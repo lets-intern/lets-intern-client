@@ -1524,6 +1524,7 @@ export const programRecommendSchema = z.object({
       reportType: reportTypeSchema,
       title: z.string().optional().nullable(),
       notice: z.string().optional().nullable(),
+      isVisible: z.boolean().optional().nullable(),
       visibleDate: z.string().optional().nullable(),
     }),
   ),
