@@ -35,10 +35,15 @@ const SideNavItem = ({
           className,
         )}
         onClick={() => {
-          hoverItem ? setOpen(!open) : onClick && onClick();
+          if (hoverItem) {
+            setOpen(!open);
+          } else if (onClick) {
+            onClick();
+          }
         }}
         target={target}
         rel={rel}
+        reloadDocument
       >
         <span className="text-1.125-bold">{children}</span>
       </Wrapper>
@@ -53,6 +58,7 @@ const SideNavItem = ({
               to={item.to}
               onClick={onClick}
               className="flex w-full px-8 py-2 text-xsmall16 font-semibold text-neutral-20"
+              reloadDocument
             >
               {item.text}
             </Link>

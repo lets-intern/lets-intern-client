@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DocumentLink from './DocumentLink';
@@ -94,7 +96,7 @@ const Footer = () => {
 
           <div className="text-0.75-medium flex flex-col gap-5 text-neutral-45">
             {/* 로고 */}
-            <Link to="/" className="w-[7.5rem]">
+            <Link to="/" className="w-[7.5rem]" reloadDocument>
               <img className="h-auto w-full" src="/logo/logo.svg" alt="Logo" />
             </Link>
             {/* 사업자 정보 */}

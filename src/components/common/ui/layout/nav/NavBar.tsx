@@ -1,13 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-
 import { useGetActiveReports } from '@/api/report';
 import { useControlScroll } from '@/hooks/useControlScroll';
 import { twMerge } from '@/lib/twMerge';
 import useAuthStore from '@/store/useAuthStore';
 import useScrollStore from '@/store/useScrollStore';
 import axios from '@/utils/axios';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import KakaoChannel from './KakaoChannel';
 import NavItem from './NavItem';
 import { NavSubItemProps } from './NavSubItem';
@@ -185,7 +184,11 @@ const NavBar = () => {
             <NavItem to="/program" active={activeLink === 'PROGRAM'}>
               프로그램
             </NavItem>
-            <NavItem to="/blog/list" active={activeLink === 'BLOG'}>
+            <NavItem
+              to="/blog/list"
+              active={activeLink === 'BLOG'}
+              reloadDocument
+            >
               블로그
             </NavItem>
             <NavItem
@@ -197,6 +200,7 @@ const NavBar = () => {
             >
               🔥 서류 진단받고 합격하기
             </NavItem>
+            <span onClick={() => navigate('/')}>홈으로...</span>
           </div>
           <div className="flex items-center gap-4">
             {isLoggedIn ? (
