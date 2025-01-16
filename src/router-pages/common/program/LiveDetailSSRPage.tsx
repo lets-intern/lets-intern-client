@@ -1,21 +1,16 @@
+// TODO: 이제 사용되지 않아서 삭제해야 함.
 import { useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useProgramApplicationQuery } from '@/api/application';
 import { useGetLiveQuery } from '@/api/program';
-import { useServerLive } from '@/context/ServerLive';
+// import { useServerLive } from '@/context/ServerLive';
 import { isDeprecatedProgram } from '@/lib/isDeprecatedProgram';
 import { generateOrderId, getPayInfo, UserInfo } from '@/lib/order';
 import useAuthStore from '@/store/useAuthStore';
 import useProgramStore from '@/store/useProgramStore';
-import {
-  getLiveTitle,
-  getProgramPathname,
-  getUniversalLink,
-} from '@/utils/url';
-import { DesktopApplyCTA, MobileApplyCTA } from '@components/common/ApplyCTA';
-import CommonHelmet from '@components/common/CommonHelmet';
-import LiveView from '@components/LiveView';
+import { getProgramPathname } from '@/utils/url';
+import { MobileApplyCTA } from '@components/common/ApplyCTA';
 
 const LiveDetailSSRPage = () => {
   const navigate = useNavigate();
@@ -25,13 +20,13 @@ const LiveDetailSSRPage = () => {
   }>();
   const { isLoggedIn } = useAuthStore();
 
-  const liveFromServer = useServerLive();
+  // const liveFromServer = useServerLive();
   const { data } = useGetLiveQuery({ liveId: Number(id || '') });
 
   const { initProgramApplicationForm, setProgramApplicationForm } =
     useProgramStore();
 
-  const live = data || liveFromServer;
+  const live = data!;
   const isLoading = live.title === '로딩중...';
   const isDeprecated = isDeprecatedProgram(live);
 
@@ -143,25 +138,7 @@ const LiveDetailSSRPage = () => {
 
   return (
     <>
-      <CommonHelmet
-        title={getLiveTitle(live)}
-        url={getUniversalLink(
-          getProgramPathname({
-            programType: 'live',
-            title: live.title,
-            id,
-          }),
-        )}
-        description={live.shortDesc}
-      />
-
-      <LiveView live={live} />
-
-      <DesktopApplyCTA
-        program={live}
-        onApplyClick={onApplyClick}
-        isAlreadyApplied={isAlreadyApplied}
-      />
+      {/* <LiveView live={live} /> */}
 
       <MobileApplyCTA
         program={live}

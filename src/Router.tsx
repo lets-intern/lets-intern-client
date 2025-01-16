@@ -8,8 +8,6 @@ import About from './router-pages/common/about/About';
 import FindPassword from './router-pages/common/auth/FindPassword';
 import Login from './router-pages/common/auth/Login';
 import SignUp from './router-pages/common/auth/SignUp';
-import BlogHashtagListPage from './router-pages/common/blog/BlogHashtagListPage';
-import BlogListPage from './router-pages/common/blog/BlogListPage';
 import ChallengeDashboard from './router-pages/common/challenge/ChallengeDashboard';
 import ChallengeUserInfo from './router-pages/common/challenge/ChallengeUserInfo';
 import MyChallengeDashboard from './router-pages/common/challenge/MyChallengeDashboard';
@@ -25,8 +23,6 @@ import Privacy from './router-pages/common/mypage/Privacy';
 import ReportCreditDelete from './router-pages/common/mypage/ReportCreditDelete';
 import ReportCreditDetail from './router-pages/common/mypage/ReportCreditDetail';
 import Review from './router-pages/common/mypage/Review';
-import ChallengeDetailSSRPage from './router-pages/common/program/ChallengeDetailSSRPage';
-import LiveDetailSSRPage from './router-pages/common/program/LiveDetailSSRPage';
 import Payment from './router-pages/common/program/Payment';
 import PaymentFail from './router-pages/common/program/PaymentFail';
 import PaymentInputPage from './router-pages/common/program/PaymentInputPage';
@@ -78,10 +74,10 @@ const Router = () => {
               />
 
               {/* 챌린지 상세 페이지 */}
-              <Route
+              {/* <Route
                 path="program/challenge/:id/:title?"
                 element={<ChallengeDetailSSRPage />}
-              />
+              /> */}
 
               {/* LIVE 클래스 상세 페이지 (Deprecated) */}
               <Route
@@ -90,10 +86,10 @@ const Router = () => {
               />
 
               {/* LIVE 클래스 상세 페이지 */}
-              <Route
+              {/* <Route
                 path="program/live/:id/:title?"
                 element={<LiveDetailSSRPage />}
-              />
+              /> */}
 
               {/* 프로그램 결제 페이지 */}
               <Route path="payment-input" element={<PaymentInputPage />} />
@@ -116,9 +112,9 @@ const Router = () => {
 
               {/* 블로그 */}
               {/* /blog?category=:category */}
-              <Route path="blog/list" element={<BlogListPage />} />
+              {/* <Route path="blog/list" element={<BlogListPage />} /> */}
               {/* blog/hashtag?tag=:tag */}
-              <Route path="blog/hashtag" element={<BlogHashtagListPage />} />
+              {/* <Route path="blog/hashtag" element={<BlogHashtagListPage />} /> */}
               {/* blog/:id */}
               {/* <Route path="blog/:id" element={<BlogDetailPage />} /> */}
               {/* Next의 app router로 이동 */}

@@ -1,21 +1,17 @@
+// TODO: 이제 사용되지 않아서 삭제해야 함.
 import { useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useProgramApplicationQuery } from '@/api/application';
 import { useChallengeQuery } from '@/api/challenge';
-import { useServerChallenge } from '@/context/ServerChallenge';
+// import { useServerChallenge } from '@/context/ServerChallenge';
 import { isDeprecatedProgram } from '@/lib/isDeprecatedProgram';
 import { generateOrderId, getPayInfo, UserInfo } from '@/lib/order';
 import useAuthStore from '@/store/useAuthStore';
 import useProgramStore from '@/store/useProgramStore';
-import {
-  getChallengeTitle,
-  getProgramPathname,
-  getUniversalLink,
-} from '@/utils/url';
-import ChallengeView from '@components/ChallengeView';
+import { getProgramPathname } from '@/utils/url';
 import { DesktopApplyCTA, MobileApplyCTA } from '@components/common/ApplyCTA';
-import CommonHelmet from '@components/common/CommonHelmet';
+// import CommonHelmet from '@components/common/CommonHelmet';
 
 const ChallengeDetailSSRPage = () => {
   const navigate = useNavigate();
@@ -26,13 +22,13 @@ const ChallengeDetailSSRPage = () => {
 
   const { isLoggedIn } = useAuthStore();
 
-  const challengeFromServer = useServerChallenge();
+  // const challengeFromServer = useServerChallenge();
   const { data } = useChallengeQuery({ challengeId: Number(id || '') });
 
   const { initProgramApplicationForm, setProgramApplicationForm } =
     useProgramStore();
 
-  const challenge = data || challengeFromServer;
+  const challenge = data!;
   const isLoading = challenge.title === '로딩중...';
   const isDeprecated = isDeprecatedProgram(challenge);
 
@@ -147,19 +143,7 @@ const ChallengeDetailSSRPage = () => {
 
   return (
     <>
-      <CommonHelmet
-        title={getChallengeTitle(challenge)}
-        url={getUniversalLink(
-          getProgramPathname({
-            programType: 'challenge',
-            title: challenge.title,
-            id,
-          }),
-        )}
-        description={challenge.shortDesc}
-      />
-
-      <ChallengeView challenge={challenge} />
+      {/* <ChallengeView challenge={challenge} /> */}
 
       <DesktopApplyCTA
         program={challenge}
