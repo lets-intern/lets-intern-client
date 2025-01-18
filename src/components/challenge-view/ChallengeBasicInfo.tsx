@@ -3,6 +3,10 @@ import ChevronDown from '@/assets/icons/chevron-down.svg?react';
 import ClockIcon from '@/assets/icons/clock.svg?react';
 import Pin from '@/assets/icons/pin.svg?react';
 import Polygon from '@/assets/icons/polygon-sharp.svg?react';
+import {
+  LOCALIZED_YYYY_MDdd_HH,
+  LOCALIZED_YYYY_MDdd_HHmm,
+} from '@/data/dayjsFormat';
 import { useInstallmentPayment } from '@/hooks/useInstallmentPayment';
 import dayjs from '@/lib/dayjs';
 import {
@@ -15,10 +19,11 @@ import {
   formatFullDateTime,
   formatFullDateTimeWithOutYear,
 } from '@/utils/formatDateString';
+import { getProgramPathname } from '@/utils/url';
 import { ChallengeColor } from '@components/ChallengeView';
 import BasicInfoRow from '@components/common/program/program-detail/basicInfo/BasicInfoRow';
+import { useRouter } from 'next/navigation';
 import { LuCalendarDays } from 'react-icons/lu';
-import { useNavigate } from 'react-router-dom';
 import RadioButton from './RadioButton';
 
 const { PERSONAL_STATEMENT } = challengeTypeSchema.enum;
@@ -47,10 +52,18 @@ const ChallengeBasicInfo = ({
     months: installmentMonths,
     banks,
   } = useInstallmentPayment();
-  const navigate = useNavigate();
+  const router = useRouter();
 
-  const onClickActiveChallenge = (challengeId: number) => {
-    navigate(`/program/challenge/${challengeId}`);
+  const handleClickActiveChallenge = (challenge: {
+    id: number;
+    title: string;
+  }) => {
+    const href = getProgramPathname({
+      programType: 'challenge',
+      ...challenge,
+    });
+
+    router.push(href);
   };
 
   const activeOnly =
@@ -228,7 +241,9 @@ const ChallengeBasicInfo = ({
                       color={colors.primary}
                       checked={activeChallenge.id === Number(challengeId)}
                       label={formatFullDate(dayjs(activeChallenge.startDate))}
-                      onClick={() => onClickActiveChallenge(activeChallenge.id)}
+                      onClick={() =>
+                        handleClickActiveChallenge(activeChallenge)
+                      }
                     />
                   ))}
             </div>
@@ -280,7 +295,10 @@ const ChallengeBasicInfo = ({
             title="OT 일자"
             content={
               <>
-                {formatFullDateTime(challenge.startDate)}
+                {challenge.startDate?.get('minute') === 0
+                  ? challenge.startDate?.format(LOCALIZED_YYYY_MDdd_HH)
+                  : challenge.startDate?.format(LOCALIZED_YYYY_MDdd_HHmm)}{' '}
+                ~ {challenge.startDate?.add(40, 'minute').format('HH시 mm분')}
                 <br />
                 <span className="text-xxsmall12 text-neutral-35 md:text-xsmall14">
                   *실시간 참여 권장 (불참시 녹화본 제공 가능)

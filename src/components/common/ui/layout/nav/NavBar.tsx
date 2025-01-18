@@ -160,8 +160,9 @@ const NavBar = () => {
         return;
 
       const currentScrollY = window.scrollY;
+      console.log(currentScrollY, lastScrollY.current);
 
-      if (currentScrollY > lastScrollY.current) {
+      if (currentScrollY > lastScrollY.current && currentScrollY > 500) {
         setScrollDirection('DOWN');
       } else if (currentScrollY < lastScrollY.current) {
         setScrollDirection('UP');
@@ -212,6 +213,7 @@ const NavBar = () => {
               active={activeLink === 'REPORT'}
               hoverItem={reportItems}
               isItemLoaded={!isLoading && !!data}
+              reloadDocument
             >
               🔥 서류 진단받고 합격하기
             </NavItem>
@@ -232,8 +234,7 @@ const NavBar = () => {
             ) : (
               <div className="items-center hidden gap-2 sm:flex">
                 <Link
-                  to="/login"
-                  state={{ prevPath: location.pathname }}
+                  to={`/login?redirect=${encodeURIComponent(location.pathname)}`}
                   className="text-0.75 rounded-xxs bg-primary px-3 py-1 text-static-100"
                 >
                   로그인
@@ -310,9 +311,8 @@ const NavBar = () => {
               <div className="text-0.875 flex gap-6">
                 <Link
                   className="text-primary"
-                  to="/login"
+                  to={`/login?redirect=${encodeURIComponent(location.pathname)}`}
                   onClick={closeMenu}
-                  state={{ prevPath: location.pathname }}
                 >
                   로그인
                 </Link>
@@ -333,13 +333,14 @@ const NavBar = () => {
             <SideNavItem to="/program" onClick={closeMenu}>
               프로그램
             </SideNavItem>
-            <SideNavItem to="/blog/list" onClick={closeMenu}>
+            <SideNavItem to="/blog/list" onClick={closeMenu} reloadDocument>
               블로그
             </SideNavItem>
             <SideNavItem
               to="/report/landing"
               onClick={closeMenu}
               hoverItem={reportItems}
+              reloadDocument
             >
               🔥 서류 진단받고 합격하기
             </SideNavItem>
