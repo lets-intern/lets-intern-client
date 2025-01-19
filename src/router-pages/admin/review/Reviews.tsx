@@ -1,16 +1,16 @@
-import { useGetTotalReview } from '@/api/challenge';
 import { MenuItem, Select } from '@mui/material';
 import { useState } from 'react';
-import TableBody from '../../../components/admin/review/reviews/table-content/TableBody';
+
+import { useGetTotalReview } from '@/api/challenge';
+import TableBody from '@/components/admin/review/reviews/table-content/TableBody';
 import TableHead, {
   ReviewsTableHeadProps,
-} from '../../../components/admin/review/reviews/table-content/TableHead';
-import Table from '../../../components/admin/ui/table/regacy/Table';
+} from '@/components/admin/review/reviews/table-content/TableHead';
+import Table from '@/components/admin/ui/table/regacy/Table';
+import { ProgramTypeUpperCase } from '@/schema';
 
 const Reviews = () => {
-  const [type, setType] = useState<'CHALLENGE' | 'LIVE' | 'REPORT' | 'VOD'>(
-    'CHALLENGE',
-  );
+  const [type, setType] = useState<ProgramTypeUpperCase>('CHALLENGE');
   const [filter, setFilter] = useState<ReviewsTableHeadProps['filter']>({
     programTitle: null,
     createdDate: null,
@@ -28,9 +28,7 @@ const Reviews = () => {
         <h1 className="text-1.5-bold">후기 관리</h1>
         <Select
           value={type}
-          onChange={(e) =>
-            setType(e.target.value as 'CHALLENGE' | 'LIVE' | 'REPORT' | 'VOD')
-          }
+          onChange={(e) => setType(e.target.value as ProgramTypeUpperCase)}
           className="mb-4"
         >
           <MenuItem value="CHALLENGE">챌린지</MenuItem>
@@ -46,18 +44,16 @@ const Reviews = () => {
           <div className="py-4 text-center">에러 발생</div>
         ) : !data || data.reviewList?.length === 0 ? (
           <div className="py-4 text-center">후기가 없습니다.</div>
-        ) : (
-          <>
-            <Table minWidth={1000}>
-              <TableHead type={type} filter={filter} setFilter={setFilter} />
-              <TableBody
-                type={type}
-                programTitle={filter.programTitle}
-                createDate={filter.createdDate}
-                reviewList={data.reviewList ?? []}
-              />
-            </Table>
-          </>
+        ) :  (
+          <Table minWidth={1000}>
+            <TableHead type={type} filter={filter} setFilter={setFilter} />
+            <TableBody
+              type={type}
+              programTitle={filter.programTitle}
+              createDate={filter.createdDate}
+              reviewList={data.reviewList ?? []}
+            />
+          </Table>
         )}
       </main>
     </div>
