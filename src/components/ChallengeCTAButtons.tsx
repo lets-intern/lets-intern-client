@@ -1,6 +1,6 @@
 'use client';
 
-import { ProgramApplicationFormInfo } from '@/api/application';
+import { useProgramApplicationQuery } from '@/api/application';
 import dayjs from '@/lib/dayjs';
 import { generateOrderId, getPayInfo, UserInfo } from '@/lib/order';
 import { ChallengeIdPrimitive } from '@/schema';
@@ -11,16 +11,19 @@ import { useCallback } from 'react';
 import { DesktopApplyCTA, MobileApplyCTA } from './common/ApplyCTA';
 
 const ChallengeCTAButtons = ({
-  application,
   challenge,
   challengeId,
 }: {
-  application: ProgramApplicationFormInfo;
   challenge: ChallengeIdPrimitive;
   challengeId: string;
 }) => {
   const { isLoggedIn } = useAuthStore();
   const router = useRouter();
+
+  const { data: application } = useProgramApplicationQuery(
+    'challenge',
+    Number(challengeId),
+  );
 
   const { setProgramApplicationForm } = useProgramStore();
 
@@ -100,8 +103,8 @@ const ChallengeCTAButtons = ({
       <DesktopApplyCTA
         program={{
           ...challenge,
-          beginning: challenge.startDate ? dayjs(challenge.startDate) : null,
-          deadline: challenge.endDate ? dayjs(challenge.endDate) : null,
+          beginning: challenge.beginning ? dayjs(challenge.beginning) : null,
+          deadline: challenge.deadline ? dayjs(challenge.deadline) : null,
         }}
         onApplyClick={onApplyClick}
         isAlreadyApplied={isAlreadyApplied}
@@ -110,8 +113,8 @@ const ChallengeCTAButtons = ({
       <MobileApplyCTA
         program={{
           ...challenge,
-          beginning: challenge.startDate ? dayjs(challenge.startDate) : null,
-          deadline: challenge.endDate ? dayjs(challenge.endDate) : null,
+          beginning: challenge.beginning ? dayjs(challenge.beginning) : null,
+          deadline: challenge.deadline ? dayjs(challenge.deadline) : null,
         }}
         onApplyClick={onApplyClick}
         isAlreadyApplied={isAlreadyApplied}
