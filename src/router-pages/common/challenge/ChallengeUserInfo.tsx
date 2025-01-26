@@ -1,15 +1,22 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import {
+  useGetChallengeGoal,
+  useGetChallengeTitle,
+  useGetUserChallengeInfo,
+  usePostChallengeGoal,
+} from '@/api/challenge';
+import { useGetChallengeQuery } from '@/api/program';
+import { usePatchUser, useUserQuery } from '@/api/user';
+import { GOAL_DATE } from '@components/common/challenge/ui/layout/ChallengeLayout';
 import TextArea from '@components/common/ui/input/TextArea';
 import GradeDropdown from '../../../components/common/mypage/privacy/form-control/GradeDropdown';
 import Input from '../../../components/common/ui/input/Input';
-import axios from '../../../utils/axios';
 
 const ChallengeUserInfo = () => {
-  const queryClient = useQueryClient();
   const params = useParams();
+  const programId = params.programId;
   const navigate = useNavigate();
 
   const [value, setValue] = useState({
@@ -22,69 +29,55 @@ const ChallengeUserInfo = () => {
   });
   const [buttonDisabled, setButtonDisabled] = useState(false);
 
-  useQuery({
-    queryKey: ['user'],
-    queryFn: async () => {
-      const res = await axios.get('/user');
-      setValue({
-        university: res.data.data.university,
-        grade: res.data.data.grade,
-        major: res.data.data.major,
-        wishJob: res.data.data.wishJob,
-        wishCompany: res.data.data.wishCompany,
-        goal: '',
-      });
-      return res.data;
-    },
-    refetchOnWindowFocus: false,
-  });
-
-  const { data: isValidUserInfoData, isLoading: isValidUserInfoLoading } =
-    useQuery({
-      queryKey: ['user', 'challenge-info'],
-      queryFn: async ({ queryKey }) => {
-        const res = await axios.get(`/${queryKey[0]}/${queryKey[1]}`);
-        return res.data;
-      },
+  const { data: challenge, isLoading: challengeIsLoading } =
+    useGetChallengeQuery({
+      challengeId: Number(programId),
+      enabled: !!programId && !isNaN(Number(programId)),
     });
 
-  const isValidUserInfo = isValidUserInfoData?.data?.pass;
+  const { data: userData, isLoading: userDataIsLoading } = useUserQuery();
 
-  const { data: programTitleData, isLoading: programTitleLoading } = useQuery({
-    queryKey: ['challenge', params.programId, 'title'],
-    queryFn: async ({ queryKey }) => {
-      const res = await axios.get(
-        `/${queryKey[0]}/${queryKey[1]}/${queryKey[2]}`,
-      );
-      return res.data;
-    },
-  });
+  const { data: challengeGoal, isLoading: challengeGoalIsLoading } =
+    useGetChallengeGoal(programId);
 
-  const programTitle = programTitleData?.data?.title;
+  const { data: isValidUserInfoData, isLoading: isValidUserInfoLoading } =
+    useGetUserChallengeInfo();
 
-  const { data: usernameData, isLoading: usernameLoading } = useQuery({
-    queryKey: ['user'],
-    queryFn: async ({ queryKey }) => {
-      const res = await axios.get(`/${queryKey[0]}`);
-      return res.data;
-    },
-  });
+  const { data: programTitleData, isLoading: programTitleDataIsLoading } =
+    useGetChallengeTitle(Number(programId));
 
-  const username = usernameData?.data?.name;
+  useEffect(() => {
+    if (userData || challengeGoal) {
+      setValue({
+        university: userData?.university ?? '',
+        grade: userData?.grade ?? '',
+        major: userData?.major ?? '',
+        wishJob: userData?.wishJob ?? '',
+        wishCompany: userData?.wishCompany ?? '',
+        goal: challengeGoal?.goal ?? '',
+      });
+    }
+  }, [userData, challengeGoal]);
 
+  const programTitle = programTitleData?.title;
+  const username = userData?.name;
+
+  const isValidUserInfo = isValidUserInfoData?.pass;
+  const hasChallengeGoal = challengeGoal?.goal;
   const isLoading =
-    isValidUserInfoLoading || programTitleLoading || usernameLoading;
+    isValidUserInfoLoading ||
+    programTitleDataIsLoading ||
+    userDataIsLoading ||
+    challengeGoalIsLoading ||
+    challengeIsLoading;
+  const isStartAfterGoal =
+    challenge?.startDate && GOAL_DATE.isBefore(challenge.startDate);
 
-  const editMyInfo = useMutation({
-    mutationFn: async () => {
-      const res = await axios.patch('/user', value);
-      return res.data;
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['user'] });
-      navigate(`/challenge/${params.programId}`);
-    },
-  });
+  const { mutateAsync: tryPatchUser, isPending: patchUserIsPending } =
+    usePatchUser({});
+
+  const { mutateAsync: tryPostGoal, isPending: postGoalIsPending } =
+    usePostChallengeGoal();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue({ ...value, [e.target.name]: e.target.value });
@@ -98,8 +91,28 @@ const ChallengeUserInfo = () => {
     setValue({ ...value, grade });
   };
 
-  const handleSubmit = () => {
-    editMyInfo.mutate();
+  const handleSubmit = async () => {
+    if (patchUserIsPending || postGoalIsPending || !programId) return;
+
+    try {
+      await tryPatchUser({
+        university: value.university,
+        grade: value.grade,
+        major: value.major,
+        wishJob: value.wishJob,
+        wishCompany: value.wishCompany,
+      });
+
+      await tryPostGoal({
+        challengeId: programId,
+        goal: value.goal,
+      });
+
+      navigate(`/challenge/${params.programId}`);
+    } catch (error) {
+      console.error(error);
+      alert('입력에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   useEffect(() => {
@@ -115,8 +128,23 @@ const ChallengeUserInfo = () => {
 
   useEffect(() => {
     if (isLoading) return;
-    if (isValidUserInfo) navigate(`/challenge/${params.programId}`);
-  }, [isValidUserInfo, isLoading]);
+    if (isStartAfterGoal) {
+      if (isValidUserInfo && hasChallengeGoal) {
+        navigate(`/challenge/${programId}`);
+        return;
+      }
+    } else if (isValidUserInfo) {
+      navigate(`/challenge/${programId}`);
+      return;
+    }
+  }, [
+    isValidUserInfo,
+    isLoading,
+    navigate,
+    hasChallengeGoal,
+    programId,
+    isStartAfterGoal,
+  ]);
 
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-6 pb-24 pt-12">
@@ -202,8 +230,9 @@ const ChallengeUserInfo = () => {
                 챌린지 목표<span className="text-requirement">*</span>
               </label>
               <TextArea
-                id="wishCompany"
-                name="wishCompany"
+                id="goal"
+                name="goal"
+                wrapperClassName="h-28"
                 placeholder={`챌린지를 신청한 목적과 계기,\n또는 챌린지 참여를 통해 이루고 싶은 목표를 자유롭게 작성해주세요.`}
                 className="text-xsmall14 font-normal"
                 value={value.goal}

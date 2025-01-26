@@ -53,6 +53,7 @@ export const challengeTypeSchema = z.enum([
   'ETC',
   'PERSONAL_STATEMENT',
   'PORTFOLIO',
+  "PERSONAL_STATEMENT_LARGE_CORP"
 ]);
 
 export type ChallengeType = z.infer<typeof challengeTypeSchema>;
@@ -1009,6 +1010,7 @@ export const challengeSchedule = z
           submitted: z.boolean().nullable(),
           id: z.number().nullable(),
           link: z.string().nullable(),
+          review: z.string().nullable().optional(),
           comments: z.string().nullable(),
           status: attendanceStatus.nullable(),
           result: attendanceResult.nullable(),
@@ -1169,6 +1171,7 @@ export const myDailyMission = z
         submitted: z.boolean(),
         id: z.number().nullable(),
         link: z.string().nullable(),
+        review: z.string().nullable().optional(),
         comments: z.string().nullable(),
         status: attendanceStatus.nullable(),
         result: attendanceResult.nullable(),

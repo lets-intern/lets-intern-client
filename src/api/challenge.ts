@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   activeChallengeResponse,
+  AttendanceResult,
+  AttendanceStatus,
   ChallengeIdPrimitive,
   challengeTitleSchema,
   ChallengeType,
@@ -10,6 +12,11 @@ import {
   reviewTotalSchema,
 } from '../schema';
 import axios from '../utils/axios';
+import {
+  challengeGoalSchema,
+  challengeUserInfoSchema,
+  challengeValidUserSchema,
+} from './challengeSchema';
 
 const useChallengeQueryKey = 'useChallengeQueryKey';
 
@@ -209,6 +216,146 @@ export const useGetActiveChallenge = (type: ChallengeType) => {
         },
       });
       return activeChallengeResponse.parse(res.data.data);
+    },
+  });
+};
+
+export const getChallengeGoalQueryKey = (challengeId: string | undefined) => {
+  return ['useGetChallengeGoal', challengeId];
+};
+
+export const useGetChallengeGoal = (challengeId: string | undefined) => {
+  return useQuery({
+    queryKey: getChallengeGoalQueryKey(challengeId),
+    queryFn: async () => {
+      const res = await axios.get(`/challenge/${challengeId}/goal`);
+      return challengeGoalSchema.parse(res.data.data);
+    },
+    enabled: !!challengeId,
+  });
+};
+
+export const usePostChallengeGoal = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      challengeId,
+      goal,
+    }: {
+      challengeId: string;
+      goal: string;
+    }) => {
+      const res = await axios.patch(`/challenge/${challengeId}/goal`, {
+        goal,
+      });
+      return { data: res.data, challengeId };
+    },
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({
+        queryKey: getChallengeGoalQueryKey(data.challengeId),
+      });
+    },
+  });
+};
+
+export const useGetUserChallengeInfo = () => {
+  return useQuery({
+    queryKey: ['user', 'challenge-info'],
+    queryFn: async () => {
+      const res = await axios.get('/user/challenge-info');
+      return challengeUserInfoSchema.parse(res.data.data);
+    },
+  });
+};
+
+export const useGetChallengeValideUser = (challengeId: string | undefined) => {
+  return useQuery({
+    queryKey: ['challenge', challengeId, 'access'],
+    queryFn: async () => {
+      const res = await axios.get(`/challenge/${challengeId}/access`);
+      return challengeValidUserSchema.parse(res.data.data);
+    },
+    enabled: !!challengeId,
+  });
+};
+
+export const usePostChallengeAttendance = ({
+  successCallback,
+  errorCallback,
+}: {
+  successCallback?: () => void;
+  errorCallback?: () => void;
+}) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      missionId,
+      link,
+      review,
+    }: {
+      missionId: number;
+      link: string;
+      review: string;
+    }) => {
+      const res = await axios.post(`/attendance/${missionId}`, {
+        link,
+        review,
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['challenge'],
+      });
+      return successCallback && successCallback();
+    },
+    onError: () => {
+      return errorCallback && errorCallback();
+    },
+  });
+};
+
+export const usePatchChallengeAttendance = ({
+  successCallback,
+  errorCallback,
+}: {
+  successCallback?: () => void;
+  errorCallback?: () => void;
+}) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      attendanceId,
+      link,
+      status,
+      result,
+      comments,
+      reviewIsVisible,
+    }: {
+      attendanceId: number;
+      link?: string;
+      status?: AttendanceStatus | null;
+      result?: AttendanceResult | null;
+      comments?: string;
+      reviewIsVisible?: boolean;
+    }) => {
+      const res = await axios.patch(`/attendance/${attendanceId}`, {
+        link,
+        status,
+        result,
+        comments,
+        reviewIsVisible,
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['challenge'],
+      });
+      return successCallback && successCallback();
+    },
+    onError: () => {
+      return errorCallback && errorCallback();
     },
   });
 };

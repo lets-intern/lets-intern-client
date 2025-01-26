@@ -1,6 +1,7 @@
 import { challengeTypeSchema, pageInfo } from '@/schema';
 import axios from '@/utils/axios';
-import { useQuery } from '@tanstack/react-query';
+import axiosV2 from '@/utils/axiosV2';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import { mypageApplicationsSchema } from './application';
 
@@ -87,3 +88,41 @@ export const blogReveiwListSchema = z.object({
 });
 
 export type BlogReview = z.infer<typeof blogReviewSchema>;
+export type PostReviewItemType = {
+  questionType: QuestionType;
+  answer: string;
+};
+
+export type PostReviewParams = {
+  type: ReviewType;
+  score: number;
+  npsScore: number;
+  goodPoint: string;
+  badPoint: string;
+  reviewItemList: PostReviewItemType[];
+};
+
+export const usePostReviewMutation = ({
+  errorCallback,
+  successCallback,
+}: {
+  successCallback?: () => void;
+  errorCallback?: (error: Error) => void;
+}) => {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (reviewForm: PostReviewParams) => {
+      await axiosV2.post('/review', reviewForm);
+    },
+    onSuccess: () => {
+      client.invalidateQueries({
+        queryKey: getAllApplicationsForReviewQueryKey,
+      });
+      return successCallback && successCallback();
+    },
+    onError: (error: Error) => {
+      return errorCallback && errorCallback(error);
+    },
+  });
+};

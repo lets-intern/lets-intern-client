@@ -133,17 +133,21 @@ export const useGetChallengeListQuery = ({
   });
 };
 
-export const useGetChallengeQueryKey = 'useGetChallengeQueryKey';
+export const useGetChallengeQueryKey = 'challenge';
 
 export const useGetChallengeQuery = ({
   challengeId,
   enabled,
+  refetchOnWindowFocus = true,
+
 }: {
   challengeId: number;
   enabled?: boolean;
+  refetchOnWindowFocus?: boolean 
 }) => {
   return useQuery({
     enabled,
+    refetchOnWindowFocus,
     queryKey: [useGetChallengeQueryKey, challengeId],
     queryFn: async () => {
       const res = await axios.get(`/challenge/${challengeId}`);
@@ -229,18 +233,20 @@ export const useGetLiveQuery = ({
   });
 };
 
-export const fetchLiveData = async (liveId: string): Promise<LiveIdPrimitive> => {
-   const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SERVER_API}/live/${liveId}`,
-    );
-  
-    if (!res.ok) {
-      throw new Error('Failed to fetch live data');
-    }
-  
-    const data = await res.json();
-    return getLiveIdPrimitiveSchema.parse(data.data);
-}
+export const fetchLiveData = async (
+  liveId: string,
+): Promise<LiveIdPrimitive> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SERVER_API}/live/${liveId}`,
+  );
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch live data');
+  }
+
+  const data = await res.json();
+  return getLiveIdPrimitiveSchema.parse(data.data);
+};
 
 /** 1회용으로 사용하기 위한 함수 */
 export const getLive = async (liveId: number) => {
@@ -479,10 +485,10 @@ export const useCreateProgramBannerMutation = ({
       await queryClient.invalidateQueries({
         queryKey: [...getProgramBannerListQueryKey],
       });
-      onSuccess && onSuccess();
+      return onSuccess && onSuccess();
     },
     onError: (error) => {
-      onError && onError(error);
+      return onError && onError(error);
     },
   });
 };
@@ -521,10 +527,10 @@ export const useEditProgramBannerMutation = ({
       await queryClient.invalidateQueries({
         queryKey: getProgramBannerListQueryKey,
       });
-      onSuccess && onSuccess();
+      return onSuccess && onSuccess();
     },
     onError: (error) => {
-      onError && onError(error);
+      return onError && onError(error);
     },
   });
 };
@@ -551,10 +557,10 @@ export const useDeleteProgramBannerMutation = ({
       await queryClient.invalidateQueries({
         queryKey: [...getProgramBannerListQueryKey],
       });
-      onSuccess && onSuccess();
+      return onSuccess && onSuccess();
     },
     onError: (error) => {
-      onError && onError(error);
+      return onError && onError(error);
     },
   });
 };
