@@ -1,6 +1,11 @@
 import dayjs from 'dayjs';
 import { z } from 'zod';
 
+export interface Pageable {
+  page: number;
+  size: number;
+}
+
 export const reportTypeSchema = z.enum([
   'RESUME',
   'PERSONAL_STATEMENT',
@@ -13,6 +18,8 @@ export const pageInfo = z.object({
   totalElements: z.number().gte(0),
   totalPages: z.number().gte(0),
 });
+
+export type PageInfo = z.infer<typeof pageInfo>;
 
 /** GET /api/v1/challenge */
 export const challengeSchema = z
@@ -53,7 +60,7 @@ export const challengeTypeSchema = z.enum([
   'ETC',
   'PERSONAL_STATEMENT',
   'PORTFOLIO',
-  "PERSONAL_STATEMENT_LARGE_CORP"
+  'PERSONAL_STATEMENT_LARGE_CORP',
 ]);
 
 export type ChallengeType = z.infer<typeof challengeTypeSchema>;

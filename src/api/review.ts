@@ -1,4 +1,5 @@
 import {
+  ChallengeType,
   challengeTypeSchema,
   pageInfo,
   ProgramTypeEnum,
@@ -52,7 +53,9 @@ export type ReviewItem = z.infer<typeof reviewItemSchema>;
 export const getReviewSchema = z.object({
   reviewInfo: z.object({
     reviewId: z.number(),
-    type: reviewTypeSchema,
+    score: z.number().nullable().optional(),
+    npsScore: z.number().nullable().optional(),
+    type: reviewTypeSchema.nullable().optional(),
     createDate: z.string().nullable().optional(),
     goodPoint: z.string().nullable().optional(),
     badPoint: z.string().nullable().optional(),
@@ -75,10 +78,14 @@ export const reviewListSchema = z.object({
   pageInfo,
 });
 
+export const reviewDetailSchema = z.object({
+  reviewInfo: getReviewSchema,
+});
+
 const blogReviewSchema = z.object({
   blogReviewId: z.number(),
   postDate: z.string().nullable().optional(),
-  programType: z.string().nullable().optional(),
+  programType: ProgramTypeEnum,
   programTitle: z.string().nullable().optional(),
   name: z.string().nullable().optional(),
   title: z.string().nullable().optional(),
@@ -87,12 +94,35 @@ const blogReviewSchema = z.object({
   description: z.string().nullable().optional(),
 });
 
-export const blogReveiwListSchema = z.object({
+export const blogReviewListSchema = z.object({
   reviewList: z.array(blogReviewSchema),
   pageInfo,
 });
 
 export type BlogReview = z.infer<typeof blogReviewSchema>;
+export type BlogReviewList = z.infer<typeof blogReviewListSchema>;
+
+// 블로그 후기 전체 조회
+
+export const useGetBlogReviewList = ({
+  page,
+  size,
+  types = [],
+}: {
+  page: number;
+  size: number;
+  types?: ProgramTypeUpperCase[];
+}) => {
+  return useQuery({
+    queryKey: ['useGetBlogReviewList', ...types, page, size],
+    queryFn: async () => {
+      const queryString = `page=${page}&size=${size}${types.map((type) => `&type=${type}`).join('')}`;
+      const res = await axiosV2.get(`/review/blog?${queryString}`);
+
+      return blogReviewListSchema.parse(res.data.data).reviewList;
+    },
+  });
+};
 
 export type PostReviewItemType = {
   questionType: QuestionType;
@@ -118,8 +148,14 @@ export const usePostReviewMutation = ({
   const client = useQueryClient();
 
   return useMutation({
-    mutationFn: async (reviewForm: PostReviewParams) => {
-      await axiosV2.post('/review', reviewForm);
+    mutationFn: async ({
+      applicationId,
+      reviewForm,
+    }: {
+      applicationId: string;
+      reviewForm: PostReviewParams;
+    }) => {
+      await axiosV2.post(`/review?applicationId=${applicationId}`, reviewForm);
     },
     onSuccess: () => {
       client.invalidateQueries({
@@ -129,6 +165,58 @@ export const usePostReviewMutation = ({
     },
     onError: (error: Error) => {
       return errorCallback && errorCallback(error);
+    },
+  });
+};
+
+export type programReviewParam = {
+  types?: ReviewType[];
+  challengeTypes?: ChallengeType[];
+  page?: number;
+  size?: number;
+};
+
+const getProgramReviewQueryKey = (param?: programReviewParam) => [
+  'programReview',
+  param?.types,
+];
+
+export const useGetProgramReview = ({
+  types,
+  challengeTypes,
+  page = 0,
+  size = 10,
+}: programReviewParam) => {
+  return useQuery({
+    queryKey: getProgramReviewQueryKey({ types, challengeTypes, page, size }),
+    queryFn: async () => {
+      const res = await axiosV2.get('/review', {
+        params: {
+          type: types ? types.join(',') : undefined,
+          challengeType: challengeTypes ? challengeTypes.join(',') : undefined,
+          page,
+          size,
+        },
+      });
+      return reviewListSchema.parse(res.data.data);
+    },
+  });
+};
+
+export const getProgramReviewDetailQueryKey = (
+  type: string,
+  reviewId: number,
+) => ['programReviewDetail', type, reviewId];
+
+export const useGetProgramReviewDetail = (
+  type: ReviewType,
+  reviewId: number,
+) => {
+  return useQuery({
+    queryKey: getProgramReviewDetailQueryKey(type, reviewId),
+    queryFn: async () => {
+      const res = await axiosV2.get(`/review/${type}/${reviewId}`);
+      return reviewDetailSchema.parse(res.data.data);
     },
   });
 };
