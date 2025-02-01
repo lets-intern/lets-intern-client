@@ -7,6 +7,14 @@ export const reportTypeSchema = z.enum([
   'PORTFOLIO',
 ]);
 
+export const ReportTypePathnameEnum = z.enum([
+  'resume',
+  'personal-statement',
+  'portfolio',
+]);
+
+export type ReportTypePathname = z.infer<typeof ReportTypePathnameEnum>
+
 export const pageInfo = z.object({
   pageNum: z.number().gte(0),
   pageSize: z.number().gte(0),
@@ -202,7 +210,7 @@ export const getChallengeIdSchema = z
       z.object({
         programAdminClassification: ProgramAdminClassificationEnum,
       }),
-    ),
+    ).nullable().optional(),
     priceInfo: z.array(
       z.object({
         priceId: z.number(),
@@ -358,7 +366,7 @@ export const getLiveIdSchema = z
       z.object({
         programAdminClassification: ProgramAdminClassificationEnum,
       }),
-    ),
+    ).nullable().optional(),
     priceInfo: z.object({
       priceId: z.number(),
       price: z.number().optional().nullable(),
@@ -528,7 +536,7 @@ export const getVodIdSchema = z.object({
     z.object({
       programAdminClassification: ProgramAdminClassificationEnum,
     }),
-  ),
+  ).nullable().optional(),
 });
 
 export type VodIdSchema = z.infer<typeof getVodIdSchema>;
@@ -1540,7 +1548,7 @@ export const programAdminSchema = z
           z.object({
             programAdminClassification: ProgramAdminClassificationEnum,
           }),
-        ),
+        ).nullable().optional(),
       }),
     ),
     pageInfo,
