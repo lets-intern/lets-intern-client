@@ -15,6 +15,8 @@ import Pen from '@/assets/graphic/pen.svg?react';
 import PinBlue from '@/assets/graphic/pin_blue.svg?react';
 import PinRed from '@/assets/graphic/pin_red.svg?react';
 import Trophy from '@/assets/graphic/trophy.svg?react';
+import clsx from 'clsx';
+import { useRouter } from 'next/navigation';
 import { ReactNode } from 'react';
 
 export const getTitle = (review: GetReview) => {
@@ -75,64 +77,88 @@ const ReviewCard = ({
   reviewItemLineClamp = 3,
   expandable = false,
   showThumbnail = false,
+  reviewItemNums,
+  href,
 }: {
   review: GetReview;
   missionTitleClamp?: 1 | 2;
   reviewItemLineClamp?: 1 | 2 | 3 | 4;
   expandable?: boolean;
   showThumbnail?: boolean;
+  reviewItemNums?: number;
+  href?: string;
 }) => {
+  const router = useRouter();
+  const reviewItems = review.reviewItemList
+    ?.sort(
+      (a, b) =>
+        questionPriority(a.questionType ?? null) -
+        questionPriority(b.questionType ?? null),
+    )
+    .slice(0, reviewItemNums);
   return (
-    <div className="flex flex-col gap-4 p-4 border rounded-sm sm:flex-row border-neutral-80 sm:gap-10">
+    <div
+      className={clsx(
+        'flex flex-col gap-4 p-4 border rounded-sm sm:flex-row border-neutral-80 sm:gap-10',
+        { 'cursor-pointer': !!href },
+      )}
+      onClick={() => {
+        if (href) {
+          router.push(href);
+        }
+      }}
+    >
       <div className="flex flex-col max-w-full mr-auto">
         <div className="mb-2">
-          <ReviewBadge
-            reviewType={review.reviewInfo.type ?? 'CHALLENGE_REVIEW'}
-          />
+          <ReviewBadge type={review.reviewInfo.type ?? 'CHALLENGE_REVIEW'} />
         </div>
         <h3 className="mb-2 font-bold truncate text-xsmall16 text-neutral-0">
           {review.reviewInfo.programTitle}
         </h3>
         {review.reviewInfo.type === 'MISSION_REVIEW' ? (
-          <div className="flex items-center gap-2 mb-3 text-xxsmall12">
-            <span className="whitespace-pre text-neutral-20">
-              {review.reviewInfo.missionTh}회차
-            </span>
-            <span className="text-neutral-70">|</span>
-            <p
-              className={twMerge(
-                ' font-medium text-neutral-20',
-                missionTitleClamp === 1
-                  ? 'line-clamp-1'
-                  : missionTitleClamp === 2
-                    ? 'line-clamp-2'
-                    : null,
-              )}
-            >
-              {review.reviewInfo.missionTitle}
-            </p>
-          </div>
+          <>
+            <div className="flex items-center gap-2 mb-3 text-xxsmall12">
+              <span className="whitespace-pre text-neutral-20">
+                {review.reviewInfo.missionTh}회차
+              </span>
+              <span className="text-neutral-70">|</span>
+              <p
+                className={twMerge(
+                  ' font-medium text-neutral-20',
+                  missionTitleClamp === 1
+                    ? 'line-clamp-1'
+                    : missionTitleClamp === 2
+                      ? 'line-clamp-2'
+                      : null,
+                )}
+              >
+                {review.reviewInfo.missionTitle}
+              </p>
+            </div>
+            <ReviewItemBlock
+              questionText="미션 수행 후기"
+              questionType={null}
+              answer={review.reviewInfo.attendanceReview}
+              lineClamp={reviewItemLineClamp}
+              icon={questionIcon(null)}
+              expandable={expandable}
+            />
+          </>
         ) : null}
         <div className="mb-4 space-y-2.5 ">
-          {review.reviewItemList
-            ?.sort(
-              (a, b) =>
-                questionPriority(a.questionType ?? null) -
-                questionPriority(b.questionType ?? null),
-            )
-            .map((reviewItem, index) => (
-              <ReviewItemBlock
-                key={index}
-                {...reviewItem}
-                lineClamp={reviewItemLineClamp}
-                icon={questionIcon(reviewItem.questionType ?? null)}
-                expandable={expandable}
-              />
-            ))}
+          {reviewItems?.map((reviewItem, index) => (
+            <ReviewItemBlock
+              key={index}
+              {...reviewItem}
+              lineClamp={reviewItemLineClamp}
+              icon={questionIcon(reviewItem.questionType ?? null)}
+              expandable={expandable}
+            />
+          ))}
         </div>
 
         <div className="flex items-center gap-2 mt-auto mb-2 text-xxsmall12">
-          <span className="whitespace-pre text-neutral-20 font-medium">
+          <span className="font-medium whitespace-pre text-neutral-20">
             {review.reviewInfo.name?.[0]}**
           </span>
           <span className="text-neutral-70">|</span>
@@ -178,7 +204,7 @@ const ReviewItemBlock = (props: {
     <div>
       <div className="flex w-fit mb-0.5 items-center gap-1">
         {props.icon && props.icon}
-        <span className="text-xxsmall12 font-semibold text-neutral-10">
+        <span className="font-semibold text-xxsmall12 text-neutral-10">
           {questionText}
         </span>
       </div>

@@ -3,46 +3,41 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { BlogReview, ReviewType } from '@/api/review';
+import { BlogReview } from '@/api/review';
 import { YYYY_MM_DD } from '@/data/dayjsFormat';
 import dayjs from '@/lib/dayjs';
-import ReviewBadge from '@components/ReviewBadge';
-import clsx from 'clsx';
+import ReviewBadge, {
+  getBadgeTypeFromProgramType,
+} from '@components/ReviewBadge';
 
 interface Props {
   blogReview: BlogReview;
 }
 
 function BlogReviewCard({ blogReview }: Props) {
+  const badgeType = getBadgeTypeFromProgramType(blogReview.programType);
+
   return (
     <Link
       href={blogReview.url ?? ''}
-      className="p-4 border rounded-sm gap-4 md:gap-11 flex md:justify-between flex-col md:flex-row border-neutral-80"
+      className="flex flex-col gap-4 p-4 border rounded-sm md:gap-11 md:justify-between md:flex-row border-neutral-80"
       target="_blank"
       rel="noreferrer noopener"
     >
       <div>
-        <div className="mb-2 flex flex-col md:flex-row gap-1 md:items-center md:gap-2">
-          <ReviewBadge
-            hideSubText
-            reviewType={`${blogReview.programType}_REVIEW` as ReviewType}
-            className={clsx('w-fit', {
-              'bg-primary-10 text-primary':
-                blogReview.programType === 'CHALLENGE',
-            })}
-            fill={blogReview.programType === 'CHALLENGE' ? '#4D55F5' : ''}
-          />
-          <span className="text-xsmall14 font-bold text-primary truncate block ">
+        <div className="flex flex-col items-start gap-1 mb-2 md:flex-row md:items-center md:gap-2">
+          <ReviewBadge type={badgeType} />
+          <span className="block font-bold truncate text-xsmall14 text-primary ">
             {blogReview.programTitle}
           </span>
         </div>
-        <h3 className="mb-2 font-bold text-xsmall16 overflow-hidden line-clamp-2 text-neutral-0 text-ellipsis">
+        <h3 className="mb-2 overflow-hidden font-bold text-xsmall16 line-clamp-2 text-neutral-0 text-ellipsis">
           {blogReview.title}
         </h3>
-        <p className="mb-4 text-neutral-20 md:h-11 text-xsmall14 overflow-hidden line-clamp-2 text-ellipsis">
+        <p className="mb-4 overflow-hidden text-neutral-20 md:h-11 text-xsmall14 line-clamp-2 text-ellipsis">
           {blogReview.description}
         </p>
-        <div className="mb-2 text-xsmall14 text-neutral-35 truncate">
+        <div className="mb-2 text-xsmall14 md:max-w-[22rem] text-neutral-35 truncate">
           {blogReview.url}
         </div>
         <span className="text-neutral-40 text-xxsmall12">

@@ -1,0 +1,103 @@
+'use client';
+
+import Image from 'next/image';
+import Link from 'next/link';
+
+import { YYYY_MM_DD } from '@/data/dayjsFormat';
+import dayjs from '@/lib/dayjs';
+import { ProgramTypeUpperCase } from '@/schema';
+import ReviewBadge, {
+  getBadgeTypeFromProgramType,
+} from '@components/ReviewBadge';
+
+interface IReviewLinkCardProps {
+  url?: string | null;
+  thumbnail?: string | null;
+  title?: string | null;
+  description?: string | null;
+  programType?: ProgramTypeUpperCase | null;
+  programTitle?: string | null;
+  externalLink?: string | null;
+  favicon?: string | null;
+  date?: string | null;
+}
+
+function ReviewLinkCard({
+  date,
+  description,
+  externalLink,
+  favicon,
+  programTitle,
+  programType,
+  thumbnail,
+  title,
+  url,
+}: IReviewLinkCardProps) {
+  const badgeType = programType
+    ? getBadgeTypeFromProgramType(programType)
+    : null;
+  const isInternal = url?.startsWith('/');
+
+  return (
+    <div className="relative flex flex-col gap-3 group">
+      <div className="w-full h-[7rem] relative overflow-hidden">
+        <Image
+          className="object-cover rounded-sm group-has-[a:hover]:opacity-80 transition"
+          src={thumbnail ?? ''}
+          alt={title + ' 블로그 썸네일'}
+          fill
+          sizes="(min-width:768px) 13rem , 50vw"
+        />
+      </div>
+      <div>
+        <div className="flex flex-col items-start gap-1 mb-2">
+          {badgeType ? <ReviewBadge type={badgeType} /> : null}
+
+          {programTitle ? (
+            <span className="block font-bold truncate text-xsmall14 text-primary">
+              {programTitle}
+            </span>
+          ) : null}
+        </div>
+
+        <h3 className="h-12 mb-2 overflow-hidden font-bold text-xsmall16 line-clamp-2 text-neutral-0 text-ellipsis">
+          <Link
+            href={url ?? ''}
+            {...(!isInternal
+              ? {
+                  target: '_blank',
+                  rel: 'noreferrer noopener',
+                }
+              : {})}
+            className="transition hover:text-neutral-30"
+          >
+            {title}
+            {/* ring-1 ring-inset ring-gray-200 hover:ring-gray-400 */}
+            <span className="absolute inset-0 transition rounded-md "></span>
+          </Link>
+        </h3>
+        <p className="mb-4 overflow-hidden text-neutral-20 text-xsmall14 line-clamp-2 text-ellipsis">
+          {description}
+        </p>
+        {externalLink || favicon ? (
+          <div className="flex items-center mb-1">
+            {/* TODO: 파비콘 추가 */}
+            {favicon ? null : null}
+            {externalLink ? (
+              <span className="block truncate text-xsmall14 text-neutral-35">
+                {externalLink}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+        {date ? (
+          <span className="text-neutral-40 text-xxsmall12">
+            {dayjs(date).format(YYYY_MM_DD)} 작성
+          </span>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+export default ReviewLinkCard;
