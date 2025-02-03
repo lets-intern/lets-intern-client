@@ -31,7 +31,6 @@ import AdminReviewHeader from './AdminReviewHeader';
 type Row = AdminBlogReview & {
   id: number | string;
   isNew: boolean;
-  isDelete: boolean;
 };
 
 export default function AdminBlogReviewListPage() {
@@ -55,7 +54,7 @@ export default function AdminBlogReviewListPage() {
       editable: true,
       sortable: false,
       type: 'singleSelect',
-      valueOptions: Object.values(ProgramTypeEnum.enum),
+      valueOptions: Object.values(ProgramTypeEnum.exclude(["VOD"]).enum),
     },
     {
       field: 'programTitle',
@@ -169,13 +168,13 @@ export default function AdminBlogReviewListPage() {
     thumbnail: undefined,
     isVisible: false,
     isNew: true,
-    isDelete: false,
   });
 
   const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
     setRowModesModel(newRowModesModel);
   };
 
+  // 수정 중인 행 바깥을 클릭해도 수정 모드 유지
   const handleRowEditStop: GridEventListener<'rowEditStop'> = (
     params,
     event,
@@ -253,7 +252,6 @@ export default function AdminBlogReviewListPage() {
         ...review,
         id: review.blogReviewId,
         isNew: false,
-        isDelete: false,
       })) ?? [];
 
     setRows(initialRows);
@@ -281,6 +279,7 @@ export default function AdminBlogReviewListPage() {
         onRowModesModelChange={handleRowModesModelChange}
         onRowEditStop={handleRowEditStop}
         processRowUpdate={processRowUpdate}
+        onProcessRowUpdateError={(error) => console.error(error)}
         disableRowSelectionOnClick
         hideFooter
       />

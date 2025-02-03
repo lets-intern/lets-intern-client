@@ -10,6 +10,7 @@ import axios from '@/utils/axios';
 import axiosV2 from '@/utils/axiosV2';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
+
 import { mypageApplicationsSchema } from './application';
 
 export const getAllApplicationsForReviewQueryKey = ['applications', 'review'];
@@ -118,8 +119,7 @@ export const useGetBlogReviewList = ({
   return useQuery({
     queryKey: ['useGetBlogReviewList', ...types, page, size],
     queryFn: async () => {
-      const queryString = `page=${page}&size=${size}${types.map((type) => `&type=${type}`).join('')}`;
-      const res = await axiosV2.get(`/review/blog?${queryString}`);
+      const res = await axiosV2.get(`/review/blog`, {params: {page, size, type: types.join(',')}});
 
       return blogReviewListSchema.parse(res.data.data);
     },
@@ -468,6 +468,23 @@ export const useUpdateAdminProgramReviewItem = ({
     },
     onError: (error: Error) => {
       return errorCallback && errorCallback(error);
+    },
+  });
+};
+
+const reviewCountSchema = z.object({
+  count: z.number().int().positive(),
+});
+
+/**
+ * @description : USER 후기 전체 개수 조회
+ */
+export const useGetReviewCount = () => {
+  return useQuery({
+    queryKey: ['useGetReviewCount'],
+    queryFn: async () => {
+      const res = await axiosV2.get(`/review/count`);
+      return reviewCountSchema.parse(res.data.data);
     },
   });
 };
