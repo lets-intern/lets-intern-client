@@ -16,11 +16,11 @@ function ReviewNavBar() {
   return (
     <>
       {/* 모바일 네비 바 */}
-      <div>
+      <div className="sticky top-[3.75rem] z-10 bg-white">
         <nav className="px-5 md:hidden">
           <ul className="flex items-stretch">
             <MobileNavItem
-              href="/review/program"
+              href="/review/mission"
               subHref={['/review/mission', '/review/program']}
             >
               프로그램 참여 후기
@@ -47,8 +47,8 @@ function ReviewNavBar() {
       </div>
 
       {/* 데스크탑 네비 바 */}
-      <nav className="relative mr-8 hidden md:block">
-        <ul className="sticky top-20 flex w-[11.5rem] flex-col items-stretch">
+      <nav className="mr-8 hidden md:block">
+        <ul className="sticky top-[106px] flex w-[11.5rem] flex-col items-stretch">
           <DesktopNavItem
             href="/review/mission"
             subHref={['/review/mission', '/review/program']}
@@ -91,14 +91,14 @@ function MobileNavItem({
   return (
     <li
       className={clsx(
-        'flex flex-1 items-center justify-center pb-3 pt-3 text-center leading-4',
+        'flex flex-1 items-center justify-center pb-2 pt-3 text-center leading-4',
         {
           'border-b-2 border-primary': active,
         },
       )}
     >
       <Link
-        className={`text-xxsmall12 ${active ? 'font-semibold text-primary' : 'text-neutral-35'}`}
+        className={`text-xsmall14 ${active ? 'font-semibold text-primary' : 'text-neutral-35'}`}
         href={href}
       >
         {children}

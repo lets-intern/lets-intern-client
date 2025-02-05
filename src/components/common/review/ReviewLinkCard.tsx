@@ -40,7 +40,7 @@ function ReviewLinkCard({
 
   return (
     <div className="group relative flex flex-col gap-3">
-      <div className="relative h-[7rem] w-full overflow-hidden">
+      <div className="relative h-[9.625rem] w-full overflow-hidden">
         <Image
           className="rounded-sm object-cover transition group-has-[a:hover]:opacity-80"
           src={thumbnail ?? ''}
@@ -54,7 +54,7 @@ function ReviewLinkCard({
           {badgeType ? <ReviewBadge type={badgeType} /> : null}
 
           {programTitle ? (
-            <span className="block truncate text-xsmall14 font-bold text-primary">
+            <span className="block max-w-full truncate text-xsmall14 font-bold text-primary">
               {programTitle}
             </span>
           ) : null}
