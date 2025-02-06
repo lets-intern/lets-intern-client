@@ -1,5 +1,6 @@
 'use client';
 
+import { ReportType } from '@/api/report';
 import { GetReview, QuestionType } from '@/api/review';
 import Bubble from '@/assets/graphic/bubble.svg?react';
 import Heart from '@/assets/graphic/heart.svg?react';
@@ -70,6 +71,22 @@ const questionPriority = (questionType: QuestionType | null) => {
   }
 };
 
+const getThumbnail = (
+  reportType: ReportType | null,
+  programThumbnail: string | null,
+) => {
+  switch (reportType) {
+    case 'RESUME':
+      return '/images/report/thumbnail_resume.png';
+    case 'PERSONAL_STATEMENT':
+      return '/images/report/thumbnail_personal.png';
+    case 'PORTFOLIO':
+      return '/images/report/thumbnail_portfolio.png';
+    default:
+      return programThumbnail ?? '';
+  }
+};
+
 const ReviewCard = ({
   review,
   missionTitleClamp = 1,
@@ -83,7 +100,7 @@ const ReviewCard = ({
 }: {
   review: GetReview;
   missionTitleClamp?: 1 | 2;
-  reviewItemLineClamp?: 1 | 2 | 3 | 4;
+  reviewItemLineClamp?: 1 | 2 | 3 | 4 | 5;
   expandable?: boolean;
   showThumbnail?: boolean;
   thumbnailLink?: string;
@@ -144,7 +161,7 @@ const ReviewCard = ({
                 questionText="미션 수행 후기"
                 questionType={null}
                 answer={review.reviewInfo.attendanceReview}
-                lineClamp={expandable ? reviewItemLineClamp : 4}
+                lineClamp={expandable ? reviewItemLineClamp : 5}
                 icon={questionIcon(null)}
                 expandable={expandable}
               />
@@ -163,11 +180,11 @@ const ReviewCard = ({
           ))}
         </div>
 
-        <div className="mb-2 mt-auto flex items-center gap-2 text-xxsmall12">
+        <div className="mb-2 mt-auto flex items-center gap-2 text-xxsmall12 md:flex-col md:items-start">
           <span className="whitespace-pre font-medium text-neutral-20">
             {review.reviewInfo.name ? `${review.reviewInfo.name[0]}**` : '익명'}
           </span>
-          <span className="text-neutral-70">|</span>
+          <span className="text-neutral-70 md:hidden">|</span>
           <span className="text-neutral-20">
             희망직무{' '}
             <span className="font-medium">{review.reviewInfo.wishJob}</span> ·
@@ -182,9 +199,13 @@ const ReviewCard = ({
           작성
         </div>
       </div>
-      {showThumbnail && review.reviewInfo.programThumbnail ? (
+      {showThumbnail &&
+      (review.reviewInfo.programThumbnail || review.reviewInfo.reportType) ? (
         <img
-          src={review.reviewInfo.programThumbnail ?? ''}
+          src={getThumbnail(
+            review.reviewInfo.reportType ?? null,
+            review.reviewInfo.programThumbnail ?? null,
+          )}
           alt={review.reviewInfo.programTitle ?? ''}
           className={clsx(
             'block h-[90px] w-[120px] rounded-sm object-cover sm:mt-10 sm:h-[135px] sm:w-[180px]',
@@ -206,7 +227,7 @@ const ReviewCard = ({
 const ReviewItemBlock = (props: {
   answer?: string | null;
   questionType?: QuestionType | null;
-  lineClamp?: 1 | 2 | 3 | 4;
+  lineClamp?: 1 | 2 | 3 | 4 | 5;
   /** 이게 있을 경우 우선함. */
   questionText?: string;
   expandable?: boolean;
@@ -242,7 +263,9 @@ const ReviewItemBlock = (props: {
                   ? 'line-clamp-3'
                   : props.lineClamp === 4
                     ? 'line-clamp-4'
-                    : null,
+                    : props.lineClamp === 5
+                      ? 'line-clamp-5'
+                      : null,
           )}
         >
           {props.answer}

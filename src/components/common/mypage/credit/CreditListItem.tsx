@@ -1,7 +1,21 @@
+import { ReportType } from '@/api/report';
 import { twMerge } from '@/lib/twMerge';
 import { Link } from 'react-router-dom';
 import { PaymentType } from '../../../../api/paymentSchema';
 import CardStatus from './CardStatus';
+
+const getReportThumbnail = (reportType: ReportType | null) => {
+  switch (reportType) {
+    case 'RESUME':
+      return '/images/report/thumbnail_resume.png';
+    case 'PERSONAL_STATEMENT':
+      return '/images/report/thumbnail_personal.png';
+    case 'PORTFOLIO':
+      return '/images/report/thumbnail_portfolio.png';
+    default:
+      return '/images/report-banner.jpg';
+  }
+};
 
 const CreditListItem = ({ payment }: { payment: PaymentType }) => {
   return (
@@ -29,9 +43,10 @@ const CreditListItem = ({ payment }: { payment: PaymentType }) => {
       />
       <div className="flex w-full items-center gap-x-[14px]">
         <img
+          alt="thumbnail"
           src={
             payment.programInfo.programType === 'REPORT'
-              ? '/images/report-banner.jpg'
+              ? getReportThumbnail(payment.programInfo.reportType || null)
               : payment.programInfo.thumbnail || ''
           }
           className={twMerge(
@@ -59,6 +74,7 @@ const CreditListItem = ({ payment }: { payment: PaymentType }) => {
           <button className="flex items-center justify-start text-xs font-semibold text-primary md:text-sm">
             결제상세
             <img
+              alt="chevron-right"
               src="/icons/Chevron_Right_MD_primary.svg"
               className="h-4 w-4"
             />

@@ -65,6 +65,7 @@ export const getReviewSchema = z.object({
     programTitle: z.string().nullable().optional(),
     programThumbnail: z.string().nullable().optional(),
     challengeType: challengeTypeSchema.nullable().optional(),
+    reportType: reportTypeSchema.nullable().optional(),
     missionTitle: z.string().nullable().optional(),
     missionTh: z.number().nullable().optional(),
     attendanceReview: z.string().nullable().optional(), // 미션 수행 후기
@@ -187,6 +188,7 @@ export const usePostReviewMutation = ({
 export type programReviewParam = {
   types?: ReviewType[];
   challengeTypes?: ChallengeType[];
+  liveJob?: string[];
   page?: number;
   size?: number;
 };
@@ -205,16 +207,24 @@ const getProgramReviewQueryKey = (param?: programReviewParam) => [
 export const useGetProgramReview = ({
   types,
   challengeTypes,
+  liveJob,
   page = 0,
   size = 10,
 }: programReviewParam) => {
   return useQuery({
-    queryKey: getProgramReviewQueryKey({ types, challengeTypes, page, size }),
+    queryKey: getProgramReviewQueryKey({
+      types,
+      challengeTypes,
+      liveJob,
+      page,
+      size,
+    }),
     queryFn: async () => {
       const res = await axiosV2.get('/review', {
         params: {
           type: types ? types.join(',') : undefined,
           challengeType: challengeTypes ? challengeTypes.join(',') : undefined,
+          liveJob: liveJob ? liveJob.join(',') : undefined,
           page,
           size,
         },

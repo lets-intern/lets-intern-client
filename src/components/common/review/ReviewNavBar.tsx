@@ -17,13 +17,13 @@ function ReviewNavBar() {
     <>
       {/* 모바일 네비 바 */}
       <div className="sticky top-[3.75rem] z-10 bg-white">
-        <nav className="px-5 md:hidden">
-          <ul className="flex items-stretch">
+        <nav className="md:hidden">
+          <ul className="flex items-stretch border-b border-neutral-80 px-5 md:hidden">
             <MobileNavItem
               href="/review/mission"
               subHref={['/review/mission', '/review/program']}
             >
-              프로그램 참여 후기
+              프로그램 후기
             </MobileNavItem>
             <MobileNavItem href="/review/blog">블로그 후기</MobileNavItem>
             <MobileNavItem href="/blog/list?category=PROGRAM_REVIEWS">
@@ -33,12 +33,12 @@ function ReviewNavBar() {
             </MobileNavItem>
           </ul>
           {isMissionOrProgramReviewPage && (
-            <ul className="my-3 flex items-stretch gap-1">
+            <ul className="my-3 flex h-[34px] items-stretch gap-1 px-5">
               <MobileNavSubItem href="/review/mission">
                 미션 수행 후기
               </MobileNavSubItem>
               <MobileNavSubItem href="/review/program">
-                프로그램 참여 후기
+                참여 후기
               </MobileNavSubItem>
             </ul>
           )}
@@ -53,7 +53,7 @@ function ReviewNavBar() {
             href="/review/mission"
             subHref={['/review/mission', '/review/program']}
           >
-            프로그램 참여 후기
+            프로그램 후기
           </DesktopNavItem>
           {isMissionOrProgramReviewPage && (
             <>
@@ -61,7 +61,7 @@ function ReviewNavBar() {
                 미션 수행 후기
               </DesktopNavSubItem>
               <DesktopNavSubItem href="/review/program">
-                프로그램 참여 후기
+                참여 후기
               </DesktopNavSubItem>
             </>
           )}
@@ -118,12 +118,15 @@ function MobileNavSubItem({
   const active = pathname === href;
   return (
     <li
-      className={clsx('h-7 rounded-full px-2.5 text-center', {
-        'bg-primary-20': active,
-      })}
+      className={clsx(
+        'flex h-full items-center justify-center rounded-full px-2.5 py-1.5',
+        {
+          'bg-primary-20': active,
+        },
+      )}
     >
       <Link
-        className={`text-xxsmall12 ${active ? 'font-semibold text-primary' : 'text-neutral-35'}`}
+        className={`text-xsmall14 ${active ? 'font-semibold text-primary' : 'text-neutral-35'}`}
         href={href}
       >
         {children}
