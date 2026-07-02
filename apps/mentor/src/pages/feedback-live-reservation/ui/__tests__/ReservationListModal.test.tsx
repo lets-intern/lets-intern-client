@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import ReservationListModal from '../ReservationListModal';
 
-const useFeedbackMentorListQueryMock = vi.fn();
+const useFeedbackMentorListWithAttendanceMock = vi.fn();
 const useUserQueryMock = vi.fn();
 const useFeedbackMentorDetailQueryMock = vi.fn();
 const useFeedbackMentorSlotsQueryMock = vi.fn();
@@ -16,7 +16,8 @@ const noopMutation = {
 };
 
 vi.mock('@/api/feedback/feedback', () => ({
-  useFeedbackMentorListQuery: () => useFeedbackMentorListQueryMock(),
+  useFeedbackMentorListWithAttendance: () =>
+    useFeedbackMentorListWithAttendanceMock(),
   useFeedbackMentorDetailQuery: (id: number | null) =>
     useFeedbackMentorDetailQueryMock(id),
   useFeedbackMentorSlotsQuery: () => useFeedbackMentorSlotsQueryMock(),
@@ -42,7 +43,7 @@ function renderModal(props: { isOpen: boolean; onClose?: () => void }) {
 }
 
 function mockBase() {
-  useFeedbackMentorListQueryMock.mockReturnValue({
+  useFeedbackMentorListWithAttendanceMock.mockReturnValue({
     data: [],
     isLoading: false,
     isError: false,

@@ -18,7 +18,7 @@ import { resolveLiveSessionStatus } from '@/pages/feedback/utils/liveFeedbackSta
  * 라이브 피드백 일정 데이터를 반환하는 훅.
  *
  * 서면 `ChallengeDataFetcher`(실 API → `PeriodBarData` 파생) 패턴을 차용해
- * 라이브 세션(`useFeedbackMentorListQuery`)과 멘토 오픈 슬롯
+ * 라이브 세션(`useFeedbackMentorListWithAttendance`)과 멘토 오픈 슬롯
  * (`useFeedbackMentorSlotsQuery`)을 캘린더 바로 파생한다.
  *
  * ⚠️ BE 한계:
