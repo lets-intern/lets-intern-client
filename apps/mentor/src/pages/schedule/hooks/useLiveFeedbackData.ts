@@ -138,7 +138,11 @@ function resolvePeriodRange(
  *  - CANCELED + menteeStatus ABSENT → mentee-absent / + mentorStatus ABSENT → mentor-absent / 그 외 → cancelled
  *  - RESERVED → 시작 전 waiting / 진행 중 in-progress / 종료 후 양측 참여 completed / 그 외 미진행
  */
-function resolveSessionStatus(
+/**
+ * BE 세션 → 캘린더 배지 축약 상태(시간+출석 기반 4상태). 캘린더·모달 공용.
+ * 라이브 목록(useLiveFeedbackList)도 이 함수를 재사용해 상태를 통일한다.
+ */
+export function resolveSessionStatus(
   session: FeedbackMentorWithAttendance,
   now: Date,
 ): LiveFeedbackInfo['status'] {

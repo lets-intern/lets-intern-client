@@ -1,12 +1,10 @@
 import { useMemo } from 'react';
 
 import { useFeedbackMentorListWithAttendance } from '@/api/feedback/feedback';
-import type {
-  FeedbackAttendanceStatus,
-  FeedbackMentorWithAttendance,
-  FeedbackStatus,
-} from '@/api/feedback/feedbackSchema';
-import type { LiveFeedbackInfo, PeriodBarData } from '@/pages/schedule/types';
+import type { FeedbackMentorWithAttendance } from '@/api/feedback/feedbackSchema';
+import { currentNow } from '@/pages/schedule/constants/mockNow';
+import { resolveSessionStatus } from '@/pages/schedule/hooks/useLiveFeedbackData';
+import type { PeriodBarData } from '@/pages/schedule/types';
 
 /** 라이브 피드백 1개 "회차" = 하나의 live-feedback-period 바 + 그 기간 내 session 바들 */
 export interface LiveFeedbackRound {
@@ -33,34 +31,6 @@ export interface LiveFeedbackChallenge {
   rounds: LiveFeedbackRound[];
 }
 
-/**
- * BE `FeedbackMentor` → 캘린더/모달 소비처가 쓰는 mock `LiveFeedbackInfo.status` 키로 매핑.
- *
- * BE는 회차/세션 진행 상태를 `status`(RESERVED/COMPLETED/CANCELED)와
- * 출석(`menteeStatus`/`mentorStatus`: PENDING/PRESENT/ABSENT) 조합으로만 제공한다.
- * - COMPLETED            → 'completed'
- * - CANCELED + 멘티 ABSENT → 'mentee-absent'
- * - CANCELED + 멘토 ABSENT → 'mentor-absent'
- * - CANCELED (그 외)      → 'mentee-absent' (구체 사유 없으면 미완료로 취급)
- * - RESERVED             → undefined (소비처가 startDate/endDate 시간 기준으로 진행 전/중/미완료 판정)
- *
- * ⚠️ BE에 in-progress/지각(mentor-late/mentee-late) 세분 상태는 없으므로 매핑하지 않는다.
- */
-function mapLiveStatus(
-  status: FeedbackStatus,
-  menteeStatus: FeedbackAttendanceStatus,
-  mentorStatus: FeedbackAttendanceStatus,
-): LiveFeedbackInfo['status'] {
-  if (status === 'COMPLETED') return 'completed';
-  if (status === 'CANCELED') {
-    if (menteeStatus === 'ABSENT') return 'mentee-absent';
-    if (mentorStatus === 'ABSENT') return 'mentor-absent';
-    return 'mentee-absent';
-  }
-  // RESERVED → 시간 기준 분기는 소비처(useMergedFeedbackRows/모달)가 담당
-  return undefined;
-}
-
 /** ISO datetime("2026-05-20T10:00:00") → "HH:mm". 파싱 실패 시 "00:00". */
 function toTimeLabel(iso: string): string {
   const t = iso.slice(11, 16);
@@ -79,6 +49,7 @@ function toDateLabel(iso: string): string {
 function toSessionBar(
   item: FeedbackMentorWithAttendance,
   challengeId: number,
+  now: Date,
 ): PeriodBarData {
   const date = toDateLabel(item.startDate);
   return {
@@ -102,7 +73,8 @@ function toSessionBar(
       menteeName: item.menteeName,
       startTime: toTimeLabel(item.startDate),
       endTime: toTimeLabel(item.endDate),
-      status: mapLiveStatus(item.status, item.menteeStatus, item.mentorStatus),
+      // 캘린더와 동일하게 시간+출석 기반 4상태로 계산(RESERVED도 진행 예정/중/미진행 판정).
+      status: resolveSessionStatus(item, now),
       // 시간·출석 정밀 판정을 위해 BE 원본 값을 그대로 보존한다.
       rawStatus: item.status,
       mentorStatus: item.mentorStatus,
@@ -150,6 +122,7 @@ export function useLiveFeedbackList(): {
 
   return useMemo(() => {
     const items = feedbackList ?? [];
+    const now = currentNow();
 
     // programTitle → 합성 challengeId. 등장 순서대로 1부터 안정적으로 부여.
     const titleToId = new Map<string, number>();
@@ -168,7 +141,7 @@ export function useLiveFeedbackList(): {
       }
       byChallenge
         .get(challengeId)!
-        .sessionBars.push(toSessionBar(item, challengeId));
+        .sessionBars.push(toSessionBar(item, challengeId, now));
     }
 
     const challenges: LiveFeedbackChallenge[] = [];

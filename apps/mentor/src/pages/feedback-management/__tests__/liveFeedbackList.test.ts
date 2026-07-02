@@ -202,9 +202,26 @@ describe('useLiveFeedbackList — status/출석 → 세션 status 매핑 (2.2)',
     expect(lf?.status).toBe('mentor-absent');
   });
 
-  it('RESERVED → undefined (소비처 시간 기준 분기)', () => {
-    const lf = firstBar([makeFeedback({ status: 'RESERVED' })]);
-    expect(lf?.status).toBeUndefined();
+  it('RESERVED + 시작 전(미래) → waiting (진행 예정)', () => {
+    const lf = firstBar([
+      makeFeedback({
+        status: 'RESERVED',
+        startDate: '2099-01-01T10:00:00',
+        endDate: '2099-01-01T10:30:00',
+      }),
+    ]);
+    expect(lf?.status).toBe('waiting');
+  });
+
+  it('RESERVED + 종료 후 미참여 → 미진행(cancelled) (시간 기준 판정)', () => {
+    const lf = firstBar([
+      makeFeedback({
+        status: 'RESERVED',
+        startDate: '2020-01-01T10:00:00',
+        endDate: '2020-01-01T10:30:00',
+      }),
+    ]);
+    expect(lf?.status).toBe('cancelled');
   });
 
   it('경험정리 미제출(attendanceStatus)을 세션 바로 전달한다 (예약현황/캘린더와 상태 일치)', () => {
