@@ -1,6 +1,27 @@
 import type { WrittenFeedbackItem } from '@/api/feedback/feedbackSchema';
 import type { WrittenFeedbackMission, WrittenFeedbackStatus } from './types';
 
+function computeFeedbackPeriod(missionEndDate: string) {
+  const end = new Date(missionEndDate);
+
+  const start = new Date(end);
+  start.setDate(start.getDate() + 2);
+  start.setHours(0, 0, 0, 0);
+
+  const periodEnd = new Date(end);
+  periodEnd.setDate(periodEnd.getDate() + 4);
+  periodEnd.setHours(23, 59, 59, 999);
+
+  return { start, periodEnd };
+}
+
+function formatDate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 function resolveStatus(item: WrittenFeedbackItem): WrittenFeedbackStatus {
   const submitted = ['PRESENT', 'UPDATED', 'LATE'].includes(
     item.attendanceStatus ?? '',
@@ -11,13 +32,15 @@ function resolveStatus(item: WrittenFeedbackItem): WrittenFeedbackStatus {
 
   if (item.feedbackStatus === 'CONFIRMED') return 'confirmed';
 
-  return missionEnded ? 'expired' : 'waiting';
+  const { periodEnd } = computeFeedbackPeriod(item.missionEndDate);
+  return periodEnd < new Date() ? 'expired' : 'waiting';
 }
 
 export function toWrittenMission(
   item: WrittenFeedbackItem,
   challengeType: string,
 ): WrittenFeedbackMission {
+  const { start, periodEnd } = computeFeedbackPeriod(item.missionEndDate);
   return {
     id: item.attendanceId,
     missionId: item.missionId,
@@ -28,6 +51,8 @@ export function toWrittenMission(
     missionNumber: item.missionTh,
     startDay: item.missionStartDate,
     endDay: item.missionEndDate,
+    feedbackPeriodStart: formatDate(start),
+    feedbackPeriodEnd: formatDate(periodEnd),
   };
 }
 
@@ -99,7 +124,7 @@ export function toWrittenCardConfig(mission: WrittenFeedbackMission) {
     },
     challengeType: mission.challengeType ?? '',
     missionNumber: mission.missionNumber,
-    feedbackStartDay: mission.startDay.slice(0, 10),
-    feedbackEndDay: mission.endDay.slice(0, 10),
+    feedbackStartDay: mission.feedbackPeriodStart,
+    feedbackEndDay: mission.feedbackPeriodEnd,
   };
 }
