@@ -23,6 +23,7 @@ const ChallengeDetailPage = () => {
     allSessionBars,
     setLiveModalBar,
     closeLiveModal,
+    canOpenLiveMission,
   } = useChallengeDetail();
 
   const isMobile = useMediaQuery('(max-width: 767px)');
@@ -42,6 +43,7 @@ const ChallengeDetailPage = () => {
         missions={missions}
         isLoading={isLoading}
         onClickFeedback={handleClickFeedback}
+        canOpenLiveMission={canOpenLiveMission}
       />
 
       {isMobile ? (

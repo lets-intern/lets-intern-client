@@ -19,6 +19,7 @@ interface MissionRowMission {
   startDate: string;
   endDate: string;
   challengeOptionTitle?: string | null;
+  challengeOptionType?: 'WRITTEN_FEEDBACK' | 'LIVE_FEEDBACK' | null;
 }
 
 /** Counts attendance statuses for a single mission */
@@ -26,11 +27,16 @@ const MissionRow = ({
   mission,
   challengeId,
   onClickFeedback,
+  canOpenLiveMission,
 }: {
   mission: MissionRowMission;
   challengeId: number;
   onClickFeedback: (missionId: number, missionTh: number) => void;
+  canOpenLiveMission: (missionTh: number) => boolean;
 }) => {
+  const isLive = mission.challengeOptionType === 'LIVE_FEEDBACK';
+  // 라이브 미션인데 열 세션이 없으면 버튼 비활성(빈 모달을 열지 않음).
+  const disabled = isLive && !canOpenLiveMission(mission.th);
   const { data } = useMentorAttendanceQuery({
     challengeId,
     missionId: mission.id,
@@ -82,7 +88,13 @@ const MissionRow = ({
           </span>
           <div className="flex flex-col gap-0.5">
             {mission.challengeOptionTitle ? (
-              <span className="text-xs text-gray-400">
+              <span
+                className={`w-fit rounded px-1.5 py-0.5 text-[11px] font-medium ${
+                  isLive
+                    ? 'bg-red-50 text-red-500'
+                    : 'bg-neutral-100 text-neutral-500'
+                }`}
+              >
                 {mission.challengeOptionTitle}
               </span>
             ) : null}
@@ -95,8 +107,8 @@ const MissionRow = ({
           </div>
         </div>
 
-        {/* Mission status badge */}
-        {statusConfig[missionStatus] && (
+        {/* Mission status badge — 서면 미션 전용(라이브는 제출/피드백 집계 의미가 달라 숨김) */}
+        {!isLive && statusConfig[missionStatus] && (
           <span
             className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusConfig[missionStatus].className}`}
           >
@@ -126,10 +138,15 @@ const MissionRow = ({
 
         <button
           type="button"
-          onClick={() => onClickFeedback(mission.id, mission.th)}
-          className="bg-primary hover:bg-primary-hover min-h-[44px] w-full rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors md:min-h-0 md:w-auto"
+          onClick={() => !disabled && onClickFeedback(mission.id, mission.th)}
+          disabled={disabled}
+          className={`min-h-[44px] w-full rounded-lg px-4 py-2 text-sm font-medium transition-colors md:min-h-0 md:w-auto ${
+            disabled
+              ? 'cursor-not-allowed bg-gray-100 text-gray-400'
+              : 'bg-primary hover:bg-primary-hover text-white'
+          }`}
         >
-          피드백 작성
+          {disabled ? '예약 없음' : '피드백 작성'}
         </button>
       </div>
     </div>
@@ -141,6 +158,7 @@ interface ChallengeDetailContentProps {
   missions: MissionRowMission[];
   isLoading: boolean;
   onClickFeedback: (missionId: number, missionTh: number) => void;
+  canOpenLiveMission: (missionTh: number) => boolean;
 }
 
 const ChallengeDetailContent = ({
@@ -148,6 +166,7 @@ const ChallengeDetailContent = ({
   missions,
   isLoading,
   onClickFeedback,
+  canOpenLiveMission,
 }: ChallengeDetailContentProps) => {
   return (
     <div className="space-y-3">
@@ -169,6 +188,7 @@ const ChallengeDetailContent = ({
               mission={mission}
               challengeId={challengeId}
               onClickFeedback={onClickFeedback}
+              canOpenLiveMission={canOpenLiveMission}
             />
           ))}
         </div>
