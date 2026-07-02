@@ -123,3 +123,36 @@ export function getLiveFeedbackBadgeVisual(
 ): LiveFeedbackBadgeVisual {
   return VISUALS[status];
 }
+
+/**
+ * 캘린더 바의 축약 상태(`LiveFeedbackInfo['status']`)를 4종 UI 상태로 환산.
+ * 캘린더·모달(멘티 리스트/카운트/하단 배지)이 같은 4상태·색을 쓰도록 통일하는 진입점.
+ */
+export type LiveBadgeStatus =
+  | 'waiting'
+  | 'in-progress'
+  | 'completed'
+  | 'cancelled'
+  | 'mentor-absent'
+  | 'mentee-absent'
+  | 'mentor-late'
+  | 'mentee-late';
+
+export function badgeStatusToUi(
+  status: LiveBadgeStatus | null | undefined,
+): LiveFeedbackUiStatus {
+  switch (status) {
+    case 'completed':
+      return 'completed';
+    case 'in-progress':
+      return 'inProgress';
+    case 'cancelled':
+    case 'mentor-absent':
+    case 'mentee-absent':
+    case 'mentor-late':
+    case 'mentee-late':
+      return 'missed';
+    default:
+      return 'waiting';
+  }
+}

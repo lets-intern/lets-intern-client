@@ -2,6 +2,10 @@ import { twMerge } from '@/lib/twMerge';
 import type { FeedbackStatus } from '@/api/challenge/challengeSchema';
 import { STATUS_BADGE } from '@/constants/statusColors';
 import { feedbackModalDesign } from '@/pages/feedback/feedbackModalDesign';
+import {
+  badgeStatusToUi,
+  getLiveFeedbackBadgeVisual,
+} from '@/pages/feedback/utils/liveFeedbackStatus';
 import { currentNow } from '@/pages/schedule/constants/mockNow';
 import type { LiveFeedbackInfo } from '@/pages/schedule/types';
 
@@ -61,33 +65,14 @@ function getFeedbackBadge(feedbackStatus: FeedbackStatus | null): {
 
 /**
  * 라이브 피드백 상태 → 배지 스타일.
- * waiting(진행 전)은 기본 보라, 임박(imminent) 시 빨강으로 강조 (시안 image #15).
+ * 캘린더/모달 하단과 동일하게 4종 UI 상태 + 캘린더 팔레트(getLiveFeedbackBadgeVisual)로 통일.
  */
-function getLiveStatusBadge(
-  status: LiveStatus | undefined,
-  imminent = false,
-): {
+function getLiveStatusBadge(status: LiveStatus | undefined): {
   label: string;
   className: string;
 } {
-  switch (status) {
-    case 'completed':
-      return { label: '진행 완료', className: LIST_BADGE_COLOR.done };
-    case 'in-progress':
-      return { label: '진행 중', className: LIST_BADGE_COLOR.active };
-    case 'mentor-late':
-    case 'mentee-late':
-    case 'mentor-absent':
-    case 'mentee-absent':
-      // LC-3124: 지각·미참여 세분 상태는 진리표 4종 라벨로 통일 → '미진행'
-      return { label: '미진행', className: STATUS_BADGE.absent };
-    case 'waiting':
-    default:
-      return {
-        label: '진행 예정',
-        className: imminent ? LIST_BADGE_COLOR.urgent : LIST_BADGE_COLOR.active,
-      };
-  }
+  const visual = getLiveFeedbackBadgeVisual(badgeStatusToUi(status));
+  return { label: visual.label, className: visual.badgeClass };
 }
 
 function getSubmissionBadge(label: '제출' | '미제출'): string {
@@ -193,10 +178,7 @@ const MenteeList = ({
                             </span>
                           )}
                           {(() => {
-                            const badge = getLiveStatusBadge(
-                              mentee.liveStatus,
-                              imminent,
-                            );
+                            const badge = getLiveStatusBadge(mentee.liveStatus);
                             return (
                               <span
                                 className={twMerge(

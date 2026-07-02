@@ -41,6 +41,10 @@ const FeedbackHeader = ({
   const waitingLabel = isLive ? '진행 예정' : '진행 전';
   const completedLabel = isLive ? '진행 완료' : '승인 완료';
   const missedLabel = '미진행';
+  // 라이브는 캘린더 4상태 팔레트(indigo/blue/neutral/red)로 통일. 서면은 기존 유지.
+  const waitingKey = isLive ? 'liveWaiting' : 'waiting';
+  const completedKey = isLive ? 'liveCompleted' : 'completed';
+  const missedKey = isLive ? 'liveMissed' : 'absent';
   return (
     <div className="flex flex-col gap-2 bg-white px-4 pb-3 pt-4 md:px-6 md:pt-6">
       {/* 1줄 (모바일: 제목+닫기 / 데스크탑: 제목+통계+가이드+닫기) */}
@@ -59,7 +63,7 @@ const FeedbackHeader = ({
           <span
             className={twMerge(
               feedbackModalDesign.headerChip,
-              statusBadgeOrMuted(waitingCount, 'waiting'),
+              statusBadgeOrMuted(waitingCount, waitingKey),
             )}
           >
             {waitingLabel} {waitingCount}
@@ -75,7 +79,7 @@ const FeedbackHeader = ({
           <span
             className={twMerge(
               feedbackModalDesign.headerChip,
-              statusBadgeOrMuted(completedCount, 'completed'),
+              statusBadgeOrMuted(completedCount, completedKey),
             )}
           >
             {completedLabel} {completedCount}
@@ -84,7 +88,7 @@ const FeedbackHeader = ({
             <span
               className={twMerge(
                 feedbackModalDesign.headerChip,
-                statusBadgeOrMuted(missedCount, 'absent'),
+                statusBadgeOrMuted(missedCount, missedKey),
               )}
             >
               {missedLabel} {missedCount}
@@ -129,7 +133,7 @@ const FeedbackHeader = ({
         <span
           className={twMerge(
             feedbackModalDesign.headerChip,
-            statusBadgeOrMuted(waitingCount, 'waiting'),
+            statusBadgeOrMuted(waitingCount, waitingKey),
           )}
         >
           {waitingLabel} {waitingCount}
@@ -145,7 +149,7 @@ const FeedbackHeader = ({
         <span
           className={twMerge(
             feedbackModalDesign.headerChip,
-            statusBadgeOrMuted(completedCount, 'completed'),
+            statusBadgeOrMuted(completedCount, completedKey),
           )}
         >
           {completedLabel} {completedCount}
@@ -154,7 +158,7 @@ const FeedbackHeader = ({
           <span
             className={twMerge(
               feedbackModalDesign.headerChip,
-              statusBadgeOrMuted(missedCount, 'absent'),
+              statusBadgeOrMuted(missedCount, missedKey),
             )}
           >
             {missedLabel} {missedCount}

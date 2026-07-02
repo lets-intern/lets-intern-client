@@ -22,12 +22,11 @@ import MenteeList from '@/pages/feedback/ui/MenteeList';
 import SidebarGuideLinks from '@/pages/feedback/ui/SidebarGuideLinks';
 import SideViewButton from '@/pages/feedback/ui/SideViewButton';
 import {
+  badgeStatusToUi,
   getLiveFeedbackBadgeVisual,
-  resolveLiveSessionStatus,
 } from '@/pages/feedback/utils/liveFeedbackStatus';
 import { isNotionUrl } from '@/pages/feedback/utils/notion';
 
-import { currentNow } from '../constants/mockNow';
 import type { PeriodBarData } from '../types';
 import JitsiEmbedModal from './JitsiEmbedModal';
 
@@ -257,33 +256,23 @@ const LiveFeedbackReservationModal = ({
     };
   });
 
-  // BE 회차 단위 멘티 집계 미구현 — 사이드바 mock 카운트로 임시 산출 (PRD §5.4 mentor3.3)
-  const waitingCount = menteeListItems.filter(
-    (item) => item.feedbackStatus === 'WAITING',
-  ).length;
-  const inProgressCount = 0;
-  const completedCount = menteeListItems.filter(
-    (item) => item.feedbackStatus === 'COMPLETED',
-  ).length;
-  const missedCount = 0;
+  // 상단 카운트 — 캘린더와 동일한 4상태(진행 예정/중/완료/미진행)로 집계.
+  const statusCounts = menteeListItems.reduce(
+    (acc, item) => {
+      acc[badgeStatusToUi(item.liveStatus)] += 1;
+      return acc;
+    },
+    { waiting: 0, inProgress: 0, completed: 0, missed: 0 },
+  );
+  const waitingCount = statusCounts.waiting;
+  const inProgressCount = statusCounts.inProgress;
+  const completedCount = statusCounts.completed;
+  const missedCount = statusCounts.missed;
 
-  // 액션 패널 상태 결정
-  const now = currentNow();
-  const apiStatus = feedbackDetail?.status ?? 'RESERVED';
-  const liveUiStatus =
-    startIso && endIso
-      ? resolveLiveSessionStatus({
-          rawStatus: apiStatus,
-          mentorStatus: feedbackDetail?.mentorStatus,
-          menteeStatus: feedbackDetail?.menteeStatus,
-          // 경험정리 미제출(LATE|ABSENT)이면 최우선으로 미진행 표기.
-          attendanceStatus: feedbackDetail?.attendanceStatus,
-          startDate: startIso,
-          endDate: endIso,
-          now,
-        })
-      : 'waiting';
-  const liveBadge = getLiveFeedbackBadgeVisual(liveUiStatus);
+  // 하단 "피드백 상태" 배지 — 왼쪽 리스트/캘린더와 동일 소스(선택 바의 상태)로 통일.
+  const liveBadge = getLiveFeedbackBadgeVisual(
+    badgeStatusToUi(selectedBar?.liveFeedback?.status),
+  );
 
   // 제출 상태 라벨 — BE attendanceStatus(서면 제출) 기준. ABSENT → '미제출', 그 외 '제출'.
   const submissionStatusLabel: '제출됨' | '미제출' =
