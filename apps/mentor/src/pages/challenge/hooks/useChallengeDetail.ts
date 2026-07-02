@@ -84,12 +84,16 @@ export function useChallengeDetail() {
     setLiveModalBar(null);
   };
 
-  /** 라이브 미션(회차)에 열 수 있는 세션이 있는지 — 없으면 버튼 비활성. */
-  const canOpenLiveMission = (missionTh: number) => {
+  /** 라이브 미션(회차)의 예약 세션(멘티) 수 — 없으면 0. */
+  const liveMenteeCount = (missionTh: number) => {
     const round =
       liveRounds.find((r) => r.th === missionTh) ?? liveRounds[0] ?? null;
-    return (round?.sessionBars.length ?? 0) > 0;
+    return round?.sessionBars.length ?? 0;
   };
+
+  /** 라이브 미션(회차)에 열 수 있는 세션이 있는지 — 없으면 버튼 비활성. */
+  const canOpenLiveMission = (missionTh: number) =>
+    liveMenteeCount(missionTh) > 0;
 
   return {
     challengeId,
@@ -107,5 +111,6 @@ export function useChallengeDetail() {
     setLiveModalBar,
     closeLiveModal,
     canOpenLiveMission,
+    liveMenteeCount,
   };
 }

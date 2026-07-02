@@ -24,6 +24,7 @@ const ChallengeDetailPage = () => {
     setLiveModalBar,
     closeLiveModal,
     canOpenLiveMission,
+    liveMenteeCount,
   } = useChallengeDetail();
 
   const isMobile = useMediaQuery('(max-width: 767px)');
@@ -44,6 +45,7 @@ const ChallengeDetailPage = () => {
         isLoading={isLoading}
         onClickFeedback={handleClickFeedback}
         canOpenLiveMission={canOpenLiveMission}
+        liveMenteeCount={liveMenteeCount}
       />
 
       {isMobile ? (

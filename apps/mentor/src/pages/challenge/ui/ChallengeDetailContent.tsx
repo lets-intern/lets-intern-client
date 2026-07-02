@@ -28,11 +28,13 @@ const MissionRow = ({
   challengeId,
   onClickFeedback,
   canOpenLiveMission,
+  liveMenteeCount,
 }: {
   mission: MissionRowMission;
   challengeId: number;
   onClickFeedback: (missionId: number, missionTh: number) => void;
   canOpenLiveMission: (missionTh: number) => boolean;
+  liveMenteeCount: (missionTh: number) => number;
 }) => {
   const isLive = mission.challengeOptionType === 'LIVE_FEEDBACK';
   // 라이브 미션인데 열 세션이 없으면 버튼 비활성(빈 모달을 열지 않음).
@@ -118,23 +120,35 @@ const MissionRow = ({
       </div>
 
       <div className="flex flex-wrap items-center gap-3 md:gap-4">
-        {/* Submission stats */}
-        <div className="text-xs text-gray-500 md:text-right">
-          <p>
-            제출{' '}
-            <span className="font-semibold text-gray-700">
-              {submittedCount}
-            </span>{' '}
-            / {total}
-          </p>
-          <p>
-            피드백 완료{' '}
-            <span className="font-semibold text-green-600">
-              {completedCount}
-            </span>{' '}
-            / {total}
-          </p>
-        </div>
+        {/* 집계 — 라이브는 예약 인원, 서면은 제출/피드백 완료 */}
+        {isLive ? (
+          <div className="text-xs text-gray-500 md:text-right">
+            <p>
+              예약{' '}
+              <span className="font-semibold text-gray-700">
+                {liveMenteeCount(mission.th)}
+              </span>
+              명
+            </p>
+          </div>
+        ) : (
+          <div className="text-xs text-gray-500 md:text-right">
+            <p>
+              제출{' '}
+              <span className="font-semibold text-gray-700">
+                {submittedCount}
+              </span>{' '}
+              / {total}
+            </p>
+            <p>
+              피드백 완료{' '}
+              <span className="font-semibold text-green-600">
+                {completedCount}
+              </span>{' '}
+              / {total}
+            </p>
+          </div>
+        )}
 
         <button
           type="button"
@@ -159,6 +173,7 @@ interface ChallengeDetailContentProps {
   isLoading: boolean;
   onClickFeedback: (missionId: number, missionTh: number) => void;
   canOpenLiveMission: (missionTh: number) => boolean;
+  liveMenteeCount: (missionTh: number) => number;
 }
 
 const ChallengeDetailContent = ({
@@ -167,6 +182,7 @@ const ChallengeDetailContent = ({
   isLoading,
   onClickFeedback,
   canOpenLiveMission,
+  liveMenteeCount,
 }: ChallengeDetailContentProps) => {
   return (
     <div className="space-y-3">
@@ -189,6 +205,7 @@ const ChallengeDetailContent = ({
               challengeId={challengeId}
               onClickFeedback={onClickFeedback}
               canOpenLiveMission={canOpenLiveMission}
+              liveMenteeCount={liveMenteeCount}
             />
           ))}
         </div>
