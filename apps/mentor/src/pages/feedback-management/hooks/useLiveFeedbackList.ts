@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 
-import { useFeedbackMentorListQuery } from '@/api/feedback/feedback';
+import { useFeedbackMentorListWithAttendance } from '@/api/feedback/feedback';
 import type {
   FeedbackAttendanceStatus,
-  FeedbackMentor,
+  FeedbackMentorWithAttendance,
   FeedbackStatus,
 } from '@/api/feedback/feedbackSchema';
 import type { LiveFeedbackInfo, PeriodBarData } from '@/pages/schedule/types';
@@ -77,7 +77,7 @@ function toDateLabel(iso: string): string {
  * `liveFeedback.id`에 `feedbackId`를 넣어 모달이 단건 상세를 정확히 fetch하도록 한다.
  */
 function toSessionBar(
-  item: FeedbackMentor,
+  item: FeedbackMentorWithAttendance,
   challengeId: number,
 ): PeriodBarData {
   const date = toDateLabel(item.startDate);
@@ -107,6 +107,8 @@ function toSessionBar(
       rawStatus: item.status,
       mentorStatus: item.mentorStatus,
       menteeStatus: item.menteeStatus,
+      // 경험정리 미제출(LATE/ABSENT) → 미진행 판정. 상세 N+1 병합으로 채워진다.
+      attendanceStatus: item.attendanceStatus,
     },
   };
 }
@@ -136,14 +138,15 @@ function countByStatus(bars: PeriodBarData[]) {
  * 각 챌린지의 세션을 BE가 제공하는 회차(`FeedbackMentorVo.th`)로 서브그룹핑해
  * 회차마다 `LiveFeedbackRound` 1개를 만든다. (`th`가 없는 응답은 `?? 1`로 폴백.)
  *
- * 동일 query key(`useFeedbackMentorListQuery`)를 예약현황 페이지와 공유해 중복 fetch를 막는다.
+ * 예약현황/스케줄과 동일한 병합 훅(`useFeedbackMentorListWithAttendance`)을 써
+ * query key를 공유하고(중복 fetch 방지), 경험정리 미제출(attendanceStatus) 판정을 뷰 간 일치시킨다.
  */
 export function useLiveFeedbackList(): {
   challenges: LiveFeedbackChallenge[];
   /** 모든 세션 바 (모달 네비게이션용) */
   allSessionBars: PeriodBarData[];
 } {
-  const { data: feedbackList } = useFeedbackMentorListQuery();
+  const { data: feedbackList } = useFeedbackMentorListWithAttendance();
 
   return useMemo(() => {
     const items = feedbackList ?? [];

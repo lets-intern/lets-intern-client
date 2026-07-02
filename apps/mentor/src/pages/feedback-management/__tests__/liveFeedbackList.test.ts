@@ -1,7 +1,7 @@
 /**
  * Push 2 / 2.1.T1 — 라이브 피드백 회차 목록 훅 그룹핑 검증.
  *
- * BE 멘토 목록(`useFeedbackMentorListQuery`)을 mock 하고,
+ * BE 멘토 목록+attendance 병합 훅(`useFeedbackMentorListWithAttendance`)을 mock 하고,
  * 옵션 A(programTitle 묶기 + 단일 회차)로 챌린지/세션이 구성되는지 검증한다.
  */
 import { renderHook } from '@testing-library/react';
@@ -11,10 +11,10 @@ import type { FeedbackMentor } from '@/api/feedback/feedbackSchema';
 
 import { useLiveFeedbackList } from '../hooks/useLiveFeedbackList';
 
-const mockUseFeedbackMentorListQuery = vi.fn();
+const mockUseFeedbackMentorList = vi.fn();
 
 vi.mock('@/api/feedback/feedback', () => ({
-  useFeedbackMentorListQuery: () => mockUseFeedbackMentorListQuery(),
+  useFeedbackMentorListWithAttendance: () => mockUseFeedbackMentorList(),
 }));
 
 function makeFeedback(overrides: Partial<FeedbackMentor> = {}): FeedbackMentor {
@@ -33,7 +33,7 @@ function makeFeedback(overrides: Partial<FeedbackMentor> = {}): FeedbackMentor {
 }
 
 function setList(list: FeedbackMentor[] | undefined) {
-  mockUseFeedbackMentorListQuery.mockReturnValue({ data: list });
+  mockUseFeedbackMentorList.mockReturnValue({ data: list });
 }
 
 describe('useLiveFeedbackList (programTitle 그룹핑 + 회차(th) 분리)', () => {
@@ -205,6 +205,16 @@ describe('useLiveFeedbackList — status/출석 → 세션 status 매핑 (2.2)',
   it('RESERVED → undefined (소비처 시간 기준 분기)', () => {
     const lf = firstBar([makeFeedback({ status: 'RESERVED' })]);
     expect(lf?.status).toBeUndefined();
+  });
+
+  it('경험정리 미제출(attendanceStatus)을 세션 바로 전달한다 (예약현황/캘린더와 상태 일치)', () => {
+    const lf = firstBar([
+      {
+        ...makeFeedback({ status: 'RESERVED' }),
+        attendanceStatus: 'ABSENT',
+      } as FeedbackMentor,
+    ]);
+    expect(lf?.attendanceStatus).toBe('ABSENT');
   });
 
   it('liveFeedback.id 는 feedbackId 를 그대로 사용한다 (모달 단건 상세 fetch 키)', () => {
