@@ -217,7 +217,8 @@ const WeeklyCalendar = ({
     const ROW_H = 56;
     const MIN_ROWS = 1;
     const maxRow = barLayouts.reduce((max, l) => Math.max(max, l.gridRow), 0);
-    return Math.max(maxRow, MIN_ROWS) * ROW_H + 8;
+    // 하단 여백 최소화 — 바닥 버퍼 제거(그리드는 내용에 맞게 늘어나므로 잘림 없음).
+    return Math.max(maxRow, MIN_ROWS) * ROW_H;
   }, [barLayouts]);
 
   const innerWidthPercent = (totalDays / 7) * 100;
@@ -276,7 +277,7 @@ const WeeklyCalendar = ({
             <div className="relative flex-1">
               <ColumnDividers days={days} gridCols={gridCols} />
               <div
-                className="relative w-full gap-y-1 py-3"
+                className="relative w-full gap-y-1 pb-1 pt-3"
                 style={{ display: 'grid', gridTemplateColumns: gridCols }}
               >
                 {barLayouts.map(({ bar, startCol, endCol, gridRow }, idx) => (

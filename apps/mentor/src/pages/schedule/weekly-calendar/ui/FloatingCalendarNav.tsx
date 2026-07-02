@@ -111,7 +111,7 @@ const FloatingCalendarNav = ({
     <>
       {/* ① 좌우 이동 + 날짜 범위 — 뷰포트 하단 고정, 가로는 캘린더 중앙 */}
       <div
-        className="border-neutral-80 fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-1.5 rounded-full border bg-white px-2 py-1.5 shadow-lg"
+        className="border-neutral-80 fixed bottom-6 left-1/2 z-40 flex h-10 -translate-x-1/2 items-center gap-1.5 rounded-full border bg-white px-2 shadow-lg"
         style={box ? { left: box.centerX } : undefined}
       >
         <button
@@ -161,7 +161,7 @@ const FloatingCalendarNav = ({
           type="button"
           onClick={onGoToToday}
           aria-label="오늘로 이동"
-          className="border-neutral-80 text-primary text-xsmall14 hover:bg-neutral-95 fixed bottom-6 right-6 z-40 flex items-center gap-1 rounded-full border bg-white py-1.5 pl-3 pr-3.5 font-medium shadow-lg transition-colors"
+          className="border-neutral-80 text-primary text-xsmall14 hover:bg-neutral-95 fixed bottom-6 right-6 z-40 flex h-10 items-center gap-1 rounded-full border bg-white pl-3 pr-3.5 font-medium shadow-lg transition-colors"
           style={
             box
               ? {
