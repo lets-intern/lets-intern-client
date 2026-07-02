@@ -138,6 +138,27 @@ describe('deriveLiveFeedbackBars', () => {
     expect(open[0].endDate).toBe('2026-04-28');
   });
 
+  it('미션 시작일이 있으면 오픈 기간 바를 미션시작 -3d~-2d 로 확정한다(표 §4)', () => {
+    const bars = deriveLiveFeedbackBars(
+      [
+        makeSession({
+          missionStartDate: '2026-05-10T00:00:00',
+          missionEndDate: '2026-05-16T23:59:59',
+        }),
+      ],
+      // 슬롯이 있어도 미션 앵커가 우선 → 슬롯 min/max 폴백 바는 만들지 않는다.
+      [makeSlot({})],
+    );
+
+    const open = bars.filter((b) => b.barType === 'live-feedback-mentor-open');
+    expect(open).toHaveLength(1);
+    // 미션시작 5/10 → 오픈 기간 5/7(−3d) ~ 5/8(−2d)
+    expect(open[0].startDate).toBe('2026-05-07');
+    expect(open[0].endDate).toBe('2026-05-08');
+    // D-day 앵커도 오픈 시작일
+    expect(open[0].feedbackStartDate).toBe('2026-05-07');
+  });
+
   it('mentee-open 바는 생성하지 않는다', () => {
     const bars = deriveLiveFeedbackBars([makeSession({})], [makeSlot({})]);
     expect(bars.some((b) => b.barType === 'live-feedback-mentee-open')).toBe(

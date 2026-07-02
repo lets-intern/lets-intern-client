@@ -15,6 +15,7 @@ import { currentNow } from '../constants/mockNow';
 import {
   type ScheduleWindow,
   computeReservationWindow,
+  computeSlotOpenWindow,
   selectSlotOpenWindow,
 } from '../data/feedbackScheduleRules';
 import { resolveLiveSessionStatus } from '@/pages/feedback/utils/liveFeedbackStatus';
@@ -177,8 +178,9 @@ function resolveSessionStatus(
 /**
  * 라이브 세션·슬롯 → `PeriodBarData[]` 파생.
  *  - 각 세션 → `live-feedback` 바 (`missionId = -feedbackId`)
- *  - `programTitle` 그룹마다 `live-feedback-period` 바 (min/max, th=1)
- *  - 슬롯 전체 min/max → `live-feedback-mentor-open` 바 1개 (글로벌 슬롯 운영)
+ *  - `(programTitle, th)` 그룹마다 `live-feedback-period` 바 (예약 기간 = 미션 시작일~종료일)
+ *  - `(programTitle, th)` 그룹마다 `live-feedback-mentor-open` 바 (슬롯 오픈 기간 = 미션 시작일 -3d~-2d)
+ *    · 미션 일자가 없으면(BE 미배포) 슬롯 전체 min/max로 글로벌 폴백 바 1개
  *
  * 테스트 가능하도록 순수 함수로 분리 (쿼리 데이터를 인자로 받음).
  */
@@ -188,6 +190,8 @@ export function deriveLiveFeedbackBars(
 ): PeriodBarData[] {
   const now = currentNow();
   const bars: PeriodBarData[] = [];
+  // 미션 일자 기반 오픈 기간 바를 하나라도 만들었는지 — 폴백(슬롯 min/max) 여부 판단용.
+  let emittedMissionOpenBar = false;
 
   // programTitle 그룹 → 안정적 인덱스. 정렬로 입력 순서 무관 결정성 확보.
   const groupTitles = Array.from(
@@ -275,11 +279,36 @@ export function deriveLiveFeedbackBars(
         submittedCount: thSessions.length,
         waitingCount: thSessions.length,
       });
+
+      // ── 슬롯 오픈 기간 바 (미션 시작일 -3d 00:00 ~ -2d 23:59, PRD §4 표) ──
+      // BE 미션 일자가 있을 때만 표 기준으로 확정한다. 없으면(BE 미배포) 아래 폴백.
+      const missionStart = thSessions.find(
+        (s) => s.missionStartDate,
+      )?.missionStartDate;
+      if (missionStart) {
+        const open = computeSlotOpenWindow(missionStart);
+        const openStart = format(open.start, 'yyyy-MM-dd');
+        const openEnd = format(open.end, 'yyyy-MM-dd');
+        bars.push({
+          barType: 'live-feedback-mentor-open',
+          challengeId: buildSyntheticChallengeId(groupIndex),
+          missionId: -(3_100_000 + groupIndex * 100 + th),
+          challengeTitle: title,
+          th,
+          startDate: openStart,
+          endDate: openEnd,
+          feedbackStartDate: openStart,
+          feedbackDeadline: openEnd,
+          ...zeroCounts,
+        });
+        emittedMissionOpenBar = true;
+      }
     }
   }
 
-  // ── 멘토 오픈 슬롯 전체 → 글로벌 오픈기간 바 1개 ──
-  if (slots.length > 0) {
+  // ── 폴백: 미션 일자 미반영(BE 미배포)일 때만 기존 슬롯 min/max 오픈 바 유지 ──
+  // (미션 일자가 있으면 위에서 미션 그룹별 정확한 오픈 기간 바를 이미 생성했다.)
+  if (!emittedMissionOpenBar && slots.length > 0) {
     const starts = slots.map((s) => toDate(s.startDate));
     const ends = slots.map((s) => toDate(s.endDate));
     const min = starts.reduce((a, b) => (a < b ? a : b));
