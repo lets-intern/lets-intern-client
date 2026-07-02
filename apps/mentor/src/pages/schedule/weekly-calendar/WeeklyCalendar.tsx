@@ -13,10 +13,9 @@ import WrittenFeedbackBar from '../calendar-bar/ui/WrittenFeedbackBar';
 import type { PeriodBarData } from '../types';
 import { useTimelineScroll } from './hooks/useInfiniteWeekScroll';
 import { useVisibleDateRange } from './hooks/useVisibleDateRange';
-import CalendarRangeHeader from './ui/CalendarRangeHeader';
+import FloatingCalendarNav from './ui/FloatingCalendarNav';
 import ColumnDividers from './ui/ColumnDividers';
 import DayHeaderCell from './ui/DayHeaderCell';
-import TodayButton from './ui/TodayButton';
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 interface WeeklyCalendarProps {
@@ -233,12 +232,6 @@ const WeeklyCalendar = ({
       {/* -top-6: 페이지 스크롤 컨테이너(py-6=24px)의 상단 패딩만큼 끌어올려, 그 패딩
           영역으로 본문이 비쳐 보이는 여백 버그를 막는다 (헤더가 패딩 구간까지 덮음). */}
       <div className="sticky -top-6 z-20 overflow-hidden rounded-t-2xl bg-white">
-        <CalendarRangeHeader
-          range={visibleRange}
-          containerRef={containerRef}
-          totalDays={totalDays}
-        />
-
         {/* 요일·날짜 헤더 — body 가로 스크롤을 미러링(자체 스크롤바 숨김) */}
         <div ref={headerScrollRef} className="overflow-x-hidden">
           <div
@@ -391,7 +384,11 @@ const WeeklyCalendar = ({
         </div>
       )}
 
-      <TodayButton
+      {/* 하단 중앙 플로팅: 날짜 범위 + 주 이동 + 오늘로 이동 (통합) */}
+      <FloatingCalendarNav
+        range={visibleRange}
+        containerRef={containerRef}
+        totalDays={totalDays}
         isTodayVisible={isTodayVisible}
         onGoToToday={scrollToToday}
       />
