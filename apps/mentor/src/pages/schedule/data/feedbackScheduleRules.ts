@@ -1,0 +1,83 @@
+import {
+  addDays,
+  endOfDay,
+  isWithinInterval,
+  parseISO,
+  startOfDay,
+} from 'date-fns';
+
+/**
+ * 라이브 피드백 일정/슬롯 오픈 기간 규칙 — 미션 일자(missionStartDate/EndDate) 앵커 오프셋.
+ *
+ * PRD §4·§6-2 하단 표 근거 (미션 일자 기준 오프셋):
+ * | 구분            | 기간(오프셋)                                |
+ * | --------------- | ------------------------------------------- |
+ * | LIVE 슬롯 오픈  | 미션 시작일 -3일 00:00:00 ~ -2일 23:59:59   |
+ * | LIVE 예약(멘티) | 미션 시작일 ~ 미션 종료일                   |
+ * | LIVE/서면 진행  | 미션 종료일 +2일 00:00:00 ~ +4일 23:59:59   |
+ *
+ * BE 산식 일치 확인(`domain/mission/vo/LiveFeedbackMissionVo.java`):
+ *  - slotDeadline  = missionStartDate.minusDays(2) 23:59
+ *  - feedbackStart = missionEndDate.plusDays(2) 00:00
+ *  - feedbackEnd   = missionEndDate.plusDays(4)
+ * → 경계 시각은 위 표(±N일 00:00:00 / 23:59:59)를 FE 기준으로 삼는다.
+ *   즉 여는 경계는 해당 일자의 하루 시작(00:00:00), 닫는 경계는 하루 끝(23:59:59)으로 취한다.
+ *
+ * ⚠️ 순수 규칙만 담는다(부수효과·쿼리 없음). 소비처가 미션 일자를 넘겨 기간을 파생한다.
+ */
+
+/** 슬롯 오픈 기간 오프셋(일) — 미션 시작일 기준. start=-3일 시작, end=-2일 끝. */
+export const SLOT_OPEN_OFFSET_DAYS = { start: -3, end: -2 } as const;
+
+/** 진행 기간 오프셋(일) — 미션 종료일 기준. start=+2일 시작, end=+4일 끝. */
+export const PROGRESS_OFFSET_DAYS = { start: 2, end: 4 } as const;
+
+/** 파생된 기간 구간. `start`/`end`는 경계 시각까지 포함한 Date. */
+export interface ScheduleWindow {
+  start: Date;
+  end: Date;
+}
+
+/**
+ * 슬롯 오픈 기간: 미션 시작일 -3일 00:00:00 ~ -2일 23:59:59.
+ * @param missionStartDate BE 미션 시작 일시(ISO LocalDateTime 문자열)
+ */
+export function computeSlotOpenWindow(
+  missionStartDate: string,
+): ScheduleWindow {
+  const anchor = parseISO(missionStartDate);
+  return {
+    start: startOfDay(addDays(anchor, SLOT_OPEN_OFFSET_DAYS.start)),
+    end: endOfDay(addDays(anchor, SLOT_OPEN_OFFSET_DAYS.end)),
+  };
+}
+
+/**
+ * 진행 기간: 미션 종료일 +2일 00:00:00 ~ +4일 23:59:59.
+ * @param missionEndDate BE 미션 종료 일시(ISO LocalDateTime 문자열)
+ */
+export function computeProgressWindow(missionEndDate: string): ScheduleWindow {
+  const anchor = parseISO(missionEndDate);
+  return {
+    start: startOfDay(addDays(anchor, PROGRESS_OFFSET_DAYS.start)),
+    end: endOfDay(addDays(anchor, PROGRESS_OFFSET_DAYS.end)),
+  };
+}
+
+/**
+ * 예약(멘티) 기간: 미션 시작일 00:00:00 ~ 미션 종료일 23:59:59.
+ */
+export function computeReservationWindow(
+  missionStartDate: string,
+  missionEndDate: string,
+): ScheduleWindow {
+  return {
+    start: startOfDay(parseISO(missionStartDate)),
+    end: endOfDay(parseISO(missionEndDate)),
+  };
+}
+
+/** `now`가 구간에 포함되는지(경계 포함) 판정. */
+export function isWithinWindow(now: Date, window: ScheduleWindow): boolean {
+  return isWithinInterval(now, { start: window.start, end: window.end });
+}
