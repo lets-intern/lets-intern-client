@@ -152,6 +152,17 @@ export const feedbackMentorSchema = z.object({
 export type FeedbackMentor = z.infer<typeof feedbackMentorSchema>;
 
 /**
+ * 목록 아이템(`FeedbackMentor`)에 상세 VO에만 존재하는 `attendanceStatus`(경험정리 제출 상태)를
+ * 병합한 결과 타입. `useFeedbackMentorListWithAttendance`가 상세 N+1 조회로 채운다.
+ *
+ * 상세 조회 전/실패 시 `attendanceStatus`는 `undefined`(forward-compatible)이며,
+ * 이때 상태 리졸버는 미제출 판정을 생략하고 기존(시각·출석) 로직을 따른다.
+ */
+export type FeedbackMentorWithAttendance = FeedbackMentor & {
+  attendanceStatus?: AttendanceStatus;
+};
+
+/**
  * BE GetMentorFeedbacksResponseDto 응답 매핑.
  * `GET /feedback/mentor` 응답 구조.
  */
