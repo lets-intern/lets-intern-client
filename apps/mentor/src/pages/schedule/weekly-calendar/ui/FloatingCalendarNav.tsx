@@ -99,44 +99,47 @@ const FloatingCalendarNav = ({
         </svg>
       </button>
 
-      {!isTodayVisible && (
-        <>
-          <span className="bg-neutral-80 mx-0.5 h-4 w-px" aria-hidden />
-          <button
-            type="button"
-            onClick={onGoToToday}
-            aria-label="오늘로 이동"
-            className="text-primary hover:bg-neutral-95 text-xsmall14 flex items-center gap-1 rounded-full py-1 pl-2 pr-2.5 font-medium transition-colors"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <rect
-                x="2"
-                y="3"
-                width="12"
-                height="11"
-                rx="1.5"
-                stroke="currentColor"
-                strokeWidth="1.2"
-              />
-              <path d="M2 6.5H14" stroke="currentColor" strokeWidth="1.2" />
-              <path
-                d="M5.5 2V4"
-                stroke="currentColor"
-                strokeWidth="1.2"
-                strokeLinecap="round"
-              />
-              <path
-                d="M10.5 2V4"
-                stroke="currentColor"
-                strokeWidth="1.2"
-                strokeLinecap="round"
-              />
-              <circle cx="8" cy="10" r="1.5" fill="currentColor" />
-            </svg>
-            오늘
-          </button>
-        </>
-      )}
+      {/* "오늘" 버튼: 오늘이 보이면 숨기되(invisible) 자리는 유지해 pill 폭이
+          고정되도록 한다 → 주 이동 시 재중앙정렬로 `›`가 밀려 오클릭되는 문제 방지. */}
+      <span className="bg-neutral-80 mx-0.5 h-4 w-px" aria-hidden />
+      <button
+        type="button"
+        onClick={onGoToToday}
+        disabled={isTodayVisible}
+        aria-hidden={isTodayVisible}
+        tabIndex={isTodayVisible ? -1 : 0}
+        aria-label="오늘로 이동"
+        className={`text-primary hover:bg-neutral-95 text-xsmall14 flex items-center gap-1 rounded-full py-1 pl-2 pr-2.5 font-medium transition-colors ${
+          isTodayVisible ? 'invisible' : ''
+        }`}
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <rect
+            x="2"
+            y="3"
+            width="12"
+            height="11"
+            rx="1.5"
+            stroke="currentColor"
+            strokeWidth="1.2"
+          />
+          <path d="M2 6.5H14" stroke="currentColor" strokeWidth="1.2" />
+          <path
+            d="M5.5 2V4"
+            stroke="currentColor"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+          />
+          <path
+            d="M10.5 2V4"
+            stroke="currentColor"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+          />
+          <circle cx="8" cy="10" r="1.5" fill="currentColor" />
+        </svg>
+        오늘
+      </button>
     </div>
   );
 };
