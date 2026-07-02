@@ -6,6 +6,13 @@ import type { ChallengeType } from '@/schema';
 import { challengeTypeToText } from '@/utils/convert';
 import type { LiveFeedbackMission, LiveFeedbackStatus } from './types';
 
+function formatLocalDate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 function resolveStatus(item: LiveFeedbackItem): LiveFeedbackStatus {
   const isExpired = new Date(item.missionEndDate) < new Date();
   const validSubmission =
@@ -51,16 +58,18 @@ export function toMission(
   item: LiveFeedbackItem,
   challengeType: string,
 ): LiveFeedbackMission {
-  const feedbackStartDay = new Date(
-    new Date(item.missionEndDate).getTime() + 2 * 24 * 60 * 60 * 1000,
-  )
-    .toISOString()
-    .slice(0, 10);
-  const feedbackEndDay = new Date(
-    new Date(item.missionEndDate).getTime() + 4 * 24 * 60 * 60 * 1000,
-  )
-    .toISOString()
-    .slice(0, 10);
+  const end = new Date(item.missionEndDate);
+
+  const slotStart = new Date(end);
+  slotStart.setDate(slotStart.getDate() + 2);
+  slotStart.setHours(0, 0, 0, 0);
+
+  const slotEnd = new Date(end);
+  slotEnd.setDate(slotEnd.getDate() + 4);
+  slotEnd.setHours(23, 59, 59, 999);
+
+  const feedbackStartDay = formatLocalDate(slotStart);
+  const feedbackEndDay = formatLocalDate(slotEnd);
 
   const isMissionSubmitted = ['PRESENT', 'UPDATED', 'LATE'].includes(
     item.attendanceStatus ?? '',
