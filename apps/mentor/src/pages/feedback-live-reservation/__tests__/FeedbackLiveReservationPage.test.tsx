@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import FeedbackLiveReservationPage from '../FeedbackLiveReservationPage';
 
-const useFeedbackMentorListQueryMock = vi.fn();
+const useFeedbackMentorListWithAttendanceMock = vi.fn();
 const useUserQueryMock = vi.fn();
 const useFeedbackMentorDetailQueryMock = vi.fn();
 const useFeedbackMentorSlotsQueryMock = vi.fn();
@@ -16,7 +16,8 @@ const noopMutation = {
 };
 
 vi.mock('@/api/feedback/feedback', () => ({
-  useFeedbackMentorListQuery: () => useFeedbackMentorListQueryMock(),
+  useFeedbackMentorListWithAttendance: () =>
+    useFeedbackMentorListWithAttendanceMock(),
   useFeedbackMentorDetailQuery: (id: number | null) =>
     useFeedbackMentorDetailQueryMock(id),
   useFeedbackMentorSlotsQuery: () => useFeedbackMentorSlotsQueryMock(),
@@ -45,7 +46,7 @@ afterEach(() => {
 
 describe('FeedbackLiveReservationPage', () => {
   it('페이지 헤더와 본문(ReservationListContent) 섹션을 노출한다', () => {
-    useFeedbackMentorListQueryMock.mockReturnValue({
+    useFeedbackMentorListWithAttendanceMock.mockReturnValue({
       data: [],
       isLoading: false,
       isError: false,

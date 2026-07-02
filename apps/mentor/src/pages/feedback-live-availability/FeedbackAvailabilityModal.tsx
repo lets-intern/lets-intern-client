@@ -63,7 +63,8 @@ const FeedbackAvailabilityModal = ({
 
   // 챌린지별 라이브 피드백 기간 바 — 날짜 헤더 아래 요일 컬럼에 걸쳐 표시.
   // 모달이 닫혀 있을 때는 쿼리를 실행하지 않는다 (슬롯 쿼리 enabled 가드와 동일).
-  const { bars } = useLiveFeedbackData({ enabled: isOpen });
+  // slotOpenWindow: 모든 미션 오픈 윈도를 합성한 단일 게이팅 윈도(미션 일자 없으면 null).
+  const { bars, slotOpenWindow } = useLiveFeedbackData({ enabled: isOpen });
   const livePeriods = useMemo(
     () =>
       bars
@@ -168,6 +169,7 @@ const FeedbackAvailabilityModal = ({
               focusDate={focusDate}
               onOpenReservation={() => setReservationOpen(true)}
               livePeriods={livePeriods}
+              slotOpenWindow={slotOpenWindow}
             />
           </>
         )}

@@ -1,10 +1,15 @@
 import { Fragment, useMemo, useState } from 'react';
 
-import { useFeedbackMentorListQuery } from '@/api/feedback/feedback';
+import { useFeedbackMentorListWithAttendance } from '@/api/feedback/feedback';
 import { useUserQuery } from '@/api/user/user';
+import { currentNow } from '@/pages/schedule/constants/mockNow';
 import { useLiveFeedbackData } from '@/pages/schedule/hooks/useLiveFeedbackData';
 import LiveFeedbackReservationModal from '@/pages/schedule/modal/LiveFeedbackReservationModal';
 import type { PeriodBarData } from '@/pages/schedule/types';
+import {
+  getLiveFeedbackBadgeVisual,
+  resolveLiveSessionStatus,
+} from '@/pages/feedback/utils/liveFeedbackStatus';
 
 import { useReservationFilters } from '../hooks/useReservationFilters';
 import { formatDateTimeRange } from '../utils/formatReservation';
@@ -26,7 +31,8 @@ const emptyBoxClass =
  * 자체적으로 query/필터/보기 모달을 포함하므로 어디서든 단독 마운트 가능하다.
  */
 const ReservationListContent = () => {
-  const { data, isLoading, isError } = useFeedbackMentorListQuery();
+  // 목록 + 상세 attendanceStatus 병합 — 상태 뱃지에서 미제출→미진행을 정확히 표시하기 위함.
+  const { data, isLoading, isError } = useFeedbackMentorListWithAttendance();
   const { data: user } = useUserQuery();
   const mentorName = user?.name ?? '';
 
@@ -67,6 +73,9 @@ const ReservationListContent = () => {
     menteeNameOptions,
     reservedList,
   } = useReservationFilters(data);
+
+  // 상태 뱃지 판정 기준 시각(실시간). 행마다 동일 값을 쓰도록 한 번만 계산.
+  const now = currentNow();
 
   if (isLoading) {
     return (
@@ -114,6 +123,7 @@ const ReservationListContent = () => {
                   <th className="px-3 py-3 text-left font-medium">프로그램</th>
                   <th className="px-3 py-3 text-center font-medium">멘토</th>
                   <th className="px-3 py-3 text-center font-medium">멘티</th>
+                  <th className="px-3 py-3 text-center font-medium">상태</th>
                   <th className="px-3 py-3 text-center font-medium">상세</th>
                   <th className="px-3 py-3 text-center font-medium">
                     예약 변경 내역
@@ -126,6 +136,18 @@ const ReservationListContent = () => {
                   const hasChanges = changeCount > 0;
                   const isExpanded =
                     hasChanges && expandedId === row.feedbackId;
+                  // 4상태 리졸버로 뱃지 판정 — 미제출(attendanceStatus ABSENT/LATE)이면 '미진행'.
+                  const statusBadge = getLiveFeedbackBadgeVisual(
+                    resolveLiveSessionStatus({
+                      rawStatus: row.status,
+                      mentorStatus: row.mentorStatus,
+                      menteeStatus: row.menteeStatus,
+                      attendanceStatus: row.attendanceStatus,
+                      startDate: row.startDate,
+                      endDate: row.endDate,
+                      now,
+                    }),
+                  );
                   return (
                     <Fragment key={row.feedbackId}>
                       <tr className="border-b border-gray-100 text-sm text-neutral-700 last:border-b-0 hover:bg-gray-50">
@@ -140,6 +162,13 @@ const ReservationListContent = () => {
                         </td>
                         <td className="px-3 py-3 text-center align-middle text-neutral-800">
                           {row.menteeName}
+                        </td>
+                        <td className="px-3 py-3 text-center align-middle">
+                          <span
+                            className={`inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${statusBadge.badgeClass}`}
+                          >
+                            {statusBadge.label}
+                          </span>
                         </td>
                         <td className="px-3 py-3 text-center align-middle">
                           <button
@@ -177,7 +206,7 @@ const ReservationListContent = () => {
                       </tr>
                       {isExpanded && (
                         <tr className="border-b border-gray-100 bg-white">
-                          <td colSpan={6} className="px-3 py-2">
+                          <td colSpan={7} className="px-3 py-2">
                             <ReservationHistoryPanel />
                           </td>
                         </tr>

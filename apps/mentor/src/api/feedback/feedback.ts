@@ -1,9 +1,16 @@
 import axios from '@/utils/axios';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import {
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 import {
   type CreateFeedbackSlotRequest,
   type FeedbackAttendanceStatus,
+  type FeedbackMentorWithAttendance,
   type FeedbackSlotStatus,
   type FeedbackStatus,
   getFeedbackDetailResponseSchema,
@@ -187,6 +194,24 @@ export const useFeedbackMentorListQuery = (
 };
 
 /**
+ * 멘토 단건 상세 query key 빌더.
+ * 단건 훅(`useFeedbackMentorDetailQuery`)과 목록+상세 병합 훅
+ * (`useFeedbackMentorListWithAttendance`)이 동일 키를 써 캐시를 공유한다.
+ */
+const mentorDetailQueryKey = (feedbackId: number | null | undefined) =>
+  [...FEEDBACK_MENTOR_QUERY_KEY, 'detail', { feedbackId }] as const;
+
+/**
+ * GET /feedback/mentor/{feedbackId} — 멘토 라이브 피드백 단건 상세 fetcher.
+ * 단건 훅·병합 훅이 동일 queryFn을 공유해 응답 파싱·캐시 정합을 보장한다.
+ */
+async function fetchMentorFeedbackDetail(feedbackId: number) {
+  const res = await axios.get(`${FEEDBACK_MENTOR_PATH}/${feedbackId}`);
+  const parsed = getMentorFeedbackDetailResponseSchema.parse(res.data.data);
+  return parsed.feedbackInfo;
+}
+
+/**
  * GET /feedback/mentor/{feedbackId} — 멘토 라이브 피드백 단건 상세 조회.
  *
  * Query key: `['feedback','mentor','detail', { feedbackId }]`
@@ -197,15 +222,79 @@ export const useFeedbackMentorDetailQuery = (
   feedbackId: number | null | undefined,
 ) => {
   return useQuery({
-    queryKey: [...FEEDBACK_MENTOR_QUERY_KEY, 'detail', { feedbackId }],
-    queryFn: async () => {
-      const res = await axios.get(`${FEEDBACK_MENTOR_PATH}/${feedbackId}`);
-      const parsed = getMentorFeedbackDetailResponseSchema.parse(res.data.data);
-      return parsed.feedbackInfo;
-    },
+    queryKey: mentorDetailQueryKey(feedbackId),
+    queryFn: () => fetchMentorFeedbackDetail(feedbackId as number),
     enabled: !!feedbackId,
     refetchOnWindowFocus: false,
   });
+};
+
+/**
+ * 목록 + 상세 병합 훅 — 목록 각 `feedbackId`의 `attendanceStatus`(경험정리 제출 상태)를
+ * 상세 API N+1 조회로 보강한다.
+ *
+ * 배경(PRD §6-1): 목록 VO(`FeedbackMentorVo`)엔 `attendanceStatus`가 없고 상세 VO에만 있다.
+ * "멘티 미제출(`ABSENT`/`LATE`) → 미진행" 판정에 필요해, 목록 각 건을
+ * `useFeedbackMentorDetailQuery`와 **동일 queryKey/queryFn**으로 `useQueries` 병렬 조회해
+ * `attendanceStatus`만 머지한다.
+ * (⚠️ `status=CANCELED` 재사용 금지 — 취소는 별도 용도. 미제출은 `attendanceStatus`로만 판정.)
+ *
+ * 캐시: `feedbackId`별 상세 쿼리키를 단건 훅·모달과 공유하므로, 상세 모달을 열어도
+ * 이미 병합 훅이 채운 캐시를 재사용해 중복 호출이 없다.
+ *
+ * N+1 호출 범위(성능 가드, PRD §8): 현재는 목록 **전체**를 대상으로 상세를 조회한다.
+ *  - 멘토 목록은 본인 예약분이라 규모가 자연히 제한적이라 전체 조회 부담이 작다.
+ *  - 뷰포트/탭 단위 지연 조회는 IntersectionObserver 등 추가 복잡도가 크고,
+ *    근본 해결(목록 VO에 `attendanceStatus` 추가)은 BE 별건이다.
+ *  - 목록이 커지면 지연/조건부 조회 또는 BE 목록필드 추가로 전환한다.
+ *
+ * 실패 처리: 상세 조회 실패는 목록을 깨지 않는다(`isError`는 목록 기준). 실패 건은
+ * `attendanceStatus`가 `undefined`로 남아 리졸버가 기존(시각·출석) 로직을 따른다(하위 호환).
+ */
+export const useFeedbackMentorListWithAttendance = (
+  params: UseFeedbackMentorListQueryParams = {},
+) => {
+  const listQuery = useFeedbackMentorListQuery(params);
+  const list = listQuery.data;
+  const enabled = params.enabled ?? true;
+
+  const detailQueries = useQueries({
+    queries: (list ?? []).map((item) => ({
+      queryKey: mentorDetailQueryKey(item.feedbackId),
+      queryFn: () => fetchMentorFeedbackDetail(item.feedbackId),
+      enabled,
+      refetchOnWindowFocus: false,
+    })),
+  });
+
+  // detailQueries 배열 참조는 매 렌더 변동 → 병합 대상 값만 안정 키로 뽑아 재계산 제어.
+  const detailKey = detailQueries
+    .map(
+      (q) =>
+        `${q.data?.attendanceStatus ?? ''}~${q.data?.missionStartDate ?? ''}~${q.data?.missionEndDate ?? ''}`,
+    )
+    .join('|');
+
+  const data = useMemo<FeedbackMentorWithAttendance[] | undefined>(
+    () =>
+      list?.map((item, index) => ({
+        ...item,
+        attendanceStatus: detailQueries[index]?.data?.attendanceStatus,
+        missionStartDate: detailQueries[index]?.data?.missionStartDate,
+        missionEndDate: detailQueries[index]?.data?.missionEndDate,
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [list, detailKey],
+  );
+
+  const isDetailLoading =
+    !!list && list.length > 0 && detailQueries.some((q) => q.isLoading);
+
+  return {
+    data,
+    isLoading: listQuery.isLoading || isDetailLoading,
+    isError: listQuery.isError,
+  };
 };
 
 export interface UpdateFeedbackByMentorVariables {

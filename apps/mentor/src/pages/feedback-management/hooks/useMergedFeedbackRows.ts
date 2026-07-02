@@ -129,6 +129,8 @@ function resolveLiveRowStatus(
       rawStatus: lf.rawStatus,
       mentorStatus: lf.mentorStatus,
       menteeStatus: lf.menteeStatus,
+      // 경험정리 미제출(LATE/ABSENT) → 미진행. 예약현황/캘린더와 동일 규칙 적용.
+      attendanceStatus: lf.attendanceStatus,
       startDate: `${bar.startDate}T${lf.startTime}:00`,
       endDate: `${bar.startDate}T${lf.endTime}:00`,
       now,

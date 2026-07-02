@@ -10,13 +10,15 @@
 import { describe, expect, it } from 'vitest';
 
 import type {
-  FeedbackMentor,
+  FeedbackMentorWithAttendance,
   FeedbackSlot,
 } from '@/api/feedback/feedbackSchema';
 
 import { deriveLiveFeedbackBars } from '../hooks/useLiveFeedbackData';
 
-function makeSession(overrides: Partial<FeedbackMentor>): FeedbackMentor {
+function makeSession(
+  overrides: Partial<FeedbackMentorWithAttendance>,
+): FeedbackMentorWithAttendance {
   return {
     feedbackId: 101,
     startDate: '2026-05-04T10:00:00',
@@ -136,6 +138,27 @@ describe('deriveLiveFeedbackBars', () => {
     expect(open[0].endDate).toBe('2026-04-28');
   });
 
+  it('미션 시작일이 있으면 오픈 기간 바를 미션시작 -3d~-2d 로 확정한다(표 §4)', () => {
+    const bars = deriveLiveFeedbackBars(
+      [
+        makeSession({
+          missionStartDate: '2026-05-10T00:00:00',
+          missionEndDate: '2026-05-16T23:59:59',
+        }),
+      ],
+      // 슬롯이 있어도 미션 앵커가 우선 → 슬롯 min/max 폴백 바는 만들지 않는다.
+      [makeSlot({})],
+    );
+
+    const open = bars.filter((b) => b.barType === 'live-feedback-mentor-open');
+    expect(open).toHaveLength(1);
+    // 미션시작 5/10 → 오픈 기간 5/7(−3d) ~ 5/8(−2d)
+    expect(open[0].startDate).toBe('2026-05-07');
+    expect(open[0].endDate).toBe('2026-05-08');
+    // D-day 앵커도 오픈 시작일
+    expect(open[0].feedbackStartDate).toBe('2026-05-07');
+  });
+
   it('mentee-open 바는 생성하지 않는다', () => {
     const bars = deriveLiveFeedbackBars([makeSession({})], [makeSlot({})]);
     expect(bars.some((b) => b.barType === 'live-feedback-mentee-open')).toBe(
@@ -208,6 +231,40 @@ describe('deriveLiveFeedbackBars', () => {
     expect(bar!.liveFeedback?.status).toBe('completed');
   });
 
+  it('종료된 RESERVED + 멘토 출석 + 멘티 불참 → completed (멘토 출석만으로 완료, 멘티 무관)', () => {
+    const bar = deriveLiveFeedbackBars(
+      [
+        makeSession({
+          feedbackId: 9,
+          status: 'RESERVED',
+          mentorStatus: 'PRESENT',
+          menteeStatus: 'ABSENT',
+          startDate: '2020-01-01T10:00:00',
+          endDate: '2020-01-01T10:30:00',
+        }),
+      ],
+      [],
+    ).find((b) => b.barType === 'live-feedback');
+    expect(bar!.liveFeedback?.status).toBe('completed');
+  });
+
+  it('종료된 RESERVED + 멘토 불참 + 멘티 출석 → mentor-absent (멘토 미참여면 미진행)', () => {
+    const bar = deriveLiveFeedbackBars(
+      [
+        makeSession({
+          feedbackId: 10,
+          status: 'RESERVED',
+          mentorStatus: 'ABSENT',
+          menteeStatus: 'PRESENT',
+          startDate: '2020-01-01T10:00:00',
+          endDate: '2020-01-01T10:30:00',
+        }),
+      ],
+      [],
+    ).find((b) => b.barType === 'live-feedback');
+    expect(bar!.liveFeedback?.status).toBe('mentor-absent');
+  });
+
   it('종료된 RESERVED + 출석 미체크 → waiting 이 아니라 미진행 처리된다', () => {
     const bar = deriveLiveFeedbackBars(
       [
@@ -222,6 +279,114 @@ describe('deriveLiveFeedbackBars', () => {
     ).find((b) => b.barType === 'live-feedback');
     expect(bar!.liveFeedback?.status).not.toBe('waiting');
     expect(bar!.liveFeedback?.status).toBe('cancelled');
+  });
+
+  it('경험정리 미제출(attendanceStatus ABSENT) → 시작 전이어도 미진행 처리된다', () => {
+    const bar = deriveLiveFeedbackBars(
+      [
+        makeSession({
+          feedbackId: 20,
+          status: 'RESERVED',
+          // 먼 미래(시작 전)라도 미제출이면 최우선 미진행.
+          startDate: '2099-01-01T10:00:00',
+          endDate: '2099-01-01T10:30:00',
+          attendanceStatus: 'ABSENT',
+        }),
+      ],
+      [],
+    ).find((b) => b.barType === 'live-feedback');
+    expect(bar!.liveFeedback?.status).not.toBe('waiting');
+    expect(bar!.liveFeedback?.status).toBe('cancelled');
+    expect(bar!.liveFeedback?.attendanceStatus).toBe('ABSENT');
+  });
+
+  it('경험정리 미제출(attendanceStatus LATE) → 미진행 처리된다', () => {
+    const bar = deriveLiveFeedbackBars(
+      [
+        makeSession({
+          feedbackId: 21,
+          status: 'RESERVED',
+          startDate: '2099-01-01T10:00:00',
+          endDate: '2099-01-01T10:30:00',
+          attendanceStatus: 'LATE',
+        }),
+      ],
+      [],
+    ).find((b) => b.barType === 'live-feedback');
+    expect(bar!.liveFeedback?.status).toBe('cancelled');
+  });
+
+  it('제출 완료(attendanceStatus PRESENT) + 시작 전 → 진행 예정(waiting) 유지', () => {
+    const bar = deriveLiveFeedbackBars(
+      [
+        makeSession({
+          feedbackId: 22,
+          status: 'RESERVED',
+          startDate: '2099-01-01T10:00:00',
+          endDate: '2099-01-01T10:30:00',
+          attendanceStatus: 'PRESENT',
+        }),
+      ],
+      [],
+    ).find((b) => b.barType === 'live-feedback');
+    expect(bar!.liveFeedback?.status).toBe('waiting');
+  });
+
+  it('미션 일자가 있으면 period 바 기간을 미션 시작일~종료일로 확정한다 (BE 반영 후)', () => {
+    const bars = deriveLiveFeedbackBars(
+      [
+        makeSession({
+          feedbackId: 30,
+          // 세션 시각(예약 시각)은 미션 기간 안의 특정 하루
+          startDate: '2026-07-13T10:00:00',
+          endDate: '2026-07-13T10:30:00',
+          missionStartDate: '2026-07-12T00:00:00',
+          missionEndDate: '2026-07-15T23:59:59',
+        }),
+      ],
+      [],
+    );
+    const period = bars.find((b) => b.barType === 'live-feedback-period')!;
+    // 세션 시각(07-13)이 아니라 미션 기간(07-12~07-15)으로 확정
+    expect(period.startDate).toBe('2026-07-12');
+    expect(period.endDate).toBe('2026-07-15');
+    expect(period.feedbackStartDate).toBe('2026-07-12');
+    expect(period.feedbackDeadline).toBe('2026-07-15');
+  });
+
+  it('미션 일자가 없으면(BE 미반영) period 바는 세션 min/max로 폴백한다', () => {
+    const bars = deriveLiveFeedbackBars(
+      [
+        makeSession({
+          feedbackId: 31,
+          startDate: '2026-07-13T10:00:00',
+          endDate: '2026-07-13T10:30:00',
+        }),
+      ],
+      [],
+    );
+    const period = bars.find((b) => b.barType === 'live-feedback-period')!;
+    // 미션 일자 없음 → 세션 시각 기준
+    expect(period.startDate).toBe('2026-07-13');
+    expect(period.endDate).toBe('2026-07-13');
+  });
+
+  it('미션 일자가 null 이면 폴백한다 (미션 없는 라이브)', () => {
+    const bars = deriveLiveFeedbackBars(
+      [
+        makeSession({
+          feedbackId: 32,
+          startDate: '2026-07-13T10:00:00',
+          endDate: '2026-07-13T10:30:00',
+          missionStartDate: null,
+          missionEndDate: null,
+        }),
+      ],
+      [],
+    );
+    const period = bars.find((b) => b.barType === 'live-feedback-period')!;
+    expect(period.startDate).toBe('2026-07-13');
+    expect(period.endDate).toBe('2026-07-13');
   });
 
   it('빈 입력은 빈 배열을 반환한다', () => {

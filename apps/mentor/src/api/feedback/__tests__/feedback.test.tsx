@@ -12,6 +12,7 @@ import {
   useFeedbackDetailQuery,
   useFeedbackMentorDetailQuery,
   useFeedbackMentorListQuery,
+  useFeedbackMentorListWithAttendance,
   useFeedbackMentorSlotsQuery,
   useUpdateFeedbackByMentorMutation,
 } from '../feedback';
@@ -378,6 +379,140 @@ describe('useFeedbackMentorDetailQuery', () => {
 
     await new Promise((r) => setTimeout(r, 10));
     expect(axiosMock.get).not.toHaveBeenCalled();
+  });
+});
+
+describe('useFeedbackMentorListWithAttendance', () => {
+  it('목록 각 건에 상세 attendanceStatus 를 병합한다', async () => {
+    axiosMock.get.mockImplementation((url: string) => {
+      if (url === '/feedback/mentor') {
+        return Promise.resolve({
+          data: {
+            data: {
+              feedbackList: [
+                makeMentorFeedback({ feedbackId: 1 }),
+                makeMentorFeedback({ feedbackId: 2, menteeName: '박민수' }),
+              ],
+            },
+          },
+        });
+      }
+      if (url === '/feedback/mentor/1') {
+        return Promise.resolve({
+          data: {
+            data: {
+              feedbackInfo: makeMentorDetail({
+                feedbackId: 1,
+                attendanceStatus: 'PRESENT',
+              }),
+            },
+          },
+        });
+      }
+      if (url === '/feedback/mentor/2') {
+        return Promise.resolve({
+          data: {
+            data: {
+              feedbackInfo: makeMentorDetail({
+                feedbackId: 2,
+                attendanceStatus: 'ABSENT',
+              }),
+            },
+          },
+        });
+      }
+      return Promise.reject(new Error(`unexpected url: ${url}`));
+    });
+
+    const client = newClient();
+    const { result } = renderHook(() => useFeedbackMentorListWithAttendance(), {
+      wrapper: createWrapper(client),
+    });
+
+    await waitFor(() => {
+      expect(result.current.data).toHaveLength(2);
+      expect(result.current.data?.[0].attendanceStatus).toBe('PRESENT');
+      expect(result.current.data?.[1].attendanceStatus).toBe('ABSENT');
+    });
+    // 목록 필드는 그대로 보존
+    expect(result.current.data?.[1].menteeName).toBe('박민수');
+  });
+
+  it('상세 조회가 실패해도 목록은 유지되고 attendanceStatus 만 undefined 로 남는다', async () => {
+    axiosMock.get.mockImplementation((url: string) => {
+      if (url === '/feedback/mentor') {
+        return Promise.resolve({
+          data: {
+            data: { feedbackList: [makeMentorFeedback({ feedbackId: 1 })] },
+          },
+        });
+      }
+      return Promise.reject(new Error('detail failed'));
+    });
+
+    const client = newClient();
+    const { result } = renderHook(() => useFeedbackMentorListWithAttendance(), {
+      wrapper: createWrapper(client),
+    });
+
+    await waitFor(() => expect(result.current.data).toHaveLength(1));
+    expect(result.current.isError).toBe(false);
+    expect(result.current.data?.[0].attendanceStatus).toBeUndefined();
+  });
+
+  it('enabled=false 면 목록·상세 모두 호출하지 않는다', async () => {
+    const client = newClient();
+    renderHook(() => useFeedbackMentorListWithAttendance({ enabled: false }), {
+      wrapper: createWrapper(client),
+    });
+
+    await new Promise((r) => setTimeout(r, 10));
+    expect(axiosMock.get).not.toHaveBeenCalled();
+  });
+
+  // 2.4.T1 — N+1 성능 가드: 대량 목록에서 feedbackId당 상세 1회, 중복 없음.
+  it('대량 목록(30건)에서 feedbackId당 상세를 1회만 조회한다(중복 없음)', async () => {
+    const list = Array.from({ length: 30 }, (_, i) =>
+      makeMentorFeedback({ feedbackId: i + 1 }),
+    );
+    axiosMock.get.mockImplementation((url: string) => {
+      if (url === '/feedback/mentor') {
+        return Promise.resolve({ data: { data: { feedbackList: list } } });
+      }
+      const match = url.match(/^\/feedback\/mentor\/(\d+)$/);
+      if (match) {
+        return Promise.resolve({
+          data: {
+            data: {
+              feedbackInfo: makeMentorDetail({
+                feedbackId: Number(match[1]),
+                attendanceStatus: 'PRESENT',
+              }),
+            },
+          },
+        });
+      }
+      return Promise.reject(new Error(`unexpected url: ${url}`));
+    });
+
+    const client = newClient();
+    const { result } = renderHook(() => useFeedbackMentorListWithAttendance(), {
+      wrapper: createWrapper(client),
+    });
+
+    await waitFor(() =>
+      expect(
+        result.current.data?.every((d) => d.attendanceStatus === 'PRESENT'),
+      ).toBe(true),
+    );
+
+    const detailCalls = axiosMock.get.mock.calls
+      .map(([url]) => url as string)
+      .filter((url) => /^\/feedback\/mentor\/\d+$/.test(url));
+    const uniqueDetailUrls = new Set(detailCalls);
+    // 30개 feedbackId 각각 정확히 1회 → 총 30회, 중복 없음.
+    expect(detailCalls).toHaveLength(30);
+    expect(uniqueDetailUrls.size).toBe(30);
   });
 });
 
