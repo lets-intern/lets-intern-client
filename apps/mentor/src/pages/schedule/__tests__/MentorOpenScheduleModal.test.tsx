@@ -3,6 +3,10 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import MentorOpenScheduleModal from '../modal/MentorOpenScheduleModal';
+import {
+  computeSlotOpenWindow,
+  selectSlotOpenWindow,
+} from '../data/feedbackScheduleRules';
 
 const focusDate = '2026-05-11';
 
@@ -145,6 +149,59 @@ describe('MentorOpenScheduleModal (콘텐츠 추출 후 회귀)', () => {
           initialSlots={[]}
           onSave={() => {}}
           focusDate={focusDate}
+        />,
+      );
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: '저장하기' }),
+      ).not.toBeDisabled();
+    });
+
+    // rule → UI 연결: 미션 일자로 파생한 실 윈도가 안내 메시지 경계로 렌더되는지 확인.
+    it('미션 일자로 파생한 윈도(computeSlotOpenWindow) 밖이면 그 윈도 기간이 안내에 노출된다', () => {
+      // 미션 시작 2026-07-12 → 오픈 윈도 07-09 00:00 ~ 07-10 23:59 (now=2026-07-02 밖)
+      const window = computeSlotOpenWindow('2026-07-12T09:30:00');
+      render(
+        <MentorOpenScheduleModal
+          isOpen
+          onClose={() => {}}
+          initialSlots={[]}
+          onSave={() => {}}
+          focusDate={focusDate}
+          slotOpenWindow={window}
+        />,
+      );
+      const alert = screen.getByRole('alert');
+      // 07월 09일 ~ 07월 10일 경계가 메시지에 표기된다.
+      expect(alert).toHaveTextContent('7월 9일');
+      expect(alert).toHaveTextContent('7월 10일');
+      expect(screen.getByRole('button', { name: '저장하기' })).toBeDisabled();
+    });
+
+    // 다중 미션 합성: 하나라도 활성이면 통과, 전부 미래면 예정 윈도로 게이팅.
+    it('여러 미션 중 활성 윈도가 있으면 게이팅이 통과된다 (selectSlotOpenWindow union)', () => {
+      const DAY_MS = 24 * 60 * 60 * 1000;
+      const now = new Date();
+      // 미션 A: now가 오픈 윈도(-3d~-2d) 안에 들도록 now+2.5d 시작으로 앵커
+      const activeMissionStart = new Date(
+        now.getTime() + 2.5 * DAY_MS,
+      ).toISOString();
+      // 미션 B: 먼 미래 → 그 윈도는 아직 미래
+      const futureMissionStart = new Date(
+        now.getTime() + 60 * DAY_MS,
+      ).toISOString();
+      const window = selectSlotOpenWindow(
+        [futureMissionStart, activeMissionStart],
+        now,
+      );
+      render(
+        <MentorOpenScheduleModal
+          isOpen
+          onClose={() => {}}
+          initialSlots={[]}
+          onSave={() => {}}
+          focusDate={focusDate}
+          slotOpenWindow={window}
         />,
       );
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();

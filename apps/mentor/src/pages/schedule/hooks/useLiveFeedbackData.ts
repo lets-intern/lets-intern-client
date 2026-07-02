@@ -12,7 +12,11 @@ import type {
 
 import type { LiveFeedbackInfo, PeriodBarData } from '../types';
 import { currentNow } from '../constants/mockNow';
-import { computeReservationWindow } from '../data/feedbackScheduleRules';
+import {
+  type ScheduleWindow,
+  computeReservationWindow,
+  selectSlotOpenWindow,
+} from '../data/feedbackScheduleRules';
 import { resolveLiveSessionStatus } from '@/pages/feedback/utils/liveFeedbackStatus';
 
 /**
@@ -35,9 +39,16 @@ export function useLiveFeedbackData(
   { enabled = true }: { enabled?: boolean } = {},
 ): {
   bars: PeriodBarData[];
+  /**
+   * 슬롯 오픈 게이팅 윈도 — 모든 미션의 오픈 윈도(-3d~-2d)를 `selectSlotOpenWindow`로
+   * 단일 윈도로 합성한 값. 미션 일자(BE forward-compat)가 없으면 `null`(게이팅 미적용).
+   * `LiveAvailabilityContent.slotOpenWindow`로 그대로 주입한다.
+   */
+  slotOpenWindow: ScheduleWindow | null;
   isLoading: boolean;
 } {
   // 목록 + 상세 attendanceStatus 병합(N+1) — 미제출(LATE|ABSENT)을 '미진행'으로 반영하기 위함.
+  // 병합 상세엔 missionStartDate도 포함되어 슬롯 오픈 윈도 앵커로 재사용한다.
   const { data: sessions, isLoading: isSessionsLoading } =
     useFeedbackMentorListWithAttendance({ enabled });
   const { data: slotsData, isLoading: isSlotsLoading } =
@@ -49,7 +60,21 @@ export function useLiveFeedbackData(
     [sessions, slotsData],
   );
 
-  return { bars, isLoading: isSessionsLoading || isSlotsLoading };
+  // 미션 시작일 목록 → 단일 게이팅 윈도. now가 어느 윈도에 들면 통과, 아니면 예정 윈도 안내.
+  const slotOpenWindow = useMemo(
+    () =>
+      selectSlotOpenWindow(
+        (sessions ?? []).map((s) => s.missionStartDate),
+        currentNow(),
+      ),
+    [sessions],
+  );
+
+  return {
+    bars,
+    slotOpenWindow,
+    isLoading: isSessionsLoading || isSlotsLoading,
+  };
 }
 
 /** "YYYY-MM-DD" (날짜 단위) */
