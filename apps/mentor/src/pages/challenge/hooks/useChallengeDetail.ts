@@ -46,11 +46,20 @@ export function useChallengeDetail() {
   const missions = missionData?.missionList ?? [];
 
   // 라이브 피드백 세션 — 이 챌린지(title 매칭)의 회차별 세션 바.
+  // TODO(BE 선행): FeedbackMentorVo에 challengeId/missionId가 없어 챌린지는 programTitle,
+  //   미션은 회차(th)로만 매칭한다. (1) title 중복/변경 시, (2) 미션의 LIVE 피드백 회차가
+  //   미션 순번(th)과 다를 때(예: "2회차 미션"의 옵션이 "LIVE 피드백 4회차") 매칭이 어긋날
+  //   수 있다. BE가 세션에 challengeId·missionId(또는 옵션 회차)를 실어주면 정밀 매칭 가능.
   const { challenges: liveChallenges, allSessionBars } = useLiveFeedbackList();
   const liveRounds = useMemo<LiveFeedbackRound[]>(
     () => liveChallenges.find((c) => c.title === challengeTitle)?.rounds ?? [],
     [liveChallenges, challengeTitle],
   );
+
+  // 미션 회차(th)에 정확히 매칭되는 라이브 라운드. ⚠️ 폴백 금지 —
+  // 폴백하면 세션 없는 미션까지 같은 세션이 중복으로 붙는다(중복 표기 버그).
+  const findLiveRound = (missionTh: number) =>
+    liveRounds.find((r) => r.th === missionTh) ?? null;
 
   const [liveModalBar, setLiveModalBar] = useState<PeriodBarData | null>(null);
   const [liveSelectedRound, setLiveSelectedRound] =
@@ -60,10 +69,8 @@ export function useChallengeDetail() {
     const mission = missions.find((m) => m.id === missionId);
 
     // 라이브 피드백 미션 → 라이브 모달 (해당 회차 세션으로 네비게이션)
-    // ⚠️ 회차(th) 정확 매칭만 — 폴백 금지. 폴백하면 세션 없는 미션까지 같은
-    //    세션이 중복으로 붙는다.
     if (mission?.challengeOptionType === 'LIVE_FEEDBACK') {
-      const round = liveRounds.find((r) => r.th === missionTh) ?? null;
+      const round = findLiveRound(missionTh);
       const firstBar = round?.sessionBars[0] ?? null;
       if (firstBar) {
         setLiveSelectedRound(round);
@@ -85,12 +92,9 @@ export function useChallengeDetail() {
     setLiveModalBar(null);
   };
 
-  /**
-   * 라이브 미션(회차)의 예약 세션(멘티) 수 — 회차(th) 정확 매칭만.
-   * 폴백을 두면 세션 없는 미션까지 같은 세션이 중복 표기되므로 매칭 실패 시 0.
-   */
+  /** 라이브 미션(회차)의 예약 세션(멘티) 수 — 매칭 실패 시 0. */
   const liveMenteeCount = (missionTh: number) =>
-    liveRounds.find((r) => r.th === missionTh)?.sessionBars.length ?? 0;
+    findLiveRound(missionTh)?.sessionBars.length ?? 0;
 
   /** 라이브 미션(회차)에 열 수 있는 세션이 있는지 — 없으면 버튼 비활성. */
   const canOpenLiveMission = (missionTh: number) =>

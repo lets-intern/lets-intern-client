@@ -36,14 +36,12 @@ interface MenteeListProps {
 }
 
 /**
- * 멘티 리스트 상태 뱃지 색 (디자인 시안 image #15 기준).
- * - 진행 중 / 진행 전: 보라(primary), 임박한 진행 전은 빨강으로 강조
- * - 진행 완료: 회색 아웃라인
- * (헤더 칩 등 다른 화면의 STATUS_BADGE 와 분리 — 모달 멘티 리스트 전용)
+ * 서면 멘티 리스트 상태 뱃지 색(getFeedbackBadge 전용).
+ * - 진행 중 / 진행 전: 보라(primary)  - 진행 완료: 회색 아웃라인
+ * (라이브는 getLiveStatusBadge가 캘린더 팔레트를 쓴다. 헤더 칩 STATUS_BADGE 와도 분리.)
  */
 const LIST_BADGE_COLOR = {
   active: 'bg-primary-5 text-primary',
-  urgent: 'bg-red-50 text-red-500',
   done: 'border border-neutral-300 bg-white text-neutral-500',
 } as const;
 

@@ -55,6 +55,10 @@ export function computeSlotOpenWindow(
 /**
  * 진행 기간: 미션 종료일 +2일 00:00:00 ~ +4일 23:59:59.
  * @param missionEndDate BE 미션 종료 일시(ISO LocalDateTime 문자열)
+ *
+ * TODO(미배선): 현재 정의만 있고 캘린더에 "진행 기간" 바로 배선되지 않았다(PRD §4 표의
+ *   LIVE/서면 진행 기간). 진행 기간 바를 추가하려면 useLiveFeedbackData에서 이 함수로
+ *   기간을 만들어 period 바로 push하고 렌더 분기를 추가할 것.
  */
 export function computeProgressWindow(missionEndDate: string): ScheduleWindow {
   const anchor = parseISO(missionEndDate);

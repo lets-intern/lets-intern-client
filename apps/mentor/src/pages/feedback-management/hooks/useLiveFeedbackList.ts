@@ -122,6 +122,9 @@ export function useLiveFeedbackList(): {
 
   return useMemo(() => {
     const items = feedbackList ?? [];
+    // TODO(정밀도): now는 데이터 페치 시점 스냅샷이라, 열어둔 화면에서 시간이 흘러
+    //   '진행 예정→진행 중→미진행'으로 자동 전환되지 않는다(refetch/재마운트 시 갱신).
+    //   실시간 전환이 필요하면 타이머로 now를 주기 갱신해 재계산할 것.
     const now = currentNow();
 
     // programTitle → 합성 challengeId. 등장 순서대로 1부터 안정적으로 부여.
