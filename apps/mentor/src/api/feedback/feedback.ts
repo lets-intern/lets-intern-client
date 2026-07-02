@@ -267,9 +267,12 @@ export const useFeedbackMentorListWithAttendance = (
     })),
   });
 
-  // detailQueries 배열 참조는 매 렌더 변동 → attendanceStatus 값만 안정 키로 뽑아 재계산 제어.
-  const attendanceKey = detailQueries
-    .map((q) => q.data?.attendanceStatus ?? '')
+  // detailQueries 배열 참조는 매 렌더 변동 → 병합 대상 값만 안정 키로 뽑아 재계산 제어.
+  const detailKey = detailQueries
+    .map(
+      (q) =>
+        `${q.data?.attendanceStatus ?? ''}~${q.data?.missionStartDate ?? ''}~${q.data?.missionEndDate ?? ''}`,
+    )
     .join('|');
 
   const data = useMemo<FeedbackMentorWithAttendance[] | undefined>(
@@ -277,9 +280,11 @@ export const useFeedbackMentorListWithAttendance = (
       list?.map((item, index) => ({
         ...item,
         attendanceStatus: detailQueries[index]?.data?.attendanceStatus,
+        missionStartDate: detailQueries[index]?.data?.missionStartDate,
+        missionEndDate: detailQueries[index]?.data?.missionEndDate,
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [list, attendanceKey],
+    [list, detailKey],
   );
 
   const isDetailLoading =

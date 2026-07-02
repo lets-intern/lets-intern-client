@@ -268,6 +268,76 @@ describe('feedbackSchema', () => {
       expect(parsed.preQuestion).toBeNull();
     });
 
+    it('missionStartDate/EndDate 가 없어도 파싱한다 (forward-compatible, BE 미반영)', () => {
+      const parsed = feedbackDetailMentorSchema.parse({
+        feedbackId: 10,
+        startDate: '2026-05-20T11:00:00',
+        endDate: '2026-05-20T11:30:00',
+        meetingUrl: null,
+        status: 'RESERVED',
+        programTitle: '자소서 챌린지 7기',
+        attendanceUrl: '',
+        attendanceStatus: 'PRESENT',
+        menteeName: '이지수',
+        menteeWishField: null,
+        menteeWishIndustry: null,
+        menteeWishCompany: null,
+        preQuestion: null,
+        mentorStatus: 'PENDING',
+        menteeStatus: 'PENDING',
+      });
+      expect(parsed.missionStartDate).toBeUndefined();
+      expect(parsed.missionEndDate).toBeUndefined();
+    });
+
+    it('missionStartDate/EndDate 가 채워진 응답도 파싱한다 (BE 반영 후)', () => {
+      const parsed = feedbackDetailMentorSchema.parse({
+        feedbackId: 11,
+        startDate: '2026-07-10T10:00:00',
+        endDate: '2026-07-10T10:30:00',
+        meetingUrl: null,
+        status: 'RESERVED',
+        programTitle: '기필코 경험정리 챌린지 21기',
+        attendanceUrl: '',
+        attendanceStatus: 'PRESENT',
+        menteeName: '이지수',
+        menteeWishField: null,
+        menteeWishIndustry: null,
+        menteeWishCompany: null,
+        preQuestion: null,
+        mentorStatus: 'PENDING',
+        menteeStatus: 'PENDING',
+        missionStartDate: '2026-07-12T00:00:00',
+        missionEndDate: '2026-07-15T23:59:59',
+      });
+      expect(parsed.missionStartDate).toBe('2026-07-12T00:00:00');
+      expect(parsed.missionEndDate).toBe('2026-07-15T23:59:59');
+    });
+
+    it('missionStartDate/EndDate 가 null 이어도 파싱한다 (미션 없는 라이브)', () => {
+      const parsed = feedbackDetailMentorSchema.parse({
+        feedbackId: 12,
+        startDate: '2026-07-10T10:00:00',
+        endDate: '2026-07-10T10:30:00',
+        meetingUrl: null,
+        status: 'RESERVED',
+        programTitle: '자소서 챌린지 7기',
+        attendanceUrl: '',
+        attendanceStatus: 'ABSENT',
+        menteeName: '이지수',
+        menteeWishField: null,
+        menteeWishIndustry: null,
+        menteeWishCompany: null,
+        preQuestion: null,
+        mentorStatus: 'PENDING',
+        menteeStatus: 'PENDING',
+        missionStartDate: null,
+        missionEndDate: null,
+      });
+      expect(parsed.missionStartDate).toBeNull();
+      expect(parsed.missionEndDate).toBeNull();
+    });
+
     it('attendanceStatus 가 라이브 enum 값이면 실패한다', () => {
       expect(() =>
         feedbackDetailMentorSchema.parse({
