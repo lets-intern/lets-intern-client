@@ -136,6 +136,8 @@ export const LiveFeedbackTimeBlock = ({ bar }: { bar: PeriodBarData }) => {
           rawStatus: lf.rawStatus,
           mentorStatus: lf.mentorStatus,
           menteeStatus: lf.menteeStatus,
+          // 경험정리 미제출(LATE|ABSENT)이면 최우선으로 '미진행' 표시.
+          attendanceStatus: lf.attendanceStatus,
           startDate: `${bar.startDate}T${lf.startTime}:00`,
           endDate: `${bar.startDate}T${lf.endTime}:00`,
           now: currentNow(),

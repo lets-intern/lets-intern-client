@@ -2,11 +2,11 @@ import { useMemo } from 'react';
 import { format } from 'date-fns';
 
 import {
-  useFeedbackMentorListQuery,
+  useFeedbackMentorListWithAttendance,
   useFeedbackMentorSlotsQuery,
 } from '@/api/feedback/feedback';
 import type {
-  FeedbackMentor,
+  FeedbackMentorWithAttendance,
   FeedbackSlot,
 } from '@/api/feedback/feedbackSchema';
 
@@ -36,8 +36,9 @@ export function useLiveFeedbackData(
   bars: PeriodBarData[];
   isLoading: boolean;
 } {
+  // 목록 + 상세 attendanceStatus 병합(N+1) — 미제출(LATE|ABSENT)을 '미진행'으로 반영하기 위함.
   const { data: sessions, isLoading: isSessionsLoading } =
-    useFeedbackMentorListQuery({ enabled });
+    useFeedbackMentorListWithAttendance({ enabled });
   const { data: slotsData, isLoading: isSlotsLoading } =
     useFeedbackMentorSlotsQuery({ enabled });
 
@@ -80,7 +81,7 @@ function buildSyntheticChallengeId(groupIndex: number): number {
  *  - RESERVED → 시작 전 waiting / 진행 중 in-progress / 종료 후 양측 참여 completed / 그 외 미진행
  */
 function resolveSessionStatus(
-  session: FeedbackMentor,
+  session: FeedbackMentorWithAttendance,
   now: Date,
 ): LiveFeedbackInfo['status'] {
   // 취소는 불참 주체를 보존(배지·집계 활용).
@@ -94,6 +95,8 @@ function resolveSessionStatus(
     rawStatus: session.status,
     mentorStatus: session.mentorStatus,
     menteeStatus: session.menteeStatus,
+    // 경험정리 미제출(LATE|ABSENT)이면 최우선으로 '미진행' 처리(시각·출석 무관).
+    attendanceStatus: session.attendanceStatus,
     startDate: session.startDate,
     endDate: session.endDate,
     now,
@@ -123,7 +126,7 @@ function resolveSessionStatus(
  * 테스트 가능하도록 순수 함수로 분리 (쿼리 데이터를 인자로 받음).
  */
 export function deriveLiveFeedbackBars(
-  sessions: FeedbackMentor[],
+  sessions: FeedbackMentorWithAttendance[],
   slots: FeedbackSlot[],
 ): PeriodBarData[] {
   const now = currentNow();
@@ -167,6 +170,7 @@ export function deriveLiveFeedbackBars(
         startTime: toTime(session.startDate),
         endTime: toTime(session.endDate),
         status: resolveSessionStatus(session, now),
+        attendanceStatus: session.attendanceStatus,
       },
     });
   }
@@ -179,7 +183,7 @@ export function deriveLiveFeedbackBars(
     const groupIndex = groupIndexByTitle.get(title) ?? 0;
 
     // 회차(th)별 버킷
-    const byTh = new Map<number, FeedbackMentor[]>();
+    const byTh = new Map<number, FeedbackMentorWithAttendance[]>();
     for (const s of groupSessions) {
       const th = s.th ?? 1;
       const bucket = byTh.get(th);

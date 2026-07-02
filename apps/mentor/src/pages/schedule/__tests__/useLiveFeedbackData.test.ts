@@ -10,13 +10,15 @@
 import { describe, expect, it } from 'vitest';
 
 import type {
-  FeedbackMentor,
+  FeedbackMentorWithAttendance,
   FeedbackSlot,
 } from '@/api/feedback/feedbackSchema';
 
 import { deriveLiveFeedbackBars } from '../hooks/useLiveFeedbackData';
 
-function makeSession(overrides: Partial<FeedbackMentor>): FeedbackMentor {
+function makeSession(
+  overrides: Partial<FeedbackMentorWithAttendance>,
+): FeedbackMentorWithAttendance {
   return {
     feedbackId: 101,
     startDate: '2026-05-04T10:00:00',
@@ -256,6 +258,57 @@ describe('deriveLiveFeedbackBars', () => {
     ).find((b) => b.barType === 'live-feedback');
     expect(bar!.liveFeedback?.status).not.toBe('waiting');
     expect(bar!.liveFeedback?.status).toBe('cancelled');
+  });
+
+  it('경험정리 미제출(attendanceStatus ABSENT) → 시작 전이어도 미진행 처리된다', () => {
+    const bar = deriveLiveFeedbackBars(
+      [
+        makeSession({
+          feedbackId: 20,
+          status: 'RESERVED',
+          // 먼 미래(시작 전)라도 미제출이면 최우선 미진행.
+          startDate: '2099-01-01T10:00:00',
+          endDate: '2099-01-01T10:30:00',
+          attendanceStatus: 'ABSENT',
+        }),
+      ],
+      [],
+    ).find((b) => b.barType === 'live-feedback');
+    expect(bar!.liveFeedback?.status).not.toBe('waiting');
+    expect(bar!.liveFeedback?.status).toBe('cancelled');
+    expect(bar!.liveFeedback?.attendanceStatus).toBe('ABSENT');
+  });
+
+  it('경험정리 미제출(attendanceStatus LATE) → 미진행 처리된다', () => {
+    const bar = deriveLiveFeedbackBars(
+      [
+        makeSession({
+          feedbackId: 21,
+          status: 'RESERVED',
+          startDate: '2099-01-01T10:00:00',
+          endDate: '2099-01-01T10:30:00',
+          attendanceStatus: 'LATE',
+        }),
+      ],
+      [],
+    ).find((b) => b.barType === 'live-feedback');
+    expect(bar!.liveFeedback?.status).toBe('cancelled');
+  });
+
+  it('제출 완료(attendanceStatus PRESENT) + 시작 전 → 진행 예정(waiting) 유지', () => {
+    const bar = deriveLiveFeedbackBars(
+      [
+        makeSession({
+          feedbackId: 22,
+          status: 'RESERVED',
+          startDate: '2099-01-01T10:00:00',
+          endDate: '2099-01-01T10:30:00',
+          attendanceStatus: 'PRESENT',
+        }),
+      ],
+      [],
+    ).find((b) => b.barType === 'live-feedback');
+    expect(bar!.liveFeedback?.status).toBe('waiting');
   });
 
   it('빈 입력은 빈 배열을 반환한다', () => {
