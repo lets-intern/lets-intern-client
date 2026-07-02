@@ -276,6 +276,8 @@ const LiveFeedbackReservationModal = ({
           rawStatus: apiStatus,
           mentorStatus: feedbackDetail?.mentorStatus,
           menteeStatus: feedbackDetail?.menteeStatus,
+          // 경험정리 미제출(LATE|ABSENT)이면 최우선으로 미진행 표기.
+          attendanceStatus: feedbackDetail?.attendanceStatus,
           startDate: startIso,
           endDate: endIso,
           now,

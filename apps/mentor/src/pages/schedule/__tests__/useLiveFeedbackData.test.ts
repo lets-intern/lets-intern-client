@@ -208,6 +208,40 @@ describe('deriveLiveFeedbackBars', () => {
     expect(bar!.liveFeedback?.status).toBe('completed');
   });
 
+  it('종료된 RESERVED + 멘토 출석 + 멘티 불참 → completed (멘토 출석만으로 완료, 멘티 무관)', () => {
+    const bar = deriveLiveFeedbackBars(
+      [
+        makeSession({
+          feedbackId: 9,
+          status: 'RESERVED',
+          mentorStatus: 'PRESENT',
+          menteeStatus: 'ABSENT',
+          startDate: '2020-01-01T10:00:00',
+          endDate: '2020-01-01T10:30:00',
+        }),
+      ],
+      [],
+    ).find((b) => b.barType === 'live-feedback');
+    expect(bar!.liveFeedback?.status).toBe('completed');
+  });
+
+  it('종료된 RESERVED + 멘토 불참 + 멘티 출석 → mentor-absent (멘토 미참여면 미진행)', () => {
+    const bar = deriveLiveFeedbackBars(
+      [
+        makeSession({
+          feedbackId: 10,
+          status: 'RESERVED',
+          mentorStatus: 'ABSENT',
+          menteeStatus: 'PRESENT',
+          startDate: '2020-01-01T10:00:00',
+          endDate: '2020-01-01T10:30:00',
+        }),
+      ],
+      [],
+    ).find((b) => b.barType === 'live-feedback');
+    expect(bar!.liveFeedback?.status).toBe('mentor-absent');
+  });
+
   it('종료된 RESERVED + 출석 미체크 → waiting 이 아니라 미진행 처리된다', () => {
     const bar = deriveLiveFeedbackBars(
       [
