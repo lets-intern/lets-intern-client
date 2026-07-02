@@ -85,7 +85,7 @@ describe('resolveLiveSessionStatus — 종료 후 출석 반영', () => {
     ).toBe('completed');
   });
 
-  it('종료 후 RESERVED + 한쪽 불참 → missed', () => {
+  it('종료 후 RESERVED + 멘토 출석 + 멘티 불참 → completed (멘토 출석만으로 완료)', () => {
     expect(
       resolveLiveSessionStatus({
         rawStatus: 'RESERVED',
@@ -95,10 +95,23 @@ describe('resolveLiveSessionStatus — 종료 후 출석 반영', () => {
         endDate: end,
         now: afterEnd,
       }),
+    ).toBe('completed');
+  });
+
+  it('종료 후 RESERVED + 멘토 불참 + 멘티 출석 → missed (멘토 미참여면 미진행)', () => {
+    expect(
+      resolveLiveSessionStatus({
+        rawStatus: 'RESERVED',
+        mentorStatus: 'ABSENT',
+        menteeStatus: 'PRESENT',
+        startDate: start,
+        endDate: end,
+        now: afterEnd,
+      }),
     ).toBe('missed');
   });
 
-  it('종료 후 RESERVED + 출석 미체크(PENDING) → missed', () => {
+  it('종료 후 RESERVED + 멘토 출석 미체크(PENDING) → missed', () => {
     expect(
       resolveLiveSessionStatus({
         rawStatus: 'RESERVED',
@@ -131,6 +144,60 @@ describe('resolveLiveSessionStatus — 종료 후 출석 반영', () => {
         now: beforeStart,
       }),
     ).toBe('completed');
+  });
+});
+
+describe('resolveLiveSessionStatus — 경험정리 미제출(attendanceStatus)', () => {
+  const start = '2026-05-20T11:00:00+09:00';
+  const end = '2026-05-20T11:30:00+09:00';
+  const during = new Date('2026-05-20T11:15:00+09:00');
+
+  it('attendanceStatus ABSENT → 진행 중 시각이어도 missed (최우선)', () => {
+    expect(
+      resolveLiveSessionStatus({
+        rawStatus: 'RESERVED',
+        attendanceStatus: 'ABSENT',
+        startDate: start,
+        endDate: end,
+        now: during,
+      }),
+    ).toBe('missed');
+  });
+
+  it('attendanceStatus LATE → 진행 중 시각이어도 missed (최우선)', () => {
+    expect(
+      resolveLiveSessionStatus({
+        rawStatus: 'RESERVED',
+        attendanceStatus: 'LATE',
+        startDate: start,
+        endDate: end,
+        now: during,
+      }),
+    ).toBe('missed');
+  });
+
+  it('attendanceStatus PRESENT → 미제출 아님, 기존 시간 로직(inProgress)', () => {
+    expect(
+      resolveLiveSessionStatus({
+        rawStatus: 'RESERVED',
+        attendanceStatus: 'PRESENT',
+        startDate: start,
+        endDate: end,
+        now: during,
+      }),
+    ).toBe('inProgress');
+  });
+
+  it('attendanceStatus UPDATED → 미제출 아님, 기존 시간 로직(inProgress)', () => {
+    expect(
+      resolveLiveSessionStatus({
+        rawStatus: 'RESERVED',
+        attendanceStatus: 'UPDATED',
+        startDate: start,
+        endDate: end,
+        now: during,
+      }),
+    ).toBe('inProgress');
   });
 });
 
