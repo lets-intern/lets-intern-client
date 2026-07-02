@@ -15,4 +15,6 @@ export interface WrittenFeedbackMission {
   missionNumber: number;
   startDay: string; // 'YYYY-MM-DDTHH:mm:ss'
   endDay: string; // 'YYYY-MM-DDTHH:mm:ss'
+  feedbackPeriodStart: string; // 'YYYY-MM-DD' (missionEndDate + 2일)
+  feedbackPeriodEnd: string; // 'YYYY-MM-DD' (missionEndDate + 4일)
 }
