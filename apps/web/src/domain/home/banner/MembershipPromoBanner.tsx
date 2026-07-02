@@ -28,8 +28,8 @@ const MembershipPromoBanner = () => {
         width={4200}
         height={1200}
         className="h-auto w-full"
+        sizes="100vw"
         priority
-        unoptimized
       />
       {/* [PROMO-BANNER] 이미지 위 광택 스윕 애니메이션 */}
       <span
