@@ -81,3 +81,38 @@ export function computeReservationWindow(
 export function isWithinWindow(now: Date, window: ScheduleWindow): boolean {
   return isWithinInterval(now, { start: window.start, end: window.end });
 }
+
+/**
+ * 여러 미션의 슬롯 오픈 윈도를 단일 게이팅 윈도로 합성한다.
+ *
+ * 통합 편집기(모든 챌린지/미션 슬롯을 한 그리드에서 오픈)에서는 미션마다 오픈 윈도
+ * (미션 시작 -3d~-2d)가 다르다. 게이팅 prop은 단일 `ScheduleWindow`이므로,
+ * "하나라도 열려 있으면 통과"라는 union 시맨틱을 다음 우선순위로 안전하게 근사한다:
+ *
+ *  1) `now`가 포함되는 윈도가 하나라도 있으면 그 윈도를 반환 → 게이팅 통과(오픈 허용).
+ *  2) 없으면 앞으로 열릴 가장 가까운(시작이 `now` 이후 최솟값) 윈도를 반환
+ *     → 게이팅 활성 + "언제 열 수 있는지" 안내.
+ *  3) 활성·예정 윈도가 모두 없으면(미션 일자 미반영 또는 전부 과거) `null` 반환
+ *     → 게이팅 미적용(현행 유지, forward-compatible 폴백; 앱이 깨지지 않는다).
+ *
+ * @param missionStartDates 미션 시작 일시(ISO) 목록. null/undefined/빈 문자열은 무시.
+ * @param now 기준 시각(보통 `currentNow()`).
+ */
+export function selectSlotOpenWindow(
+  missionStartDates: Array<string | null | undefined>,
+  now: Date,
+): ScheduleWindow | null {
+  const windows = missionStartDates
+    .filter((d): d is string => !!d)
+    .map(computeSlotOpenWindow);
+
+  const active = windows.find((w) => isWithinWindow(now, w));
+  if (active) return active;
+
+  const nowMs = now.getTime();
+  const upcoming = windows
+    .filter((w) => w.start.getTime() > nowMs)
+    .sort((a, b) => a.start.getTime() - b.start.getTime());
+
+  return upcoming[0] ?? null;
+}

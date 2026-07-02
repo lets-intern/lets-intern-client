@@ -15,6 +15,7 @@ import {
   computeReservationWindow,
   computeSlotOpenWindow,
   isWithinWindow,
+  selectSlotOpenWindow,
 } from '../feedbackScheduleRules';
 
 /** 로컬 시각 비교용 — 'YYYY-MM-DD HH:mm:ss' 로 포맷 */
@@ -72,5 +73,67 @@ describe('isWithinWindow', () => {
   it('구간 이전/이후 시각은 false', () => {
     expect(isWithinWindow(new Date('2026-07-08T23:59:59'), window)).toBe(false);
     expect(isWithinWindow(new Date('2026-07-11T00:00:00'), window)).toBe(false);
+  });
+});
+
+describe('selectSlotOpenWindow', () => {
+  // 미션 시작 2026-07-12 → 오픈 윈도 07-09 00:00 ~ 07-10 23:59:59
+  const missionA = '2026-07-12T09:30:00';
+
+  it('미션 일자가 없으면 null (BE 미반영 폴백 → 게이팅 미적용)', () => {
+    expect(
+      selectSlotOpenWindow([], new Date('2026-07-09T12:00:00')),
+    ).toBeNull();
+    expect(
+      selectSlotOpenWindow(
+        [null, undefined, ''],
+        new Date('2026-07-09T12:00:00'),
+      ),
+    ).toBeNull();
+  });
+
+  it('now가 오픈 윈도 안이면 그 윈도를 반환한다 (게이팅 통과)', () => {
+    const w = selectSlotOpenWindow([missionA], new Date('2026-07-09T12:00:00'));
+    expect(w).not.toBeNull();
+    expect(isWithinWindow(new Date('2026-07-09T12:00:00'), w!)).toBe(true);
+  });
+
+  it('now가 윈도 이전이면 앞으로 열릴 그 예정 윈도를 반환한다 (안내용)', () => {
+    // now(07-01)는 07-09 오픈 전 → 예정 윈도를 안내
+    const w = selectSlotOpenWindow([missionA], new Date('2026-07-01T00:00:00'));
+    expect(w).not.toBeNull();
+    // 반환 윈도 자체는 07-09 시작
+    expect(isWithinWindow(new Date('2026-07-09T00:00:00'), w!)).toBe(true);
+    // 현재 시각은 그 윈도 밖 → 게이팅 활성
+    expect(isWithinWindow(new Date('2026-07-01T00:00:00'), w!)).toBe(false);
+  });
+
+  it('now가 모든 윈도 이후(전부 과거)면 null (게이팅 미적용)', () => {
+    expect(
+      selectSlotOpenWindow([missionA], new Date('2026-08-01T00:00:00')),
+    ).toBeNull();
+  });
+
+  it('여러 미션 중 하나라도 now를 포함하면 그 활성 윈도를 우선 반환한다 (union)', () => {
+    const missionFuture = '2026-08-20T00:00:00'; // 오픈 08-17~08-18
+    const w = selectSlotOpenWindow(
+      [missionFuture, missionA],
+      new Date('2026-07-10T10:00:00'), // missionA 윈도 안
+    );
+    expect(w).not.toBeNull();
+    expect(isWithinWindow(new Date('2026-07-10T10:00:00'), w!)).toBe(true);
+  });
+
+  it('활성 윈도가 없으면 가장 가까운 예정 윈도를 반환한다', () => {
+    const missionFar = '2026-09-20T00:00:00'; // 오픈 09-17~
+    const missionNear = '2026-08-01T00:00:00'; // 오픈 07-29~
+    const w = selectSlotOpenWindow(
+      [missionFar, missionNear],
+      new Date('2026-07-20T00:00:00'),
+    );
+    expect(w).not.toBeNull();
+    // 가까운 예정(07-29 시작)을 골라야 한다
+    expect(isWithinWindow(new Date('2026-07-29T00:00:00'), w!)).toBe(true);
+    expect(isWithinWindow(new Date('2026-09-17T00:00:00'), w!)).toBe(false);
   });
 });
