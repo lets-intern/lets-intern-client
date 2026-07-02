@@ -23,21 +23,6 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
-/**
- * 하단 중앙 플로팅 캘린더 네비게이션 — 날짜 범위 라벨 + 주 이동(`<`,`>`) + "오늘로 이동".
- *
- * 기존 상단 고정 `CalendarRangeHeader`(범위/주이동)와 우하단 `TodayButton`을
- * 하나의 플로팅 컨트롤로 통합한 것. `fixed`로 뷰포트 하단 중앙에 떠 있는다.
- *
- * - 라벨: 가로 스크롤에 따라 "YYYY.MM.DD ~ MM.DD" 로 실시간 갱신.
- * - 주 이동: 보이는 첫날 기준 ±7일, 그 날을 왼쪽 끝에 정렬(무한스크롤 위치만 이동).
- * - 레이아웃: 날짜 이동(`<` 범위 `>`)은 **정중앙**, "오늘"은 **우측 고정** 노출.
- *   좌측에 우측 "오늘" 블록과 같은 폭의 invisible 미러를 두어 날짜가 정중앙에 오게 한다.
- * - "오늘": 항상 우측에 보이며, 오늘이 이미 화면에 있으면 비활성(흐림) 처리.
- */
-const TODAY_BTN_CLASS =
-  'text-primary text-xsmall14 flex items-center gap-1 rounded-full py-1 pl-2 pr-2.5 font-medium';
-
 const TodayIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
     <rect
@@ -66,6 +51,15 @@ const TodayIcon = () => (
   </svg>
 );
 
+/**
+ * 캘린더 하단 플로팅 컨트롤 — **2개로 분리**.
+ *
+ * 1) 좌우 이동(`<`,`>`) + 날짜 범위 라벨: **캘린더 기준 하단 중앙**(absolute, left-1/2).
+ * 2) "오늘": **우측 별도** 버튼. 오늘 컬럼이 화면 밖일 때만 생겼다 사라진다.
+ *
+ * 두 요소가 독립적이라, "오늘"이 나타나도 좌우 이동 컨트롤의 중앙 정렬이 흔들리지 않는다.
+ * (부모 `WeeklyCalendar` 루트가 `relative` 이므로 absolute 기준이 캘린더가 된다.)
+ */
 const FloatingCalendarNav = ({
   range,
   containerRef,
@@ -91,73 +85,63 @@ const FloatingCalendarNav = ({
   };
 
   return (
-    <div className="border-neutral-80 fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-1.5 rounded-full border bg-white px-2 py-1.5 shadow-lg">
-      {/* 좌측 invisible 미러 — 우측 '오늘' 블록과 같은 폭을 차지해 날짜 이동을 정중앙에 둔다 */}
-      <div className="invisible flex items-center gap-1.5" aria-hidden>
-        <span className="bg-neutral-80 mx-0.5 h-4 w-px" />
-        <span className={TODAY_BTN_CLASS}>
-          <TodayIcon />
-          오늘
+    <>
+      {/* ① 좌우 이동 + 날짜 범위 — 캘린더 기준 하단 중앙 */}
+      <div className="border-neutral-80 absolute bottom-4 left-1/2 z-40 flex -translate-x-1/2 items-center gap-1.5 rounded-full border bg-white px-2 py-1.5 shadow-lg">
+        <button
+          type="button"
+          onClick={() => moveByDays(-MOVE_STEP_DAYS)}
+          disabled={!range}
+          aria-label="이전 주"
+          className="hover:bg-neutral-95 flex h-7 w-7 items-center justify-center rounded-full transition-colors disabled:opacity-40"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M14 9L10 13L14 17"
+              stroke="#333333"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+
+        <span className="text-xsmall14 text-neutral-10 min-w-[140px] text-center font-semibold tabular-nums">
+          {label}
         </span>
+
+        <button
+          type="button"
+          onClick={() => moveByDays(MOVE_STEP_DAYS)}
+          disabled={!range}
+          aria-label="다음 주"
+          className="hover:bg-neutral-95 flex h-7 w-7 items-center justify-center rounded-full transition-colors disabled:opacity-40"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M10 9L14 13L10 17"
+              stroke="#333333"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
       </div>
 
-      <button
-        type="button"
-        onClick={() => moveByDays(-MOVE_STEP_DAYS)}
-        disabled={!range}
-        aria-label="이전 주"
-        className="hover:bg-neutral-95 flex h-7 w-7 items-center justify-center rounded-full transition-colors disabled:opacity-40"
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M14 9L10 13L14 17"
-            stroke="#333333"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
-
-      <span className="text-xsmall14 text-neutral-10 min-w-[140px] text-center font-semibold tabular-nums">
-        {label}
-      </span>
-
-      <button
-        type="button"
-        onClick={() => moveByDays(MOVE_STEP_DAYS)}
-        disabled={!range}
-        aria-label="다음 주"
-        className="hover:bg-neutral-95 flex h-7 w-7 items-center justify-center rounded-full transition-colors disabled:opacity-40"
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M10 9L14 13L10 17"
-            stroke="#333333"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
-
-      {/* 우측 '오늘' — 항상 노출(좌측 미러와 동일 구조·폭). 오늘이 이미 보이면 비활성. */}
-      <div className="flex items-center gap-1.5">
-        <span className="bg-neutral-80 mx-0.5 h-4 w-px" aria-hidden />
+      {/* ② "오늘" — 우측 별도. 오늘이 화면 밖일 때만 생겼다 사라진다. */}
+      {!isTodayVisible && (
         <button
           type="button"
           onClick={onGoToToday}
-          disabled={isTodayVisible}
           aria-label="오늘로 이동"
-          className={`${TODAY_BTN_CLASS} transition-colors ${
-            isTodayVisible ? 'opacity-40' : 'hover:bg-neutral-95'
-          }`}
+          className="border-neutral-80 text-primary text-xsmall14 hover:bg-neutral-95 absolute bottom-4 right-4 z-40 flex items-center gap-1 rounded-full border bg-white py-1.5 pl-3 pr-3.5 font-medium shadow-lg transition-colors"
         >
           <TodayIcon />
           오늘
         </button>
-      </div>
-    </div>
+      )}
+    </>
   );
 };
 
