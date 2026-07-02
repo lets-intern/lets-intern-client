@@ -19,7 +19,7 @@ const MembershipPromoBanner = () => {
   return (
     <Link
       href="/membership"
-      className="relative -mt-5 block w-full overflow-hidden md:-mt-2"
+      className="relative hidden w-full overflow-hidden md:-mt-2 md:block"
       aria-label="2026 하반기 멤버십 - 공채 준비 올인원 패스 안내"
     >
       <Image
