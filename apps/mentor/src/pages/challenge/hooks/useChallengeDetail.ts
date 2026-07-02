@@ -60,9 +60,10 @@ export function useChallengeDetail() {
     const mission = missions.find((m) => m.id === missionId);
 
     // 라이브 피드백 미션 → 라이브 모달 (해당 회차 세션으로 네비게이션)
+    // ⚠️ 회차(th) 정확 매칭만 — 폴백 금지. 폴백하면 세션 없는 미션까지 같은
+    //    세션이 중복으로 붙는다.
     if (mission?.challengeOptionType === 'LIVE_FEEDBACK') {
-      const round =
-        liveRounds.find((r) => r.th === missionTh) ?? liveRounds[0] ?? null;
+      const round = liveRounds.find((r) => r.th === missionTh) ?? null;
       const firstBar = round?.sessionBars[0] ?? null;
       if (firstBar) {
         setLiveSelectedRound(round);
@@ -84,12 +85,12 @@ export function useChallengeDetail() {
     setLiveModalBar(null);
   };
 
-  /** 라이브 미션(회차)의 예약 세션(멘티) 수 — 없으면 0. */
-  const liveMenteeCount = (missionTh: number) => {
-    const round =
-      liveRounds.find((r) => r.th === missionTh) ?? liveRounds[0] ?? null;
-    return round?.sessionBars.length ?? 0;
-  };
+  /**
+   * 라이브 미션(회차)의 예약 세션(멘티) 수 — 회차(th) 정확 매칭만.
+   * 폴백을 두면 세션 없는 미션까지 같은 세션이 중복 표기되므로 매칭 실패 시 0.
+   */
+  const liveMenteeCount = (missionTh: number) =>
+    liveRounds.find((r) => r.th === missionTh)?.sessionBars.length ?? 0;
 
   /** 라이브 미션(회차)에 열 수 있는 세션이 있는지 — 없으면 버튼 비활성. */
   const canOpenLiveMission = (missionTh: number) =>
