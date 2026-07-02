@@ -1,12 +1,10 @@
 import { useMemo } from 'react';
 
-import { useFeedbackMentorListQuery } from '@/api/feedback/feedback';
-import type {
-  FeedbackAttendanceStatus,
-  FeedbackMentor,
-  FeedbackStatus,
-} from '@/api/feedback/feedbackSchema';
-import type { LiveFeedbackInfo, PeriodBarData } from '@/pages/schedule/types';
+import { useFeedbackMentorListWithAttendance } from '@/api/feedback/feedback';
+import type { FeedbackMentorWithAttendance } from '@/api/feedback/feedbackSchema';
+import { currentNow } from '@/pages/schedule/constants/mockNow';
+import { resolveSessionStatus } from '@/pages/schedule/hooks/useLiveFeedbackData';
+import type { PeriodBarData } from '@/pages/schedule/types';
 
 /** 라이브 피드백 1개 "회차" = 하나의 live-feedback-period 바 + 그 기간 내 session 바들 */
 export interface LiveFeedbackRound {
@@ -33,34 +31,6 @@ export interface LiveFeedbackChallenge {
   rounds: LiveFeedbackRound[];
 }
 
-/**
- * BE `FeedbackMentor` → 캘린더/모달 소비처가 쓰는 mock `LiveFeedbackInfo.status` 키로 매핑.
- *
- * BE는 회차/세션 진행 상태를 `status`(RESERVED/COMPLETED/CANCELED)와
- * 출석(`menteeStatus`/`mentorStatus`: PENDING/PRESENT/ABSENT) 조합으로만 제공한다.
- * - COMPLETED            → 'completed'
- * - CANCELED + 멘티 ABSENT → 'mentee-absent'
- * - CANCELED + 멘토 ABSENT → 'mentor-absent'
- * - CANCELED (그 외)      → 'mentee-absent' (구체 사유 없으면 미완료로 취급)
- * - RESERVED             → undefined (소비처가 startDate/endDate 시간 기준으로 진행 전/중/미완료 판정)
- *
- * ⚠️ BE에 in-progress/지각(mentor-late/mentee-late) 세분 상태는 없으므로 매핑하지 않는다.
- */
-function mapLiveStatus(
-  status: FeedbackStatus,
-  menteeStatus: FeedbackAttendanceStatus,
-  mentorStatus: FeedbackAttendanceStatus,
-): LiveFeedbackInfo['status'] {
-  if (status === 'COMPLETED') return 'completed';
-  if (status === 'CANCELED') {
-    if (menteeStatus === 'ABSENT') return 'mentee-absent';
-    if (mentorStatus === 'ABSENT') return 'mentor-absent';
-    return 'mentee-absent';
-  }
-  // RESERVED → 시간 기준 분기는 소비처(useMergedFeedbackRows/모달)가 담당
-  return undefined;
-}
-
 /** ISO datetime("2026-05-20T10:00:00") → "HH:mm". 파싱 실패 시 "00:00". */
 function toTimeLabel(iso: string): string {
   const t = iso.slice(11, 16);
@@ -77,8 +47,9 @@ function toDateLabel(iso: string): string {
  * `liveFeedback.id`에 `feedbackId`를 넣어 모달이 단건 상세를 정확히 fetch하도록 한다.
  */
 function toSessionBar(
-  item: FeedbackMentor,
+  item: FeedbackMentorWithAttendance,
   challengeId: number,
+  now: Date,
 ): PeriodBarData {
   const date = toDateLabel(item.startDate);
   return {
@@ -102,11 +73,14 @@ function toSessionBar(
       menteeName: item.menteeName,
       startTime: toTimeLabel(item.startDate),
       endTime: toTimeLabel(item.endDate),
-      status: mapLiveStatus(item.status, item.menteeStatus, item.mentorStatus),
+      // 캘린더와 동일하게 시간+출석 기반 4상태로 계산(RESERVED도 진행 예정/중/미진행 판정).
+      status: resolveSessionStatus(item, now),
       // 시간·출석 정밀 판정을 위해 BE 원본 값을 그대로 보존한다.
       rawStatus: item.status,
       mentorStatus: item.mentorStatus,
       menteeStatus: item.menteeStatus,
+      // 경험정리 미제출(LATE/ABSENT) → 미진행 판정. 상세 N+1 병합으로 채워진다.
+      attendanceStatus: item.attendanceStatus,
     },
   };
 }
@@ -136,17 +110,22 @@ function countByStatus(bars: PeriodBarData[]) {
  * 각 챌린지의 세션을 BE가 제공하는 회차(`FeedbackMentorVo.th`)로 서브그룹핑해
  * 회차마다 `LiveFeedbackRound` 1개를 만든다. (`th`가 없는 응답은 `?? 1`로 폴백.)
  *
- * 동일 query key(`useFeedbackMentorListQuery`)를 예약현황 페이지와 공유해 중복 fetch를 막는다.
+ * 예약현황/스케줄과 동일한 병합 훅(`useFeedbackMentorListWithAttendance`)을 써
+ * query key를 공유하고(중복 fetch 방지), 경험정리 미제출(attendanceStatus) 판정을 뷰 간 일치시킨다.
  */
 export function useLiveFeedbackList(): {
   challenges: LiveFeedbackChallenge[];
   /** 모든 세션 바 (모달 네비게이션용) */
   allSessionBars: PeriodBarData[];
 } {
-  const { data: feedbackList } = useFeedbackMentorListQuery();
+  const { data: feedbackList } = useFeedbackMentorListWithAttendance();
 
   return useMemo(() => {
     const items = feedbackList ?? [];
+    // TODO(정밀도): now는 데이터 페치 시점 스냅샷이라, 열어둔 화면에서 시간이 흘러
+    //   '진행 예정→진행 중→미진행'으로 자동 전환되지 않는다(refetch/재마운트 시 갱신).
+    //   실시간 전환이 필요하면 타이머로 now를 주기 갱신해 재계산할 것.
+    const now = currentNow();
 
     // programTitle → 합성 challengeId. 등장 순서대로 1부터 안정적으로 부여.
     const titleToId = new Map<string, number>();
@@ -165,7 +144,7 @@ export function useLiveFeedbackList(): {
       }
       byChallenge
         .get(challengeId)!
-        .sessionBars.push(toSessionBar(item, challengeId));
+        .sessionBars.push(toSessionBar(item, challengeId, now));
     }
 
     const challenges: LiveFeedbackChallenge[] = [];

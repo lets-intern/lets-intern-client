@@ -152,6 +152,22 @@ export const feedbackMentorSchema = z.object({
 export type FeedbackMentor = z.infer<typeof feedbackMentorSchema>;
 
 /**
+ * 목록 아이템(`FeedbackMentor`)에 상세 VO에만 존재하는 `attendanceStatus`(경험정리 제출 상태)를
+ * 병합한 결과 타입. `useFeedbackMentorListWithAttendance`가 상세 N+1 조회로 채운다.
+ *
+ * 상세 조회 전/실패 시 `attendanceStatus`는 `undefined`(forward-compatible)이며,
+ * 이때 상태 리졸버는 미제출 판정을 생략하고 기존(시각·출석) 로직을 따른다.
+ *
+ * `missionStartDate/EndDate`도 상세 VO에만 존재하며, 슬롯 오픈/진행 기간 계산 앵커로 병합한다.
+ * BE 미반영·상세 실패 시 `undefined`이며, 기간 계산은 폴백한다.
+ */
+export type FeedbackMentorWithAttendance = FeedbackMentor & {
+  attendanceStatus?: AttendanceStatus;
+  missionStartDate?: string | null;
+  missionEndDate?: string | null;
+};
+
+/**
  * BE GetMentorFeedbacksResponseDto 응답 매핑.
  * `GET /feedback/mentor` 응답 구조.
  */
@@ -189,6 +205,18 @@ export const feedbackDetailMentorSchema = z.object({
    */
   score: z.number().nullable().optional(),
   review: z.string().nullable().optional(),
+  /**
+   * 연결된 미션 시작/종료 일시 — 슬롯 오픈/진행 기간 계산 앵커 (Push 3 추가).
+   *
+   * ⚠️ 현재 BE `FeedbackDetailMentorVo`에는 이 필드가 없다(멘토 목록/상세 VO 모두 미션 일자 없음).
+   * forward-compatible: nullable/optional 이라 응답에 없어도 parse 통과한다.
+   * BE가 상세 쿼리의 `mission` 조인에서 projection만 추가하면 그대로 채워진다.
+   * (be-request-feedback-mentor-mission-date.md 참고)
+   *
+   * 값이 없으면 `feedbackScheduleRules` 기반 기간 계산은 폴백한다(게이팅 미적용).
+   */
+  missionStartDate: z.string().nullable().optional(),
+  missionEndDate: z.string().nullable().optional(),
 });
 export type FeedbackDetailMentor = z.infer<typeof feedbackDetailMentorSchema>;
 

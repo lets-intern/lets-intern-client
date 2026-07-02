@@ -25,6 +25,11 @@ export interface LiveFeedbackInfo {
   mentorStatus?: 'PENDING' | 'PRESENT' | 'ABSENT';
   /** BE 멘티 출석 (PENDING/PRESENT/ABSENT). */
   menteeStatus?: 'PENDING' | 'PRESENT' | 'ABSENT';
+  /**
+   * 경험정리(서면) 제출 상태 (PRESENT/UPDATED/LATE/ABSENT).
+   * 목록 VO엔 없어 상세 N+1 병합으로 채운다. `LATE`|`ABSENT`(미제출)면 최우선 미진행 판정.
+   */
+  attendanceStatus?: 'PRESENT' | 'UPDATED' | 'LATE' | 'ABSENT';
 }
 
 /** 캘린더 바 데이터 */

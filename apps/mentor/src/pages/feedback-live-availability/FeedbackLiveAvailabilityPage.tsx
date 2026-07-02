@@ -59,8 +59,9 @@ const FeedbackLiveAvailabilityPage = () => {
     [beCells],
   );
 
-  // 챌린지별 라이브 피드백 기간 바 — 날짜 헤더 아래 요일 컬럼에 걸쳐 표시
-  const { bars } = useLiveFeedbackData();
+  // 챌린지별 라이브 피드백 기간 바 — 날짜 헤더 아래 요일 컬럼에 걸쳐 표시.
+  // slotOpenWindow: 모든 미션 오픈 윈도를 합성한 단일 게이팅 윈도(미션 일자 없으면 null).
+  const { bars, slotOpenWindow } = useLiveFeedbackData();
   const livePeriods = useMemo(
     () =>
       bars
@@ -182,6 +183,7 @@ const FeedbackLiveAvailabilityPage = () => {
               resetKey={resetCounter}
               showHeader={false}
               livePeriods={livePeriods}
+              slotOpenWindow={slotOpenWindow}
             />
           </>
         )}

@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react';
 
-import type { FeedbackMentor } from '@/api/feedback/feedbackSchema';
+import type {
+  FeedbackMentor,
+  FeedbackMentorWithAttendance,
+} from '@/api/feedback/feedbackSchema';
 
 import { toDateKey } from '../utils/formatReservation';
 
@@ -95,10 +98,14 @@ export interface UseReservationFiltersResult {
   programTitleOptions: string[];
   /** 목록의 distinct menteeName (정렬). */
   menteeNameOptions: string[];
-  /** 필터 적용된 RESERVED 항목(예정), startDate 오름차순. */
-  reservedList: FeedbackMentor[];
+  /**
+   * 필터 적용된 RESERVED 항목(예정), startDate 오름차순.
+   * ⚠️ 미제출(attendanceStatus ABSENT/LATE) 건도 status는 여전히 RESERVED이므로 여기 포함된다.
+   * (상태 뱃지에서 '미진행'으로 구분 — 누락하지 않는 것이 의도된 정책.)
+   */
+  reservedList: FeedbackMentorWithAttendance[];
   /** 필터 + 정렬 적용된 COMPLETED 항목(완료). */
-  completedList: FeedbackMentor[];
+  completedList: FeedbackMentorWithAttendance[];
   sortKey: SortKey;
   sortDirection: SortDirection;
   /** 헤더 클릭: 같은 키면 방향 토글, 다른 키면 해당 키 asc. */
@@ -108,11 +115,11 @@ export interface UseReservationFiltersResult {
 /**
  * 예약 현황 필터/정렬/파생 로직.
  *
- * `useFeedbackMentorListQuery()` 결과(단일 호출)를 입력으로 받아
+ * `useFeedbackMentorListWithAttendance()` 결과(목록+상세 attendanceStatus 병합)를 입력으로 받아
  * distinct 옵션·필터·정렬을 모두 useMemo로 파생한다.
  */
 export function useReservationFilters(
-  data: FeedbackMentor[] | undefined,
+  data: FeedbackMentorWithAttendance[] | undefined,
 ): UseReservationFiltersResult {
   const [filters, setFilters] =
     useState<ReservationFilterState>(INITIAL_FILTERS);

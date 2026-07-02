@@ -1,5 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
 import { describe, expect, it, vi } from 'vitest';
 
 import LiveAvailabilityContent from '../LiveAvailabilityContent';
@@ -51,6 +53,30 @@ describe('LiveAvailabilityContent', () => {
     const { container } = render(<LiveAvailabilityContent {...baseProps} />);
     const stickyHeaders = container.querySelectorAll('.sticky.top-0');
     expect(stickyHeaders.length).toBeGreaterThan(0);
+  });
+
+  it('기간 바에 라이브 미션 시작일 ~ 마감일이 표시된다', () => {
+    // focusDate 로 보이는 주(6/29~7/5)를 고정하고 그 안에 걸치는 기간을 넘긴다.
+    const period = {
+      challengeTitle: '자소서 챌린지',
+      th: 1,
+      startDate: '2026-06-30',
+      endDate: '2026-07-03',
+      reservedCount: 0,
+      capacity: 3,
+    };
+    render(
+      <LiveAvailabilityContent
+        {...baseProps}
+        focusDate="2026-07-01"
+        livePeriods={[period]}
+      />,
+    );
+    // 컴포넌트와 동일 방식으로 기대값 계산(TZ 무관).
+    const expected = `${format(new Date(period.startDate), 'M.d', {
+      locale: ko,
+    })} ~ ${format(new Date(period.endDate), 'M.d', { locale: ko })}`;
+    expect(screen.getByText(expected)).toBeInTheDocument();
   });
 
   it('onOpenReservation 이 없으면 "예약현황 보기" 버튼을 노출하지 않는다', () => {
