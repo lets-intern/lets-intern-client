@@ -311,6 +311,63 @@ describe('deriveLiveFeedbackBars', () => {
     expect(bar!.liveFeedback?.status).toBe('waiting');
   });
 
+  it('미션 일자가 있으면 period 바 기간을 미션 시작일~종료일로 확정한다 (BE 반영 후)', () => {
+    const bars = deriveLiveFeedbackBars(
+      [
+        makeSession({
+          feedbackId: 30,
+          // 세션 시각(예약 시각)은 미션 기간 안의 특정 하루
+          startDate: '2026-07-13T10:00:00',
+          endDate: '2026-07-13T10:30:00',
+          missionStartDate: '2026-07-12T00:00:00',
+          missionEndDate: '2026-07-15T23:59:59',
+        }),
+      ],
+      [],
+    );
+    const period = bars.find((b) => b.barType === 'live-feedback-period')!;
+    // 세션 시각(07-13)이 아니라 미션 기간(07-12~07-15)으로 확정
+    expect(period.startDate).toBe('2026-07-12');
+    expect(period.endDate).toBe('2026-07-15');
+    expect(period.feedbackStartDate).toBe('2026-07-12');
+    expect(period.feedbackDeadline).toBe('2026-07-15');
+  });
+
+  it('미션 일자가 없으면(BE 미반영) period 바는 세션 min/max로 폴백한다', () => {
+    const bars = deriveLiveFeedbackBars(
+      [
+        makeSession({
+          feedbackId: 31,
+          startDate: '2026-07-13T10:00:00',
+          endDate: '2026-07-13T10:30:00',
+        }),
+      ],
+      [],
+    );
+    const period = bars.find((b) => b.barType === 'live-feedback-period')!;
+    // 미션 일자 없음 → 세션 시각 기준
+    expect(period.startDate).toBe('2026-07-13');
+    expect(period.endDate).toBe('2026-07-13');
+  });
+
+  it('미션 일자가 null 이면 폴백한다 (미션 없는 라이브)', () => {
+    const bars = deriveLiveFeedbackBars(
+      [
+        makeSession({
+          feedbackId: 32,
+          startDate: '2026-07-13T10:00:00',
+          endDate: '2026-07-13T10:30:00',
+          missionStartDate: null,
+          missionEndDate: null,
+        }),
+      ],
+      [],
+    );
+    const period = bars.find((b) => b.barType === 'live-feedback-period')!;
+    expect(period.startDate).toBe('2026-07-13');
+    expect(period.endDate).toBe('2026-07-13');
+  });
+
   it('빈 입력은 빈 배열을 반환한다', () => {
     expect(deriveLiveFeedbackBars([], [])).toEqual([]);
   });

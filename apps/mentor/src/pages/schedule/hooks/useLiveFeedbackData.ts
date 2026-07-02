@@ -12,6 +12,7 @@ import type {
 
 import type { LiveFeedbackInfo, PeriodBarData } from '../types';
 import { currentNow } from '../constants/mockNow';
+import { computeReservationWindow } from '../data/feedbackScheduleRules';
 import { resolveLiveSessionStatus } from '@/pages/feedback/utils/liveFeedbackStatus';
 
 /**
@@ -68,6 +69,37 @@ function toTime(iso: string): string {
  */
 function buildSyntheticChallengeId(groupIndex: number): number {
   return -(1_000_000 + groupIndex);
+}
+
+/**
+ * (programTitle, th) 그룹의 "LIVE 피드백 기간"(예약 기간) 날짜 범위를 확정한다.
+ *
+ * 우선순위:
+ *  1) 그룹 내 미션 일자(`missionStartDate`/`missionEndDate`)가 있으면 그 값으로 확정
+ *     (미션 시작일~종료일 = 예약 기간, `computeReservationWindow` 규칙).
+ *  2) BE 미반영(둘 중 하나라도 없음)이면 세션 시각 min/max로 폴백.
+ *
+ * 같은 (title, th)의 세션은 동일 미션을 공유하므로 첫 유효 값만 사용한다.
+ */
+function resolvePeriodRange(
+  thSessions: FeedbackMentorWithAttendance[],
+  fallbackStart: string,
+  fallbackEnd: string,
+): { startDate: string; endDate: string } {
+  const withMission = thSessions.find(
+    (s) => s.missionStartDate && s.missionEndDate,
+  );
+  if (!withMission?.missionStartDate || !withMission.missionEndDate) {
+    return { startDate: fallbackStart, endDate: fallbackEnd };
+  }
+  const window = computeReservationWindow(
+    withMission.missionStartDate,
+    withMission.missionEndDate,
+  );
+  return {
+    startDate: format(window.start, 'yyyy-MM-dd'),
+    endDate: format(window.end, 'yyyy-MM-dd'),
+  };
 }
 
 /**
@@ -197,6 +229,11 @@ export function deriveLiveFeedbackBars(
       const min = dates.reduce((a, b) => (a < b ? a : b));
       const max = endDates.reduce((a, b) => (a > b ? a : b));
 
+      // "LIVE 피드백 기간"(예약 기간) = 미션 시작일~종료일 (PRD §4·§6-2 표).
+      // BE가 상세 VO에 미션 일자를 내려주면 그 값으로 기간을 확정하고,
+      // 미반영(null/undefined)이면 세션 시각 min/max로 폴백한다.
+      const { startDate, endDate } = resolvePeriodRange(thSessions, min, max);
+
       bars.push({
         barType: 'live-feedback-period',
         // 같은 챌린지의 세션과 동일 challengeId 유지(회차는 challengeId가 아닌 th로 구분)
@@ -205,10 +242,10 @@ export function deriveLiveFeedbackBars(
         missionId: -(2_000_000 + groupIndex * 100 + th),
         challengeTitle: title,
         th,
-        startDate: min,
-        endDate: max,
-        feedbackStartDate: min,
-        feedbackDeadline: max,
+        startDate,
+        endDate,
+        feedbackStartDate: startDate,
+        feedbackDeadline: endDate,
         ...zeroCounts,
         submittedCount: thSessions.length,
         waitingCount: thSessions.length,
