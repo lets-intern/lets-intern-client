@@ -716,6 +716,16 @@ const LiveAvailabilityContent = ({
                             {period.th !== undefined && ` ${period.th}회차`}{' '}
                             LIVE 피드백 기간
                           </span>
+                          {/* 라이브 미션 시작일 ~ 마감일 (예약 기간 = 미션 시작일~종료일) */}
+                          <span className="text-xxsmall12 shrink-0 font-medium tabular-nums opacity-90">
+                            {format(new Date(period.startDate), 'M.d', {
+                              locale: ko,
+                            })}
+                            {' ~ '}
+                            {format(new Date(period.endDate), 'M.d', {
+                              locale: ko,
+                            })}
+                          </span>
                           <span className="text-xxsmall12 ml-auto flex shrink-0 items-center gap-1 font-semibold">
                             <PeopleIcon />
                             {period.reservedCount ?? 0}
