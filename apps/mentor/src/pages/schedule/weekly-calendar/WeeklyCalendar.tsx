@@ -125,6 +125,8 @@ const WeeklyCalendar = ({
       startCol: number;
       endCol: number;
       gridRow: number;
+      /** 그룹 내 stacked 위치(0=첫 행). >0 이면 같은 챌린지의 겹치는 미션 → 조금 띄운다. */
+      localRow: number;
     };
 
     // (1) 챌린지 등장 순서를 보존 (Map은 insertion order 유지)
@@ -181,6 +183,7 @@ const WeeklyCalendar = ({
           startCol,
           endCol,
           gridRow: nextStartRow + localRow,
+          localRow,
         });
       }
 
@@ -214,10 +217,11 @@ const WeeklyCalendar = ({
   const bodyMinHeight = useMemo(() => {
     // minHeight는 바닥값만 정하고 그리드는 내용에 맞게 늘어난다(잘림 없음).
     // 바가 적을 때 하단 빈 공간을 줄이기 위해 행 높이/최소 행/여백을 축소.
-    const ROW_H = 56;
+    // [실험] ROW_H를 실제 바 높이(~44px) 이하로 낮춰 minHeight가 행마다
+    // 여백을 얹지 않게 한다 → 그리드 내용(바)이 높이를 정하고, 아래 빈 공간 최소화.
+    const ROW_H = 44;
     const MIN_ROWS = 1;
     const maxRow = barLayouts.reduce((max, l) => Math.max(max, l.gridRow), 0);
-    // 하단 여백 최소화 — 바닥 버퍼 제거(그리드는 내용에 맞게 늘어나므로 잘림 없음).
     return Math.max(maxRow, MIN_ROWS) * ROW_H;
   }, [barLayouts]);
 
@@ -277,36 +281,40 @@ const WeeklyCalendar = ({
             <div className="relative flex-1">
               <ColumnDividers days={days} gridCols={gridCols} />
               <div
-                className="relative w-full gap-y-1 pb-1 pt-3"
+                className="relative w-full gap-y-1 pb-1 pt-1"
                 style={{ display: 'grid', gridTemplateColumns: gridCols }}
               >
-                {barLayouts.map(({ bar, startCol, endCol, gridRow }, idx) => (
-                  <div
-                    key={`${bar.challengeId}-${bar.missionId}-${idx}`}
-                    style={{
-                      gridColumn: `${startCol} / ${endCol}`,
-                      gridRow,
-                    }}
-                  >
-                    {bar.barType === 'live-feedback-period' ? (
-                      <LiveFeedbackPeriodBar
-                        bar={bar}
-                        onClick={onLiveFeedbackPeriodClick}
-                      />
-                    ) : bar.barType === 'live-feedback-mentor-open' ? (
-                      <LiveFeedbackOpenBar
-                        bar={bar}
-                        onMentorOpenClick={
-                          onMentorOpenPeriodBarClick
-                            ? () => onMentorOpenPeriodBarClick(bar)
-                            : onMentorOpenPeriodClick
-                        }
-                      />
-                    ) : bar.barType === 'written-feedback' ? (
-                      <WrittenFeedbackBar bar={bar} onBarClick={onBarClick} />
-                    ) : null}
-                  </div>
-                ))}
+                {barLayouts.map(
+                  ({ bar, startCol, endCol, gridRow, localRow }, idx) => (
+                    <div
+                      key={`${bar.challengeId}-${bar.missionId}-${idx}`}
+                      style={{
+                        gridColumn: `${startCol} / ${endCol}`,
+                        gridRow,
+                        // 같은 챌린지의 겹치는(같은 날) 미션은 조금 더 띄운다.
+                        marginTop: localRow > 0 ? 6 : undefined,
+                      }}
+                    >
+                      {bar.barType === 'live-feedback-period' ? (
+                        <LiveFeedbackPeriodBar
+                          bar={bar}
+                          onClick={onLiveFeedbackPeriodClick}
+                        />
+                      ) : bar.barType === 'live-feedback-mentor-open' ? (
+                        <LiveFeedbackOpenBar
+                          bar={bar}
+                          onMentorOpenClick={
+                            onMentorOpenPeriodBarClick
+                              ? () => onMentorOpenPeriodBarClick(bar)
+                              : onMentorOpenPeriodClick
+                          }
+                        />
+                      ) : bar.barType === 'written-feedback' ? (
+                        <WrittenFeedbackBar bar={bar} onBarClick={onBarClick} />
+                      ) : null}
+                    </div>
+                  ),
+                )}
               </div>
             </div>
           </div>
