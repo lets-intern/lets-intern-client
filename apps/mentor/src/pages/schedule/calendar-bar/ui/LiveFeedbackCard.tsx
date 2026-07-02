@@ -1,4 +1,5 @@
 import { twMerge } from '@/lib/twMerge';
+import { STATUS_BADGE as STATUS_BADGE_TOKENS } from '@/constants/statusColors';
 import {
   resolveLiveSessionStatus,
   type LiveFeedbackUiStatus,
@@ -102,15 +103,18 @@ const STATUS_BADGE: Record<BadgeStatus, { label: string; badge: string }> = {
   },
 };
 
-/** 시간+출석으로 판정한 4종 UI 상태 → 캘린더 배지(라벨·색). */
+/**
+ * 시간+출석으로 판정한 4종 UI 상태 → 캘린더 배지(라벨·색).
+ * 색은 image copy.png 기준: 진행예정=indigo / 진행중=blue / 진행완료=neutral / 미진행=red.
+ */
 const UI_TO_BADGE: Record<
   LiveFeedbackUiStatus,
   { label: string; badge: string }
 > = {
-  waiting: { label: '진행 예정', badge: scheduleDesign.cardBadgeActive },
-  inProgress: { label: '진행 중', badge: scheduleDesign.cardBadgeActive },
-  completed: { label: '진행 완료', badge: scheduleDesign.cardBadgeDone },
-  missed: { label: '미진행', badge: scheduleDesign.cardBadgeDone },
+  waiting: { label: '진행 예정', badge: STATUS_BADGE_TOKENS.liveWaiting },
+  inProgress: { label: '진행 중', badge: STATUS_BADGE_TOKENS.inProgress },
+  completed: { label: '진행 완료', badge: STATUS_BADGE_TOKENS.liveCompleted },
+  missed: { label: '미진행', badge: STATUS_BADGE_TOKENS.liveMissed },
 };
 
 /**

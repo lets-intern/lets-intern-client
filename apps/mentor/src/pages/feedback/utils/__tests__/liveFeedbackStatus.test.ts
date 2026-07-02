@@ -209,18 +209,18 @@ describe('getLiveFeedbackBadgeVisual', () => {
     expect(getLiveFeedbackBadgeVisual('missed').label).toBe('미진행');
   });
 
-  it('badgeClass 가 STATUS_BADGE 토큰을 사용한다', () => {
+  it('badgeClass 가 캡쳐 기준 4색(indigo/blue/neutral/red)을 사용한다', () => {
     expect(getLiveFeedbackBadgeVisual('waiting').badgeClass).toContain(
-      'text-red',
+      'indigo',
     );
     expect(getLiveFeedbackBadgeVisual('inProgress').badgeClass).toContain(
       'text-blue',
     );
     expect(getLiveFeedbackBadgeVisual('completed').badgeClass).toContain(
-      'text-green',
+      'text-neutral',
     );
     expect(getLiveFeedbackBadgeVisual('missed').badgeClass).toContain(
-      'text-neutral',
+      'text-red',
     );
   });
 });

@@ -30,10 +30,10 @@ export interface LiveFeedbackBadgeVisual {
 }
 
 const VISUALS: Record<LiveFeedbackUiStatus, LiveFeedbackBadgeVisual> = {
-  waiting: { label: '진행 예정', badgeClass: STATUS_BADGE.waiting },
+  waiting: { label: '진행 예정', badgeClass: STATUS_BADGE.liveWaiting },
   inProgress: { label: '진행 중', badgeClass: STATUS_BADGE.inProgress },
-  completed: { label: '진행 완료', badgeClass: STATUS_BADGE.completed },
-  missed: { label: '미진행', badgeClass: STATUS_BADGE.absent },
+  completed: { label: '진행 완료', badgeClass: STATUS_BADGE.liveCompleted },
+  missed: { label: '미진행', badgeClass: STATUS_BADGE.liveMissed },
 };
 
 /**
