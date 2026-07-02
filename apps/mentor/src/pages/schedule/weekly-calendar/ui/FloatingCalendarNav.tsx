@@ -26,7 +26,13 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 const TodayIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    className="shrink-0"
+  >
     <rect
       x="2"
       y="3"
@@ -88,11 +94,15 @@ const FloatingCalendarNav = ({
       setBox({ centerX: r.left + r.width / 2, rightX: r.right });
     };
     measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
+    // ResizeObserver 미지원 환경(jsdom 등)에서도 안전하게.
+    const ro =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(measure)
+        : null;
+    ro?.observe(el);
     window.addEventListener('resize', measure);
     return () => {
-      ro.disconnect();
+      ro?.disconnect();
       window.removeEventListener('resize', measure);
     };
   }, [containerRef]);
@@ -161,7 +171,7 @@ const FloatingCalendarNav = ({
           type="button"
           onClick={onGoToToday}
           aria-label="오늘로 이동"
-          className="border-neutral-80 text-primary text-xsmall14 hover:bg-neutral-95 fixed bottom-6 right-6 z-40 flex h-10 items-center gap-1 rounded-full border bg-white pl-3 pr-3.5 font-medium shadow-lg transition-colors"
+          className="border-neutral-80 text-primary text-xsmall14 hover:bg-neutral-95 fixed bottom-6 right-6 z-40 flex h-10 items-center gap-1 whitespace-nowrap rounded-full border bg-white pl-3 pr-3.5 font-medium shadow-lg transition-colors"
           style={
             box
               ? {
