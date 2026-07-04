@@ -1,6 +1,3 @@
-'use client';
-
-import { useState } from 'react';
 import { VOD_HOOK } from '../data/vodHook';
 import { VOD_DETAIL_URL } from '../data/links';
 
@@ -18,11 +15,7 @@ function Sparkle({ className }: { className?: string }) {
 }
 
 // 멤버십 신청 시 현직자 공채 준비 VOD 무료 제공 훅 섹션 (다크, 디자인 시스템 정렬).
-// 썸네일은 실제 이미지(thumbnailImage)를 우선 노출하고, 파일이 없으면 CSS 폴백 카드로 대체한다.
 export default function VodHookSection() {
-  const [thumbBroken, setThumbBroken] = useState(false);
-  const showImage = Boolean(VOD_HOOK.thumbnailImage) && !thumbBroken;
-
   return (
     <>
       <section className="vod-hook">
@@ -45,24 +38,11 @@ export default function VodHookSection() {
           </div>
 
           <article className="vod-card rv">
-            {showImage ? (
-              <img
-                className="vod-thumb-img"
-                src={VOD_HOOK.thumbnailImage}
-                alt={VOD_HOOK.thumbnailAlt}
-                onError={() => setThumbBroken(true)}
-              />
-            ) : (
-              <div className="vod-thumb" aria-hidden="true">
-                <span className="vod-thumb-brand">
-                  {VOD_HOOK.thumbnail.brand}
-                </span>
-                <div className="vod-thumb-body">
-                  <strong>{VOD_HOOK.thumbnail.title}</strong>
-                  <span>{VOD_HOOK.thumbnail.caption}</span>
-                </div>
-              </div>
-            )}
+            <img
+              className="vod-thumb-img"
+              src={VOD_HOOK.thumbnailImage}
+              alt={VOD_HOOK.thumbnailAlt}
+            />
 
             <div className="vod-info">
               <span className="vodhook-badge">{VOD_HOOK.badge}</span>
@@ -88,9 +68,9 @@ export default function VodHookSection() {
                 </div>
                 <a
                   className="btn btn-blue vod-cta"
-                  href={VOD_DETAIL_URL || undefined}
-                  target={VOD_DETAIL_URL ? '_blank' : undefined}
-                  rel={VOD_DETAIL_URL ? 'noopener noreferrer' : undefined}
+                  href={VOD_DETAIL_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   {VOD_HOOK.cta}
                 </a>

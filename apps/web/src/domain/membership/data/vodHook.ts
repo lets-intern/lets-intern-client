@@ -22,17 +22,10 @@ export const VOD_HOOK = {
   priceFree: '무료',
   cta: 'VOD 확인하기 →',
 
-  // VOD 썸네일 이미지 (LIVE CLASS 카드). 이 경로에 실제 이미지를 저장하면 노출된다.
-  // 파일이 없으면 아래 thumbnail 카피로 CSS 폴백 카드가 렌더된다.
+  // VOD 썸네일 이미지 (LIVE CLASS 카드).
   thumbnailImage: '/images/membership/vod-live-class.png',
   thumbnailAlt:
     "[LET'S CAREER LIVE CLASS] 대기업 하반기 공채 준비는 지금부터 — 삼성·CJ 계열사 최종합격 현직자 멘토",
-  // CSS 폴백 카드 카피 (이미지 미수령 시).
-  thumbnail: {
-    brand: "LET'S CAREER | LIVE CLASS",
-    title: '대기업 하반기 공채 준비는\n지금부터.',
-    caption: '삼성, CJ 계열사 최종합격 현직자 멘토가 알려주는 하반기 공채',
-  },
 
   footnoteLead: '하반기 멤버십을 신청하는 순간, ',
   footnoteStrong: '이 현직자 클래스 다시보기를 결제 없이 바로',
