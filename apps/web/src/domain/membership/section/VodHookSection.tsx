@@ -26,6 +26,8 @@ export default function VodHookSection() {
               {VOD_HOOK.titleTop}
               <br />
               {VOD_HOOK.titleBottomLead}
+              {/* 모바일에서만 줄바꿈: "…VOD를" 다음에서 끊어 "무료로 드려요"를 한 줄로 */}
+              <br className="vod-br-m" />
               <span className="vod-free">
                 <Sparkle className="vod-sparkle--sm" />
                 <span className="vod-free-text">

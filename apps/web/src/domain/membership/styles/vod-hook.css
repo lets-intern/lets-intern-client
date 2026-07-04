@@ -23,6 +23,10 @@
   font-weight: 800;
   letter-spacing: -0.04em;
 }
+/* 모바일 전용 줄바꿈용 <br> — 데스크톱은 숨김(PC 레이아웃 불변) */
+.membership-root .vod-br-m {
+  display: none;
+}
 /* "무료" 강조 — 브랜드 블루 그라디언트(오프브랜드 퍼플 제거) */
 .membership-root .vod-free {
   display: inline-flex;
@@ -203,6 +207,11 @@
   }
   .membership-root .vod-head h2 {
     font-size: 25px;
+    line-height: 1.32;
+  }
+  /* 모바일에서만 "…VOD를" 뒤 줄바꿈 노출 → "무료로 드려요" 한 줄 */
+  .membership-root .vod-br-m {
+    display: inline;
   }
   .membership-root .vod-card {
     flex-direction: column;
@@ -227,5 +236,9 @@
   .membership-root .vod-promo {
     font-size: 13.5px;
     padding: 13px 16px;
+    text-wrap: balance; /* 줄 길이 균형 — "제공해 드려요!" 홀로 남지 않게 */
+  }
+  .membership-root .vod-foot {
+    text-wrap: balance;
   }
 }
