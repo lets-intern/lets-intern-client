@@ -9,6 +9,8 @@
 import './styles/base.css';
 import './styles/nav.css';
 import './styles/hero.css';
+import './styles/early-bird.css';
+import './styles/vod-hook.css';
 import './styles/recommend.css';
 import './styles/compare.css';
 import './styles/solution.css';
@@ -31,6 +33,8 @@ import './styles/apply.css';
 import MembershipAnimations from './ui/MembershipAnimations';
 import MembershipNav from './ui/MembershipNav';
 import HeroSection from './section/HeroSection';
+import EarlyBirdBanner from './section/EarlyBirdBanner';
+import VodHookSection from './section/VodHookSection';
 import RecommendSection from './section/RecommendSection';
 import CompareSection from './section/CompareSection';
 import SolutionSection from './section/SolutionSection';
@@ -55,6 +59,8 @@ export default function MembershipLanding() {
           <MembershipAnimations />
           <HeroSection />
           <MembershipNav />
+          <EarlyBirdBanner />
+          <VodHookSection />
           <RecommendSection />
           <CompareSection />
           <SolutionSection />
