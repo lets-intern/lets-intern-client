@@ -1,14 +1,9 @@
 // 멤버십 "패스" 혜택 모달(BenefitModal) — "챌린지 종류별 1회 무료 참여" 갤러리 항목.
 //
-// [링크 방식]
-// - 앱 내부 경로이므로 상대 경로를 쓴다(로컬/스테이징에서도 해당 환경 라우트로 이동).
-// - 대부분은 `/challenge/{slug}/latest` 자동 리다이렉트 사용(해당 타입 최신 챌린지로
-//   자동 이동 → 새 회차가 열려도 수정 불필요). 이 라우트들은 prod에 이미 배포돼 있다.
-// - 단, PM·대기업(personal-statement-large-corp)은 `/latest` 라우트가 아직 없어서,
-//   현재 회차 상세 경로를 직접 지정한다. 새 회차가 열리면 아래 `/program/challenge/{id}`
-//   의 **id 숫자만** 바꾸면 된다(id 뒤 슬러그 없어도 상세페이지가 정식 URL로 리다이렉트).
-//   ※ 나중에 pm·personal-statement-large-corp latest 라우트를 만들어 배포하면
-//     아래 두 개도 `/challenge/{slug}/latest` 로 바꿔 자동화할 수 있다.
+// 모든 항목은 `/challenge/{slug}/latest` 자동 리다이렉트를 사용한다(앱 내부 상대 경로).
+// 해당 타입의 최신 모집중(없으면 최신 노출) 챌린지 상세로 자동 이동하므로, 새 회차가
+// 열려도 이 파일을 수정할 필요가 없다.
+// (라우트: apps/web/src/app/(user)/challenge/{slug}/latest/page.tsx → useLatestChallengeRedirect)
 
 export interface ChallengeModalItem {
   label: string;
@@ -34,10 +29,9 @@ export const CHALLENGE_ITEMS: ChallengeModalItem[] = [
     url: '/challenge/personal-statement/latest',
   },
   {
-    // 대기업 자기소개서 완성 챌린지 9기 (id 287) — /latest 라우트 미배포로 직접 링크
     label: '대기업 공채 자소서',
     src: 'challenge-major-coverletter.jpg',
-    url: '/program/challenge/287',
+    url: '/challenge/personal-statement-large-corp/latest',
   },
   {
     label: '포트폴리오 완성',
@@ -50,21 +44,18 @@ export const CHALLENGE_ITEMS: ChallengeModalItem[] = [
     url: '/challenge/meeting-preparation/latest',
   },
   {
-    // 마케팅: /latest 자동연결 (라우트 기배포)
     label: '마케팅 올인원',
     src: 'challenge-marketing.png',
     url: '/challenge/marketing/latest',
   },
   {
-    // HR: /latest 자동연결 (라우트 기배포)
     label: 'HR/인사 직무',
     src: 'challenge-hr.png',
     url: '/challenge/hr/latest',
   },
   {
-    // [Live 세미나 전용] PM/서비스기획 취뽀 서류 완성 챌린지 2기 (id 286) — /latest 라우트 미배포로 직접 링크
     label: 'PM/서비스기획',
     src: 'challenge-pm.png',
-    url: '/program/challenge/286',
+    url: '/challenge/pm/latest',
   },
 ];
