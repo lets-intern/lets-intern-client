@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { CHALLENGE_ITEMS } from '../data/challengeModalItems';
 
 interface BenefitModalProps {
   modalId: string | null;
@@ -18,54 +19,6 @@ function goToPlans(onClose: () => void) {
 // 렛츠런 스터디 배너 클릭 시 이동할 상세페이지(lets run 3기)
 const STUDY_DETAIL_URL =
   'https://www.letscareer.co.kr/program/challenge/288/lets-run-4주-스터디-3기';
-
-const CHALLENGE_ITEMS = [
-  {
-    label: '경험정리 챌린지',
-    src: 'challenge-experience.jpg',
-    url: 'https://www.letscareer.co.kr/challenge/experience-summary/latest',
-  },
-  {
-    label: '이력서 1주 완성',
-    src: 'challenge-resume.png',
-    url: 'https://www.letscareer.co.kr/challenge/resume/latest',
-  },
-  {
-    label: '자기소개서 완성',
-    src: 'challenge-coverletter.jpg',
-    url: 'https://www.letscareer.co.kr/challenge/personal-statement/latest',
-  },
-  {
-    label: '대기업 공채 자소서',
-    src: 'challenge-major-coverletter.jpg',
-    url: 'https://www.letscareer.co.kr/challenge/personal-statement/latest',
-  },
-  {
-    label: '포트폴리오 완성',
-    src: 'challenge-portfolio.jpg',
-    url: 'https://www.letscareer.co.kr/challenge/portfolio/latest',
-  },
-  {
-    label: '면접 끝장 챌린지',
-    src: 'challenge-interview.png',
-    url: 'https://www.letscareer.co.kr/challenge/meeting-preparation/latest',
-  },
-  {
-    label: '마케팅 올인원',
-    src: 'challenge-marketing.png',
-    url: 'https://www.letscareer.co.kr/challenge',
-  },
-  {
-    label: 'HR/인사 직무',
-    src: 'challenge-hr.png',
-    url: 'https://www.letscareer.co.kr/challenge',
-  },
-  {
-    label: 'PM/서비스기획',
-    src: 'challenge-pm.png',
-    url: 'https://www.letscareer.co.kr/challenge',
-  },
-];
 
 // 가이드북 표지(제목이 이미지 안에 포함) — 인적성은 표지 이미지 미수급
 // url: /program/guidebook/{id} → 정식 제목 경로로 리다이렉트됨
