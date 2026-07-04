@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useRef, type CSSProperties } from 'react';
 import {
   FLOW_CHIPS,
   FLOW_LABEL,
@@ -7,6 +7,8 @@ import {
   WEEKS,
   type WeekItem,
 } from '../data/coursePlan';
+import CarouselDots from './CarouselDots';
+import { useCarouselDots } from './useCarouselDots';
 
 // 주차 번호 표기. 12·13 묶음이면 "12·13".
 function weekNo(item: WeekItem): string {
@@ -62,11 +64,24 @@ function MonthBlock({ group }: { group: MonthGroup }) {
 }
 
 export default function CoursePlanTimeline() {
+  // 모바일에서 .wk-track 은 가로 scroll-snap 트랙이 된다(CSS). 월(月) 블록이 슬라이드.
+  const trackRef = useRef<HTMLDivElement>(null);
+  const { activeIndex, scrollToSlide } = useCarouselDots(trackRef);
+
   return (
     <div className="wk-timeline">
-      {MONTH_GROUPS.map((group) => (
-        <MonthBlock group={group} key={group.month} />
-      ))}
+      <CarouselDots
+        count={MONTH_GROUPS.length}
+        activeIndex={activeIndex}
+        onSelect={scrollToSlide}
+        label="월 넘기기"
+        itemLabel={(i) => MONTH_GROUPS[i].month}
+      />
+      <div className="wk-track" ref={trackRef}>
+        {MONTH_GROUPS.map((group) => (
+          <MonthBlock group={group} key={group.month} />
+        ))}
+      </div>
 
       <div className="wk-flow">
         <p>

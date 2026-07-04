@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useRef, type CSSProperties } from 'react';
 import {
   CATEGORIES,
   COURSE_TAG_LABEL,
@@ -10,6 +10,8 @@ import {
   STEPS,
   type Step,
 } from '../data/coursePlan';
+import CarouselDots from './CarouselDots';
+import { useCarouselDots } from './useCarouselDots';
 
 // 렛츠커리어가 직접 함께하는 챌린지 셀인지. (셀 색 강조용)
 // 무료 자료·템플릿·체크리스트(자료 제공) 셀은 강조 없이 흰 배경으로 둔다.
@@ -92,10 +94,22 @@ function CategoryRow({ category }: { category: Category }) {
 }
 
 export default function CoursePlanMatrix() {
+  // 모바일에서 .cpm-body 는 가로 scroll-snap 트랙이 된다(CSS). 도트는
+  // 공용 훅이 IntersectionObserver 로 활성 슬라이드를 추적한다.
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const { activeIndex, scrollToSlide } = useCarouselDots(bodyRef);
+
   return (
     <div className="cpm">
       <StepHeader />
-      <div className="cpm-body">
+      <CarouselDots
+        count={CATEGORIES.length}
+        activeIndex={activeIndex}
+        onSelect={scrollToSlide}
+        label="카테고리 넘기기"
+        itemLabel={(i) => CATEGORIES[i].label}
+      />
+      <div className="cpm-body" ref={bodyRef}>
         {CATEGORIES.map((category) => (
           <CategoryRow category={category} key={category.id} />
         ))}

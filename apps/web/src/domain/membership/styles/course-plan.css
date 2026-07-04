@@ -186,6 +186,27 @@
   align-items: stretch;
 }
 
+/* 모바일 캐러셀 도트 인디케이터 — 데스크톱은 숨김(모바일 미디어쿼리에서 노출) */
+.membership-root .cp-dots {
+  display: none;
+}
+.membership-root .cp-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: var(--g300);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    width 0.15s ease;
+}
+.membership-root .cp-dot[data-active='true'] {
+  width: 22px;
+  background: var(--lc-blue);
+}
+
 /* 카테고리 라벨 블록 — 카드(흰 배경·테두리)를 벗겨 "세로 축 행 헤더"로 둔다.
    왼쪽 컬러 액센트 바로 축임을 표시해 셀(데이터 카드)과 구분한다. */
 .membership-root .cpm-cat {
@@ -357,9 +378,13 @@
 .membership-root .wk-timeline {
   max-width: 1080px;
   margin: 0 auto;
+}
+/* 월 블록 스택(데스크톱). 모바일에서 가로 scroll-snap 트랙으로 전환된다. */
+.membership-root .wk-track {
   display: flex;
   flex-direction: column;
   gap: 30px;
+  margin-bottom: 30px;
 }
 .membership-root .wk-month {
   background: #fff;
@@ -584,11 +609,51 @@
   .membership-root .cpm-cells {
     grid-template-columns: 1fr;
   }
+  /* 매트릭스: 카테고리 카드를 좌우 스와이프 캐러셀로 (도트 + scroll-snap) */
+  .membership-root .cp-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .membership-root .cpm-body {
+    flex-direction: row;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    scroll-padding-inline: 16px;
+  }
+  .membership-root .cpm-body::-webkit-scrollbar {
+    display: none;
+  }
+  .membership-root .cpm-row {
+    flex: 0 0 88%;
+    scroll-snap-align: center;
+  }
   /* 월별: 2열 → 1열, 큰 숫자 축소 */
   .membership-root .wk-cards {
     grid-template-columns: 1fr;
   }
+  /* 월별: 월(月) 블록을 좌우 스와이프 캐러셀로 (도트는 .cp-dots 공용) */
+  .membership-root .wk-track {
+    flex-direction: row;
+    gap: 12px;
+    margin-bottom: 28px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    scroll-padding-inline: 16px;
+  }
+  .membership-root .wk-track::-webkit-scrollbar {
+    display: none;
+  }
   .membership-root .wk-month {
+    flex: 0 0 88%;
+    scroll-snap-align: center;
     padding: 22px 20px 24px;
   }
   .membership-root .wk-mon {
