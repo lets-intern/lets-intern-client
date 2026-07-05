@@ -14,7 +14,6 @@ import {
   ProgramType,
   UserMagnetDetailResponse,
   UserMagnetListResponse,
-  UserMagnetQuestionListResponse,
   baseQuestionListResponseSchema,
   launchAlertResponseSchema,
   magnetDetailResponseSchema,
@@ -22,7 +21,6 @@ import {
   mypageMagnetListResponseSchema,
   userMagnetDetailResponseSchema,
   userMagnetListResponseSchema,
-  userMagnetQuestionListResponseSchema,
 } from './magnetSchema';
 
 const magnetListQueryKey = 'MagnetListQueryKey';
@@ -113,6 +111,39 @@ export const usePatchMagnetVisibilityMutation = ({
   });
 };
 
+/** 접속 가능 여부(목록 노출과 독립) 토글 — 링크 접속·신청 게이트 */
+export const usePatchMagnetAccessibilityMutation = ({
+  successCallback,
+  errorCallback,
+}: {
+  successCallback?: () => void;
+  errorCallback?: () => void;
+} = {}) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      magnetId,
+      isAccessible,
+    }: {
+      magnetId: number;
+      isAccessible: boolean;
+    }) => {
+      const res = await axios.patch(`/admin/magnet/${magnetId}`, {
+        isAccessible,
+      });
+      return res.data;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: [magnetListQueryKey] });
+      successCallback?.();
+    },
+    onError: (error) => {
+      console.error(error);
+      errorCallback?.();
+    },
+  });
+};
+
 export const magnetDetailQueryOptions = (magnetId: number) => ({
   queryKey: [magnetDetailQueryKey, magnetId],
   queryFn: async (): Promise<MagnetDetailResponse> => {
@@ -147,6 +178,7 @@ export interface PatchMagnetReqBody {
   startDate?: string | null;
   endDate?: string | null;
   isVisible?: boolean;
+  isAccessible?: boolean;
   magnetQuestionList?: unknown[];
 }
 
@@ -204,22 +236,6 @@ export const useGetLaunchAlertQuery = ({
     retry: false,
   });
 };
-
-// 서버용 마그넷 목록 조회
-export async function fetchUserMagnetList(params?: {
-  page?: number;
-  size?: number;
-  typeList?: MagnetType[];
-}) {
-  const res = await axios.get('/magnet', {
-    params: {
-      page: params?.page ?? 1,
-      size: params?.size ?? 10,
-      typeList: params?.typeList,
-    },
-  });
-  return userMagnetListResponseSchema.parse(res.data.data);
-}
 
 // 유저용 마그넷 상세 조회
 export const userMagnetDetailQueryOptions = (magnetId: number) => ({
@@ -306,23 +322,6 @@ export const useGetMyMagnetListQuery = ({
       return userMagnetListResponseSchema.parse(res.data.data);
     },
     enabled,
-  });
-};
-
-// 마그넷 신청 폼 조회
-const userMagnetQuestionsQueryKey = 'UserMagnetQuestionsQueryKey';
-
-export const useGetUserMagnetQuestionsQuery = (
-  magnetId: number,
-  options?: { enabled?: boolean },
-) => {
-  return useQuery({
-    queryKey: [userMagnetQuestionsQueryKey, magnetId],
-    queryFn: async (): Promise<UserMagnetQuestionListResponse> => {
-      const res = await axios.get(`/magnet/${magnetId}/questions`);
-      return userMagnetQuestionListResponseSchema.parse(res.data.data);
-    },
-    enabled: options?.enabled,
   });
 };
 
