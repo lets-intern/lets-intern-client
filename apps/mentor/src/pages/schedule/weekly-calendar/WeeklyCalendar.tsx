@@ -276,7 +276,12 @@ const WeeklyCalendar = ({
           }}
         >
           {/* ── 상단: 서면 피드백 period bar 영역 ────────────────────────── */}
-          <div className="flex" style={{ minHeight: `${bodyMinHeight}px` }}>
+          {/* 빈 상태에서는 안내 박스(≈72px)가 짤리지 않도록 최소 높이를 확보한다.
+              (바가 있을 때만 여백 최소화 실험값 bodyMinHeight 적용) */}
+          <div
+            className="flex"
+            style={{ minHeight: `${isEmpty ? 160 : bodyMinHeight}px` }}
+          >
             {/* 바 렌더링 영역 */}
             <div className="relative flex-1">
               <ColumnDividers days={days} gridCols={gridCols} />
