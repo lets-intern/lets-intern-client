@@ -5,11 +5,11 @@ function computeFeedbackPeriod(missionEndDate: string) {
   const end = new Date(missionEndDate);
 
   const start = new Date(end);
-  start.setDate(start.getDate() + 2);
+  start.setDate(start.getDate() + 1);
   start.setHours(0, 0, 0, 0);
 
   const periodEnd = new Date(end);
-  periodEnd.setDate(periodEnd.getDate() + 4);
+  periodEnd.setDate(periodEnd.getDate() + 3);
   periodEnd.setHours(23, 59, 59, 999);
 
   return { start, periodEnd };
