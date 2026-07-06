@@ -19,7 +19,7 @@ const calcDDay = (endDate: string) => {
 
 const CouponCard = ({ coupon }: CouponCardProps) => {
   const dDay = calcDDay(coupon.endDate);
-  const showDDayBadge = dDay >= 0 && dDay <= 30;
+  const showDDayBadge = dDay >= 0;
 
   return (
     <div className="rounded-xs border-neutral-85 flex flex-col gap-2 border p-4">

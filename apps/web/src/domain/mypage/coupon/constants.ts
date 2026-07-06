@@ -56,4 +56,14 @@ export const DUMMY_COUPONS: CouponItem[] = [
     endDate: '2026-09-29T23:59:59',
     isUsed: false,
   },
+  {
+    id: 5,
+    name: '전액 할인 쿠폰',
+    couponType: 'EVENT',
+    discount: -1,
+    code: 'FREE2026',
+    startDate: '2026-04-29T00:00:00',
+    endDate: '2026-10-31T23:59:59',
+    isUsed: false,
+  },
 ];
