@@ -12,6 +12,8 @@ import { currentNow } from '@/pages/schedule/constants/mockNow';
 import type { PeriodBarData } from '@/pages/schedule/types';
 import {
   resolveLiveSessionStatus,
+  badgeStatusToUi,
+  getLiveFeedbackBadgeVisual,
   type LiveFeedbackUiStatus,
 } from '@/pages/feedback/utils/liveFeedbackStatus';
 
@@ -103,91 +105,93 @@ function summarizeWrittenMentee(mentee: WrittenMenteeAttendance): {
  * ⚠️ in-progress / mentor-late / mentee-late 는 BE에 없는 세분 상태다.
  * `LiveFeedbackInfo.status` 타입에는 남아 있어 아래 분기를 유지하지만, API 데이터로는 도달하지 않는다.
  */
-/** 시간+출석으로 판정한 4종 UI 상태 → 표 라벨·색. */
-const UI_TO_ROW: Record<
-  LiveFeedbackUiStatus,
-  { statusLabel: string; statusTone: FeedbackRow['statusTone'] }
-> = {
-  waiting: { statusLabel: '진행 예정', statusTone: 'waiting' },
-  inProgress: { statusLabel: '진행 중', statusTone: 'inProgress' },
-  completed: { statusLabel: '진행 완료', statusTone: 'completed' },
-  missed: { statusLabel: '미진행', statusTone: 'absent' },
-};
-
-function resolveLiveRowStatus(
+/**
+ * 라이브 세션 → 5종 UI 상태. (라벨·색은 VISUALS(SSOT)에서 파생)
+ * - 실데이터(rawStatus) → 시간+출석 정밀 판정
+ * - status만 있으면 5상태로 환산, 둘 다 없으면 시간 기준
+ */
+function resolveLiveRowUiStatus(
   bar: PeriodBarData,
   now: Date,
-): {
-  statusLabel: string;
-  statusTone: FeedbackRow['statusTone'];
-} {
+): LiveFeedbackUiStatus {
   const lf = bar.liveFeedback;
 
-  // 실데이터(rawStatus 존재) → 시간+출석 정밀 판정.
   if (lf?.rawStatus) {
-    const ui = resolveLiveSessionStatus({
+    return resolveLiveSessionStatus({
       rawStatus: lf.rawStatus,
       mentorStatus: lf.mentorStatus,
       menteeStatus: lf.menteeStatus,
-      // 경험정리 미제출(LATE/ABSENT) → 미진행. 예약현황/캘린더와 동일 규칙 적용.
       attendanceStatus: lf.attendanceStatus,
       startDate: `${bar.startDate}T${lf.startTime}:00`,
       endDate: `${bar.startDate}T${lf.endTime}:00`,
       now,
     });
-    return UI_TO_ROW[ui];
   }
 
-  const liveStatus = lf?.status;
-
-  if (liveStatus === 'completed')
-    return { statusLabel: '진행 완료', statusTone: 'completed' };
-  if (liveStatus === 'mentor-absent' || liveStatus === 'mentee-absent')
-    return { statusLabel: '미진행', statusTone: 'absent' };
-  if (
-    liveStatus === 'in-progress' ||
-    liveStatus === 'mentor-late' ||
-    liveStatus === 'mentee-late'
-  )
-    return { statusLabel: '진행 중', statusTone: 'inProgress' };
+  if (lf?.status) return badgeStatusToUi(lf.status);
 
   // 미설정 → 시간 기준 분기
-  const startTime = bar.liveFeedback?.startTime ?? '00:00';
-  const endTime = bar.liveFeedback?.endTime ?? '00:00';
-  const startMs = new Date(`${bar.startDate}T${startTime}:00`).getTime();
-  const endMs = new Date(`${bar.startDate}T${endTime}:00`).getTime();
+  const startMs = new Date(
+    `${bar.startDate}T${lf?.startTime ?? '00:00'}:00`,
+  ).getTime();
+  const endMs = new Date(
+    `${bar.startDate}T${lf?.endTime ?? '00:00'}:00`,
+  ).getTime();
   const nowMs = now.getTime();
+  if (Number.isNaN(startMs) || Number.isNaN(endMs)) return 'waiting';
+  if (nowMs < startMs) return 'waiting';
+  if (nowMs < endMs) return 'inProgress';
+  return 'missed';
+}
 
-  if (Number.isNaN(startMs) || Number.isNaN(endMs))
-    return { statusLabel: '진행 예정', statusTone: 'waiting' };
-  if (nowMs < startMs)
-    return { statusLabel: '진행 예정', statusTone: 'waiting' };
-  if (nowMs < endMs)
-    return { statusLabel: '진행 중', statusTone: 'inProgress' };
-  return { statusLabel: '미진행', statusTone: 'absent' };
+/** 라이브 행 상태 라벨·tone — 캘린더/모달과 동일한 VISUALS(SSOT)에서 가져온다. */
+function resolveLiveRowStatus(
+  bar: PeriodBarData,
+  now: Date,
+): { statusLabel: string; statusTone: FeedbackRow['statusTone'] } {
+  const v = getLiveFeedbackBadgeVisual(resolveLiveRowUiStatus(bar, now));
+  return { statusLabel: v.label, statusTone: v.tone };
+}
+
+/** 라이브 멘티 경험정리 제출 라벨 — attendanceStatus(PRESENT/UPDATED/LATE=제출, ABSENT=미제출). */
+function deriveLiveSubmissionLabel(
+  attendanceStatus: AttendanceStatus | undefined,
+): '제출' | '미제출' | null {
+  if (attendanceStatus === undefined) return null; // 상세 미병합 → 빈칸
+  return attendanceStatus === 'ABSENT' ? '미제출' : '제출';
 }
 
 /**
- * 라이브 세션 → 멘티 예약/참여 라벨.
- * BE 목록에 내려온 세션은 모두 예약 확정 건이므로 예약 라벨은 '예약 완료'로 고정한다.
- * 참여 라벨은 `useLiveFeedbackList`가 BE status/출석을 매핑한 liveFeedback.status에서 도출.
- * (mentee-absent → 멘티 불참, mentor-absent → 멘토 불참, completed → 양측 참여)
+ * 라이브 세션 → 멘티/멘토 참여 라벨.
+ * 실데이터(rawStatus)면 BE 출석 + 세션 종료 여부로 판정한다.
+ * - 멘티: PRESENT=참여 / ABSENT=불참 / PENDING=null
+ * - 멘토: PRESENT=참여 / 종료 후 미출석=불참(BE가 노쇼를 PENDING으로 두는 문제 보정) / 진행 전·중=null
  */
-function resolveLiveParticipation(bar: PeriodBarData): {
+function resolveLiveParticipation(
+  bar: PeriodBarData,
+  now: Date,
+): {
   menteeParticipation: '참여' | '불참' | null;
   mentorParticipation: '참여' | '불참' | null;
 } {
   const lf = bar.liveFeedback;
 
-  // 실데이터(rawStatus 존재) → BE 원본 출석으로 직접 판정.
-  // PRESENT=참여 / ABSENT=불참 / PENDING(미체크)=null(빈 표시).
+  // 실데이터(rawStatus 존재) → BE 원본 출석 + 세션 종료 여부로 판정.
   if (lf?.rawStatus) {
-    const toLabel = (s?: 'PENDING' | 'PRESENT' | 'ABSENT') =>
-      s === 'PRESENT' ? '참여' : s === 'ABSENT' ? '불참' : null;
-    return {
-      menteeParticipation: toLabel(lf.menteeStatus),
-      mentorParticipation: toLabel(lf.mentorStatus),
-    };
+    const endMs = new Date(`${bar.startDate}T${lf.endTime}:00`).getTime();
+    const ended = !Number.isNaN(endMs) && now.getTime() >= endMs;
+    // 멘티: PRESENT=참여 / ABSENT=불참 / 그 외(PENDING)=null.
+    const menteeParticipation =
+      lf.menteeStatus === 'PRESENT'
+        ? '참여'
+        : lf.menteeStatus === 'ABSENT'
+          ? '불참'
+          : null;
+    // 멘토: PRESENT=참여 / 종료 후 미출석=불참(BE가 노쇼를 ABSENT 아닌 PENDING으로 두는 문제 보정,
+    //       상태 컬럼의 '미진행'과 동일 규칙) / 진행 전·중=null.
+    const mentorParticipation =
+      lf.mentorStatus === 'PRESENT' ? '참여' : ended ? '불참' : null;
+    return { menteeParticipation, mentorParticipation };
   }
 
   const liveStatus = lf?.status;
@@ -238,7 +242,7 @@ export function buildMissionRangeMap(
  * 정렬: `startDate ASC → startTime ASC → menteeName/challenge ASC`.
  * 빈 컬럼 규칙:
  * - 서면: 멘티예약/멘티참여/멘토참여 = null
- * - 라이브: 멘티제출 = null (제출 연동 미구현)
+ * - 라이브: 멘티제출 = attendanceStatus 기반(상세 미병합 시 null)
  *
  * 라이브 행 데이터 소스는 Push 2부터 BE 멘토 목록(`useFeedbackMentorListQuery`) 기반
  * `useLiveFeedbackList`의 결과(`LiveFeedbackRound.sessionBars`)를 사용한다.
@@ -324,7 +328,7 @@ export function useMergedFeedbackRows(
         const endTime = bar.liveFeedback.endTime;
         const sessionDate = bar.startDate.slice(0, 10);
         const status = resolveLiveRowStatus(bar, now);
-        const participation = resolveLiveParticipation(bar);
+        const participation = resolveLiveParticipation(bar, now);
 
         rows.push({
           id: `live-${bar.liveFeedback.id ?? bar.missionId}`,
@@ -336,8 +340,10 @@ export function useMergedFeedbackRows(
           statusTone: status.statusTone,
           // mock 슬롯은 모두 예약 상태로 가정 (예약 전 행은 향후 RESERVED/OPEN 분리 시 추가)
           reservationLabel: '예약 완료',
-          // 라이브는 제출 컬럼 비움 (PRD §5.3 분기 규칙)
-          submissionLabel: null,
+          // 멘티 경험정리 제출 여부 (attendanceStatus 기반, 상세 미병합 시 null)
+          submissionLabel: deriveLiveSubmissionLabel(
+            bar.liveFeedback.attendanceStatus,
+          ),
           menteeParticipation: participation.menteeParticipation,
           mentorParticipation: participation.mentorParticipation,
           challengeTitle: round.challengeTitle,

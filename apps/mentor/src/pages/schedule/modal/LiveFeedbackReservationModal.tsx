@@ -256,18 +256,19 @@ const LiveFeedbackReservationModal = ({
     };
   });
 
-  // 상단 카운트 — 캘린더와 동일한 4상태(진행 예정/중/완료/미진행)로 집계.
+  // 상단 카운트 — 캘린더와 동일한 5상태(진행 예정/중/완료/미진행/취소)로 집계.
   const statusCounts = menteeListItems.reduce(
     (acc, item) => {
       acc[badgeStatusToUi(item.liveStatus)] += 1;
       return acc;
     },
-    { waiting: 0, inProgress: 0, completed: 0, missed: 0 },
+    { waiting: 0, inProgress: 0, completed: 0, missed: 0, cancelled: 0 },
   );
   const waitingCount = statusCounts.waiting;
   const inProgressCount = statusCounts.inProgress;
   const completedCount = statusCounts.completed;
   const missedCount = statusCounts.missed;
+  const cancelledCount = statusCounts.cancelled;
 
   // 하단 "피드백 상태" 배지 — 왼쪽 리스트/캘린더와 동일 소스(선택 바의 상태)로 통일.
   const liveBadge = getLiveFeedbackBadgeVisual(
@@ -336,6 +337,7 @@ const LiveFeedbackReservationModal = ({
           inProgressCount={inProgressCount}
           completedCount={completedCount}
           missedCount={missedCount}
+          cancelledCount={cancelledCount}
           isLive
           onClose={onClose}
         />

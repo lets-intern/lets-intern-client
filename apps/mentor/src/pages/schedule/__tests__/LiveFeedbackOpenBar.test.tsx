@@ -115,23 +115,23 @@ describe('LiveFeedbackTimeBlock (PRD-0503 #3 디자인)', () => {
     expect(screen.getByText('진행 예정')).toBeInTheDocument();
   });
 
-  it('취소(cancelled) 상태는 "미진행" 배지를 표시한다', () => {
+  it('취소(cancelled) 상태는 "취소" 배지를 표시한다', () => {
     render(<LiveFeedbackTimeBlock bar={makeLiveBar('cancelled')} />);
-    expect(screen.getByText('미진행')).toBeInTheDocument();
+    expect(screen.getByText('취소')).toBeInTheDocument();
   });
 
-  it('취소(미진행) 배지는 연빨강 톤 색상을 가진다', () => {
+  it('취소 배지는 연빨강 톤 색상을 가진다', () => {
     render(<LiveFeedbackTimeBlock bar={makeLiveBar('cancelled')} />);
-    const badge = screen.getByText('미진행');
+    const badge = screen.getByText('취소');
     expect(badge.className).toContain('bg-red-50');
     expect(badge.className).toContain('text-red-500');
   });
 
-  it('진행 중 배지는 보라(primary) 톤 색상을 가진다', () => {
+  it('진행 중 배지는 blue 톤 색상을 가진다 (캘린더=모달=내역 통일)', () => {
     render(<LiveFeedbackTimeBlock bar={makeLiveBar('in-progress')} />);
     const badge = screen.getByText('진행 중');
-    expect(badge.className).toContain('bg-primary-5');
-    expect(badge.className).toContain('text-primary');
+    expect(badge.className).toContain('bg-blue-50');
+    expect(badge.className).toContain('text-blue-600');
   });
 
   it('진행 완료 배지는 회색 아웃라인 톤 색상을 가진다', () => {

@@ -184,14 +184,14 @@ describe('useLiveFeedbackList — status/출석 → 세션 status 매핑 (2.2)',
     expect(lf?.endTime).toBe('10:30');
   });
 
-  it('CANCELED + 멘티 ABSENT → mentee-absent', () => {
+  it('CANCELED(예약취소) → cancelled(취소)', () => {
     const lf = firstBar([
       makeFeedback({ status: 'CANCELED', menteeStatus: 'ABSENT' }),
     ]);
-    expect(lf?.status).toBe('mentee-absent');
+    expect(lf?.status).toBe('cancelled');
   });
 
-  it('CANCELED + 멘토 ABSENT → mentor-absent', () => {
+  it('CANCELED(예약취소) → cancelled(취소) (멘토 불참이어도)', () => {
     const lf = firstBar([
       makeFeedback({
         status: 'CANCELED',
@@ -199,7 +199,7 @@ describe('useLiveFeedbackList — status/출석 → 세션 status 매핑 (2.2)',
         mentorStatus: 'ABSENT',
       }),
     ]);
-    expect(lf?.status).toBe('mentor-absent');
+    expect(lf?.status).toBe('cancelled');
   });
 
   it('RESERVED + 시작 전(미래) → waiting (진행 예정)', () => {
@@ -213,7 +213,7 @@ describe('useLiveFeedbackList — status/출석 → 세션 status 매핑 (2.2)',
     expect(lf?.status).toBe('waiting');
   });
 
-  it('RESERVED + 종료 후 미참여 → 미진행(cancelled) (시간 기준 판정)', () => {
+  it('RESERVED + 종료 후 멘토 미입장 → mentor-absent(미진행) (시간 기준 판정)', () => {
     const lf = firstBar([
       makeFeedback({
         status: 'RESERVED',
@@ -221,7 +221,7 @@ describe('useLiveFeedbackList — status/출석 → 세션 status 매핑 (2.2)',
         endDate: '2020-01-01T10:30:00',
       }),
     ]);
-    expect(lf?.status).toBe('cancelled');
+    expect(lf?.status).toBe('mentor-absent');
   });
 
   it('경험정리 미제출(attendanceStatus)을 세션 바로 전달한다 (예약현황/캘린더와 상태 일치)', () => {

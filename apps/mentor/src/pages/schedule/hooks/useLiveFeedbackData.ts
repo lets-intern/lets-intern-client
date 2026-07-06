@@ -146,18 +146,11 @@ export function resolveSessionStatus(
   session: FeedbackMentorWithAttendance,
   now: Date,
 ): LiveFeedbackInfo['status'] {
-  // 취소는 불참 주체를 보존(배지·집계 활용).
-  if (session.status === 'CANCELED') {
-    if (session.menteeStatus === 'ABSENT') return 'mentee-absent';
-    if (session.mentorStatus === 'ABSENT') return 'mentor-absent';
-    return 'cancelled';
-  }
-
   const ui = resolveLiveSessionStatus({
     rawStatus: session.status,
     mentorStatus: session.mentorStatus,
     menteeStatus: session.menteeStatus,
-    // 경험정리 미제출(LATE|ABSENT)이면 최우선으로 '미진행' 처리(시각·출석 무관).
+    // 미제출(LATE|ABSENT)·예약취소면 '취소', 멘토 미입장이면 '미진행'.
     attendanceStatus: session.attendanceStatus,
     startDate: session.startDate,
     endDate: session.endDate,
@@ -168,11 +161,12 @@ export function resolveSessionStatus(
       return 'in-progress';
     case 'completed':
       return 'completed';
-    case 'missed':
-      // 종료 후 미충족 — 불참 주체가 있으면 보존, 없으면 일반 미진행(cancelled 배지=미진행).
-      if (session.menteeStatus === 'ABSENT') return 'mentee-absent';
-      if (session.mentorStatus === 'ABSENT') return 'mentor-absent';
+    case 'cancelled':
+      // 멘티 예약 후 경험정리 미제출 · 예약취소 → 취소
       return 'cancelled';
+    case 'missed':
+      // 멘토가 라이브에 입장하지 않음 → 미진행
+      return 'mentor-absent';
     case 'waiting':
     default:
       return 'waiting';

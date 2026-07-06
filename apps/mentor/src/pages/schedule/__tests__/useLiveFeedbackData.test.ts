@@ -166,7 +166,7 @@ describe('deriveLiveFeedbackBars', () => {
     );
   });
 
-  it('상태 매핑: COMPLETED→completed, CANCELED+menteeABSENT→mentee-absent, CANCELED+mentorABSENT→mentor-absent', () => {
+  it('상태 매핑: COMPLETED→completed, CANCELED(예약취소)→cancelled(취소)', () => {
     const completed = deriveLiveFeedbackBars(
       [makeSession({ feedbackId: 1, status: 'COMPLETED' })],
       [],
@@ -183,7 +183,7 @@ describe('deriveLiveFeedbackBars', () => {
       ],
       [],
     ).find((b) => b.barType === 'live-feedback');
-    expect(menteeAbsent!.liveFeedback?.status).toBe('mentee-absent');
+    expect(menteeAbsent!.liveFeedback?.status).toBe('cancelled');
 
     const mentorAbsent = deriveLiveFeedbackBars(
       [
@@ -196,7 +196,7 @@ describe('deriveLiveFeedbackBars', () => {
       ],
       [],
     ).find((b) => b.barType === 'live-feedback');
-    expect(mentorAbsent!.liveFeedback?.status).toBe('mentor-absent');
+    expect(mentorAbsent!.liveFeedback?.status).toBe('cancelled');
   });
 
   it('상태 매핑: CANCELED(불참 표기 없는 단순 취소)→cancelled("취소" 배지)', () => {
@@ -265,7 +265,7 @@ describe('deriveLiveFeedbackBars', () => {
     expect(bar!.liveFeedback?.status).toBe('mentor-absent');
   });
 
-  it('종료된 RESERVED + 출석 미체크 → waiting 이 아니라 미진행 처리된다', () => {
+  it('종료된 RESERVED + 멘토 미입장 → waiting 이 아니라 mentor-absent(미진행) 처리된다', () => {
     const bar = deriveLiveFeedbackBars(
       [
         makeSession({
@@ -278,7 +278,7 @@ describe('deriveLiveFeedbackBars', () => {
       [],
     ).find((b) => b.barType === 'live-feedback');
     expect(bar!.liveFeedback?.status).not.toBe('waiting');
-    expect(bar!.liveFeedback?.status).toBe('cancelled');
+    expect(bar!.liveFeedback?.status).toBe('mentor-absent');
   });
 
   it('경험정리 미제출(attendanceStatus ABSENT) → 시작 전이어도 미진행 처리된다', () => {

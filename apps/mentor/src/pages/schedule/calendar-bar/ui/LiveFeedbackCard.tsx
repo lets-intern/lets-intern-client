@@ -1,12 +1,12 @@
 import { twMerge } from '@/lib/twMerge';
-import { STATUS_BADGE as STATUS_BADGE_TOKENS } from '@/constants/statusColors';
 import {
   resolveLiveSessionStatus,
-  type LiveFeedbackUiStatus,
+  badgeStatusToUi,
+  getLiveFeedbackBadgeVisual,
 } from '@/pages/feedback/utils/liveFeedbackStatus';
 import { currentNow } from '../../constants/mockNow';
 import { scheduleDesign } from '../../scheduleDesign';
-import type { LiveFeedbackInfo, PeriodBarData } from '../../types';
+import type { PeriodBarData } from '../../types';
 
 /** "09:00" → "09:00", "18:30" → "18:30" */
 function formatTimeRange(start: string, end: string): string {
@@ -61,63 +61,6 @@ const LiveFeedbackCard = ({ bar }: { bar: PeriodBarData }) => {
 };
 
 /**
- * 시간별 일정(하단) 안에서 시간순으로 쌓이는 라이브 피드백 블록.
- * 콘텐츠 높이에 맞춰 자연스럽게 늘어난다 (절대배치 아님).
- */
-type BadgeStatus = NonNullable<LiveFeedbackInfo['status']>;
-
-/**
- * 상태별 태그 스타일 — 종료 상태(완료/미참여)는 dim 처리, 진행 상태(진행중/지각)는 강조.
- *
- * 디자인(이미지 #1): 솔리드 배지를 연한 톤(소프트) 배지로 정렬.
- *  - 진행 예정 : 연보라 배경 / 보라 글씨 (waiting·undefined 기본)
- *  - 진행 중   : 연파랑 배경 / 파랑 글씨
- *  - 진행 완료 : 회색 배경 / 회색 글씨
- *  - 미진행(취소·미참여 등 종료 상태): 회색 배경 / 회색 글씨
- * LC-3124: 라이브 상태 라벨을 진리표 뱃지 4종(진행 예정/진행 중/진행 완료/미진행)으로 통일.
- * 취소·미참여 세분 상태는 모두 '미진행'으로 표기하며 색/배경 토큰은 기존 그대로 둔다.
- */
-const STATUS_BADGE: Record<BadgeStatus, { label: string; badge: string }> = {
-  waiting: { label: '진행 예정', badge: scheduleDesign.cardBadgeActive },
-  'in-progress': { label: '진행 중', badge: scheduleDesign.cardBadgeActive },
-  completed: {
-    label: '진행 완료',
-    badge: scheduleDesign.cardBadgeDone,
-  },
-  cancelled: { label: '미진행', badge: scheduleDesign.cardBadgeCanceled },
-  'mentor-absent': {
-    label: '미진행',
-    badge: scheduleDesign.cardBadgeDone,
-  },
-  'mentee-absent': {
-    label: '미진행',
-    badge: scheduleDesign.cardBadgeDone,
-  },
-  'mentor-late': {
-    label: '미진행',
-    badge: scheduleDesign.cardBadgeDone,
-  },
-  'mentee-late': {
-    label: '미진행',
-    badge: scheduleDesign.cardBadgeDone,
-  },
-};
-
-/**
- * 시간+출석으로 판정한 4종 UI 상태 → 캘린더 배지(라벨·색).
- * 색은 image copy.png 기준: 진행예정=indigo / 진행중=blue / 진행완료=neutral / 미진행=red.
- */
-const UI_TO_BADGE: Record<
-  LiveFeedbackUiStatus,
-  { label: string; badge: string }
-> = {
-  waiting: { label: '진행 예정', badge: STATUS_BADGE_TOKENS.liveWaiting },
-  inProgress: { label: '진행 중', badge: STATUS_BADGE_TOKENS.inProgress },
-  completed: { label: '진행 완료', badge: STATUS_BADGE_TOKENS.liveCompleted },
-  missed: { label: '미진행', badge: STATUS_BADGE_TOKENS.liveMissed },
-};
-
-/**
  * 시간별 일정(하단) 안에서 시간순으로 쌓이는 라이브 피드백 개별 카드.
  *
  * 디자인 시안 image #19:
@@ -129,23 +72,20 @@ const UI_TO_BADGE: Record<
  */
 export const LiveFeedbackTimeBlock = ({ bar }: { bar: PeriodBarData }) => {
   const lf = bar.liveFeedback!;
-  // 실데이터(rawStatus 존재)는 시간+출석으로 정밀 판정, mock(status만)은 기존 매핑 유지.
-  const badge = lf.rawStatus
-    ? UI_TO_BADGE[
-        resolveLiveSessionStatus({
-          rawStatus: lf.rawStatus,
-          mentorStatus: lf.mentorStatus,
-          menteeStatus: lf.menteeStatus,
-          // 경험정리 미제출(LATE|ABSENT)이면 최우선으로 '미진행' 표시.
-          attendanceStatus: lf.attendanceStatus,
-          startDate: `${bar.startDate}T${lf.startTime}:00`,
-          endDate: `${bar.startDate}T${lf.endTime}:00`,
-          now: currentNow(),
-        })
-      ]
-    : lf.status
-      ? STATUS_BADGE[lf.status]
-      : STATUS_BADGE.waiting;
+  // 실데이터(rawStatus)면 시간+출석으로 5상태 정밀 판정, 아니면 status를 5상태로 환산.
+  // 라벨·색은 liveFeedbackStatus.VISUALS(SSOT)에서 가져온다.
+  const ui = lf.rawStatus
+    ? resolveLiveSessionStatus({
+        rawStatus: lf.rawStatus,
+        mentorStatus: lf.mentorStatus,
+        menteeStatus: lf.menteeStatus,
+        attendanceStatus: lf.attendanceStatus,
+        startDate: `${bar.startDate}T${lf.startTime}:00`,
+        endDate: `${bar.startDate}T${lf.endTime}:00`,
+        now: currentNow(),
+      })
+    : badgeStatusToUi(lf.status);
+  const visual = getLiveFeedbackBadgeVisual(ui);
 
   return (
     <div
@@ -163,10 +103,10 @@ export const LiveFeedbackTimeBlock = ({ bar }: { bar: PeriodBarData }) => {
           className={twMerge(
             'shrink-0 whitespace-nowrap',
             scheduleDesign.cardBadge,
-            badge.badge,
+            visual.cardBadgeClass,
           )}
         >
-          {badge.label}
+          {visual.label}
         </span>
       </div>
 

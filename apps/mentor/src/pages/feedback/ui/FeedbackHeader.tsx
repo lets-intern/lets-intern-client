@@ -15,6 +15,11 @@ interface FeedbackHeaderProps {
    * 서면 피드백 모달은 이 prop을 넘기지 않으므로 미렌더.
    */
   missedCount?: number;
+  /**
+   * LIVE 피드백 모달 전용 5번째 카운터 ("취소" — 예약 후 미제출·예약취소).
+   * 서면 피드백 모달은 이 prop을 넘기지 않으므로 미렌더.
+   */
+  cancelledCount?: number;
   /** 헤더 좌상단 회차 라벨을 "LIVE 피드백"으로 표시 (디자인 image copy 3.png). */
   isLive?: boolean;
   onClose: () => void;
@@ -33,6 +38,7 @@ const FeedbackHeader = ({
   inProgressCount,
   completedCount,
   missedCount,
+  cancelledCount,
   isLive = false,
   onClose,
 }: FeedbackHeaderProps) => {
@@ -92,6 +98,16 @@ const FeedbackHeader = ({
               )}
             >
               {missedLabel} {missedCount}
+            </span>
+          )}
+          {cancelledCount !== undefined && (
+            <span
+              className={twMerge(
+                feedbackModalDesign.headerChip,
+                statusBadgeOrMuted(cancelledCount, 'liveCancelled'),
+              )}
+            >
+              취소 {cancelledCount}
             </span>
           )}
         </div>
@@ -162,6 +178,16 @@ const FeedbackHeader = ({
             )}
           >
             {missedLabel} {missedCount}
+          </span>
+        )}
+        {cancelledCount !== undefined && (
+          <span
+            className={twMerge(
+              feedbackModalDesign.headerChip,
+              statusBadgeOrMuted(cancelledCount, 'liveCancelled'),
+            )}
+          >
+            취소 {cancelledCount}
           </span>
         )}
       </div>

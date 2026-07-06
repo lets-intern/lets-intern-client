@@ -31,6 +31,10 @@ export interface FeedbackRow {
     | 'absent'
     | 'submitted'
     | 'notSubmitted'
+    | 'liveWaiting'
+    | 'liveCompleted'
+    | 'liveMissed'
+    | 'liveCancelled'
     | null;
 
   /** 컬럼: 멘티 예약 — 라이브 전용 ('예약 전' | '예약 완료'). 서면 = null */

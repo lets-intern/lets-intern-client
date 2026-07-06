@@ -250,19 +250,77 @@ describe('useMergedFeedbackRows', () => {
     const waiting = result.current.find((r) => r.id === 'live-101');
 
     expect(completed?.statusLabel).toBe('진행 완료');
-    expect(completed?.statusTone).toBe('completed');
+    expect(completed?.statusTone).toBe('liveCompleted');
     expect(completed?.menteeParticipation).toBe('참여');
     expect(completed?.mentorParticipation).toBe('참여');
 
     expect(absent?.statusLabel).toBe('미진행');
-    expect(absent?.statusTone).toBe('absent');
+    expect(absent?.statusTone).toBe('liveMissed');
     expect(absent?.menteeParticipation).toBe('불참');
     expect(absent?.mentorParticipation).toBe('참여');
 
     expect(waiting?.statusLabel).toBe('진행 예정');
-    expect(waiting?.statusTone).toBe('waiting');
+    expect(waiting?.statusTone).toBe('liveWaiting');
     expect(waiting?.menteeParticipation).toBeNull();
     expect(waiting?.mentorParticipation).toBeNull();
+  });
+
+  // ── 버그 회귀: 실데이터(rawStatus) 기반 멘티 제출 / 멘토 불참 ──
+  // now=2026-05-04 09:45 (목킹). 08:00~08:30 세션은 종료된 상태.
+  const realLiveRound = (fields: {
+    id: number;
+    attendanceStatus?: 'PRESENT' | 'UPDATED' | 'LATE' | 'ABSENT';
+    mentorStatus?: 'PENDING' | 'PRESENT' | 'ABSENT';
+    menteeStatus?: 'PENDING' | 'PRESENT' | 'ABSENT';
+  }): LiveFeedbackRound => ({
+    ...liveRound,
+    sessionBars: [
+      {
+        ...liveSessionBar,
+        missionId: -fields.id,
+        liveFeedback: {
+          id: fields.id,
+          menteeName: '테스트멘티',
+          startTime: '08:00',
+          endTime: '08:30',
+          rawStatus: 'RESERVED',
+          attendanceStatus: fields.attendanceStatus,
+          mentorStatus: fields.mentorStatus,
+          menteeStatus: fields.menteeStatus,
+        },
+      },
+    ],
+  });
+  const firstLiveRow = (round: LiveFeedbackRound) =>
+    renderHook(() => useMergedFeedbackRows([], [round])).result.current.find(
+      (r) => r.type === 'live',
+    );
+
+  it('멘티 제출: attendanceStatus ABSENT→미제출, PRESENT→제출, 없으면 null', () => {
+    expect(
+      firstLiveRow(realLiveRound({ id: 201, attendanceStatus: 'ABSENT' }))
+        ?.submissionLabel,
+    ).toBe('미제출');
+    expect(
+      firstLiveRow(realLiveRound({ id: 202, attendanceStatus: 'PRESENT' }))
+        ?.submissionLabel,
+    ).toBe('제출');
+    // 상세 미병합(attendanceStatus 없음) → null
+    expect(
+      firstLiveRow(realLiveRound({ id: 203 }))?.submissionLabel,
+    ).toBeNull();
+  });
+
+  it('멘토 불참: 종료된 세션 + mentorStatus PENDING(노쇼) → 멘토 참여=불참', () => {
+    const row = firstLiveRow(
+      realLiveRound({
+        id: 204,
+        mentorStatus: 'PENDING',
+        menteeStatus: 'PRESENT',
+      }),
+    );
+    expect(row?.mentorParticipation).toBe('불참');
+    expect(row?.menteeParticipation).toBe('참여');
   });
 
   it('정렬: startDate DESC(최신 먼저) → startTime ASC → menteeName ASC', () => {

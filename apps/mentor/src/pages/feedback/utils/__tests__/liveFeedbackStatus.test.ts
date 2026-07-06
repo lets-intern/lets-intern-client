@@ -42,16 +42,16 @@ describe('resolveLiveFeedbackStatus', () => {
       'completed' as const,
     ],
     [
-      'CANCELED 이면 시각 무관하게 missed',
+      'CANCELED(예약취소) 이면 시각 무관하게 cancelled',
       'CANCELED' as const,
       new Date('2026-05-20T11:15:00+09:00'),
-      'missed' as const,
+      'cancelled' as const,
     ],
     [
-      'CANCELED 이면 시작 전이어도 missed',
+      'CANCELED(예약취소) 이면 시작 전이어도 cancelled',
       'CANCELED' as const,
       new Date('2026-05-20T09:00:00+09:00'),
-      'missed' as const,
+      'cancelled' as const,
     ],
   ])('%s', (_label, apiStatus, now, expected) => {
     expect(resolveLiveFeedbackStatus(apiStatus, start, end, now)).toBe(
@@ -152,7 +152,7 @@ describe('resolveLiveSessionStatus — 경험정리 미제출(attendanceStatus)'
   const end = '2026-05-20T11:30:00+09:00';
   const during = new Date('2026-05-20T11:15:00+09:00');
 
-  it('attendanceStatus ABSENT → 진행 중 시각이어도 missed (최우선)', () => {
+  it('attendanceStatus ABSENT → 진행 중 시각이어도 cancelled(취소) (최우선)', () => {
     expect(
       resolveLiveSessionStatus({
         rawStatus: 'RESERVED',
@@ -161,10 +161,10 @@ describe('resolveLiveSessionStatus — 경험정리 미제출(attendanceStatus)'
         endDate: end,
         now: during,
       }),
-    ).toBe('missed');
+    ).toBe('cancelled');
   });
 
-  it('attendanceStatus LATE → 진행 중 시각이어도 missed (최우선)', () => {
+  it('attendanceStatus LATE → 진행 중 시각이어도 cancelled(취소) (최우선)', () => {
     expect(
       resolveLiveSessionStatus({
         rawStatus: 'RESERVED',
@@ -173,7 +173,7 @@ describe('resolveLiveSessionStatus — 경험정리 미제출(attendanceStatus)'
         endDate: end,
         now: during,
       }),
-    ).toBe('missed');
+    ).toBe('cancelled');
   });
 
   it('attendanceStatus PRESENT → 미제출 아님, 기존 시간 로직(inProgress)', () => {
@@ -207,9 +207,10 @@ describe('getLiveFeedbackBadgeVisual', () => {
     expect(getLiveFeedbackBadgeVisual('inProgress').label).toBe('진행 중');
     expect(getLiveFeedbackBadgeVisual('completed').label).toBe('진행 완료');
     expect(getLiveFeedbackBadgeVisual('missed').label).toBe('미진행');
+    expect(getLiveFeedbackBadgeVisual('cancelled').label).toBe('취소');
   });
 
-  it('badgeClass 가 캡쳐 기준 4색(indigo/blue/neutral/red)을 사용한다', () => {
+  it('badgeClass 색상: 진행예정=indigo/진행중=blue/완료=neutral/미진행=solid red/취소=연red', () => {
     expect(getLiveFeedbackBadgeVisual('waiting').badgeClass).toContain(
       'indigo',
     );
@@ -219,7 +220,15 @@ describe('getLiveFeedbackBadgeVisual', () => {
     expect(getLiveFeedbackBadgeVisual('completed').badgeClass).toContain(
       'text-neutral',
     );
+    // 미진행(멘토 미입장) = 진한 빨강 배경 + 흰 글자
     expect(getLiveFeedbackBadgeVisual('missed').badgeClass).toContain(
+      'bg-red-500',
+    );
+    expect(getLiveFeedbackBadgeVisual('missed').badgeClass).toContain(
+      'text-white',
+    );
+    // 취소(예약 후 미제출·예약취소) = 연빨강 배경 + 빨강 글자
+    expect(getLiveFeedbackBadgeVisual('cancelled').badgeClass).toContain(
       'text-red',
     );
   });

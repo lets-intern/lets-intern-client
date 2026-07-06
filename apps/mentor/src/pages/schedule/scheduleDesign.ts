@@ -5,10 +5,6 @@
 export const scheduleDesign = {
   /** 일정 바 / 개별 카드 표면 (테두리·라운드 6px·배경) */
   surface: 'border-neutral-80 rounded-md border bg-white',
-  /** 개별 카드 상태 배지 모양(6px) */
+  /** 개별 카드 상태 배지 모양(6px). 상태별 색은 statusColors.LIVE_CARD_BADGE(SSOT) 사용. */
   cardBadge: 'rounded-md px-1.5 py-0.5 text-[10px] font-medium leading-none',
-  /** 개별 카드 상태 배지 색 */
-  cardBadgeActive: 'bg-primary-5 text-primary',
-  cardBadgeDone: 'border border-neutral-300 bg-white text-neutral-500',
-  cardBadgeCanceled: 'bg-red-50 text-red-500',
 } as const;

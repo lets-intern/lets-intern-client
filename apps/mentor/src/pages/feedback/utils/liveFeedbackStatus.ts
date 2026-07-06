@@ -5,7 +5,7 @@ import type {
   FeedbackAttendanceStatus,
   FeedbackStatus,
 } from '@/api/feedback/feedbackSchema';
-import { STATUS_BADGE } from '@/constants/statusColors';
+import { STATUS_BADGE, LIVE_CARD_BADGE } from '@/constants/statusColors';
 
 /**
  * 라이브 피드백 모달에서 사용하는 4종 진행 상태.
@@ -14,26 +14,73 @@ import { STATUS_BADGE } from '@/constants/statusColors';
  * - waiting:    예약 시간 전 (status=RESERVED, now < startAt)
  * - inProgress: 예약 시간 중 (status=RESERVED, startAt ≤ now < endAt)
  * - completed:  멘토/멘티 정상 참가 (status=COMPLETED)
- * - missed:     불참/취소 또는 종료 후 미진행 (status=CANCELED, 또는 RESERVED + now ≥ endAt)
+ * - missed:     멘토가 라이브에 입장하지 않음 (RESERVED + now ≥ endAt + 멘토 미출석)
+ * - cancelled:  멘티가 예약 후 경험정리 미제출(attendanceStatus LATE|ABSENT) 또는 예약취소(status=CANCELED)
  */
 export type LiveFeedbackUiStatus =
   | 'waiting'
   | 'inProgress'
   | 'completed'
-  | 'missed';
+  | 'missed'
+  | 'cancelled';
+
+/** 피드백 내역 테이블 statusTone 중 라이브 5상태가 쓰는 키. */
+export type LiveStatusTone =
+  | 'liveWaiting'
+  | 'inProgress'
+  | 'liveCompleted'
+  | 'liveMissed'
+  | 'liveCancelled';
 
 export interface LiveFeedbackBadgeVisual {
-  /** 화면 표기 라벨 ("진행 예정" / "진행 중" / "진행 완료" / "미진행") */
+  /** 화면 표기 라벨 ("진행 예정" / "진행 중" / "진행 완료" / "미진행" / "취소") */
   label: string;
-  /** STATUS_BADGE 토큰 (border + bg + text) */
+  /** 표준 배지 토큰 (border+bg+text) — 모달·내역 테이블·예약·멘티리스트·헤더 */
   badgeClass: string;
+  /** 캘린더 카드 전용 컴팩트 배지 토큰 */
+  cardBadgeClass: string;
+  /** 내역 테이블 statusTone 키 (StatusCell 이 STATUS_BADGE[tone] 로 색 변환) */
+  tone: LiveStatusTone;
 }
 
+/**
+ * 라이브 5상태 → {라벨, 색} **단일 소스(SSOT)**.
+ * 모든 화면(캘린더 카드/모달/내역 테이블/예약현황/멘티리스트/헤더)이 여기만 참조한다.
+ * 색을 바꾸려면 이 표(또는 statusColors 토큰)만 고치면 전 화면에 반영된다.
+ */
 const VISUALS: Record<LiveFeedbackUiStatus, LiveFeedbackBadgeVisual> = {
-  waiting: { label: '진행 예정', badgeClass: STATUS_BADGE.liveWaiting },
-  inProgress: { label: '진행 중', badgeClass: STATUS_BADGE.inProgress },
-  completed: { label: '진행 완료', badgeClass: STATUS_BADGE.liveCompleted },
-  missed: { label: '미진행', badgeClass: STATUS_BADGE.liveMissed },
+  waiting: {
+    label: '진행 예정',
+    badgeClass: STATUS_BADGE.liveWaiting,
+    cardBadgeClass: LIVE_CARD_BADGE.waiting,
+    tone: 'liveWaiting',
+  },
+  inProgress: {
+    label: '진행 중',
+    badgeClass: STATUS_BADGE.inProgress,
+    cardBadgeClass: LIVE_CARD_BADGE.inProgress,
+    tone: 'inProgress',
+  },
+  completed: {
+    label: '진행 완료',
+    badgeClass: STATUS_BADGE.liveCompleted,
+    cardBadgeClass: LIVE_CARD_BADGE.completed,
+    tone: 'liveCompleted',
+  },
+  // 미진행 = 멘토가 라이브에 입장하지 않은 경우 (solid 빨강)
+  missed: {
+    label: '미진행',
+    badgeClass: STATUS_BADGE.liveMissed,
+    cardBadgeClass: LIVE_CARD_BADGE.missed,
+    tone: 'liveMissed',
+  },
+  // 취소 = 멘티가 예약 후 경험정리 미제출 또는 예약취소 (연빨강)
+  cancelled: {
+    label: '취소',
+    badgeClass: STATUS_BADGE.liveCancelled,
+    cardBadgeClass: LIVE_CARD_BADGE.cancelled,
+    tone: 'liveCancelled',
+  },
 };
 
 /**
@@ -53,13 +100,13 @@ const VISUALS: Record<LiveFeedbackUiStatus, LiveFeedbackBadgeVisual> = {
  * 완료 판정(PRD §2·§3): 종료 후 **멘토가 출석(PRESENT)하면 진행 완료**(멘티 출석 무관).
  * 멘토 미참여면 미진행. (기존 "양측 PRESENT" 조건을 "멘토 PRESENT"로 완화.)
  *
- * - 미제출(attendanceStatus LATE|ABSENT) → missed  (최우선, 시각·출석 무관)
- * - CANCELED            → missed
+ * - 미제출(attendanceStatus LATE|ABSENT) → cancelled(취소)  (최우선, 시각·출석 무관)
+ * - CANCELED(예약취소)  → cancelled(취소)
  * - COMPLETED           → completed
  * - 시작 전             → waiting
  * - 진행 중             → inProgress
  * - 종료 후 + 멘토 출석  → completed
- * - 종료 후 + 그 외      → missed
+ * - 종료 후 + 멘토 미입장 → missed(미진행)
  *
  * 출석 인자를 생략하면 PENDING으로 보아 기존(시간 기준) 동작과 동일하다(하위 호환).
  */
@@ -83,11 +130,12 @@ export function resolveLiveSessionStatus(input: {
   const { rawStatus, mentorStatus, attendanceStatus, startDate, endDate, now } =
     input;
 
-  // 최우선: 경험정리 미제출(LATE|ABSENT)이면 시각·출석과 무관하게 미진행.
+  // 최우선: 경험정리 미제출(LATE|ABSENT)이면 시각·출석과 무관하게 '취소'.
   if (attendanceStatus === 'LATE' || attendanceStatus === 'ABSENT')
-    return 'missed';
+    return 'cancelled';
 
-  if (rawStatus === 'CANCELED') return 'missed';
+  // 예약취소(BE CANCELED)도 '취소'.
+  if (rawStatus === 'CANCELED') return 'cancelled';
   if (rawStatus === 'COMPLETED') return 'completed';
 
   // RESERVED: 시간으로 분기
@@ -147,6 +195,7 @@ export function badgeStatusToUi(
     case 'in-progress':
       return 'inProgress';
     case 'cancelled':
+      return 'cancelled';
     case 'mentor-absent':
     case 'mentee-absent':
     case 'mentor-late':

@@ -219,8 +219,8 @@ describe('ReservationListContent', () => {
     ]);
   });
 
-  // 2.3.T1 — 상태 뱃지 컬럼: 미제출(ABSENT/LATE)→미진행, 제출+미래→진행 예정.
-  it('미제출(attendanceStatus ABSENT) RESERVED 건은 "미진행" 뱃지로 표시된다', () => {
+  // 2.3.T1 — 상태 뱃지 컬럼: 미제출(ABSENT/LATE)→취소, 제출+미래→진행 예정.
+  it('미제출(attendanceStatus ABSENT) RESERVED 건은 "취소" 뱃지로 표시된다', () => {
     mockBase([
       makeFeedback({
         feedbackId: 1,
@@ -231,7 +231,7 @@ describe('ReservationListContent', () => {
       }),
     ]);
     renderContent();
-    expect(within(getReservedTable()).getByText('미진행')).toBeInTheDocument();
+    expect(within(getReservedTable()).getByText('취소')).toBeInTheDocument();
   });
 
   it('제출 완료(attendanceStatus PRESENT) + 미래 RESERVED 건은 "진행 예정" 뱃지로 표시된다', () => {
