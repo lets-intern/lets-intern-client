@@ -45,13 +45,23 @@ const CouponSection = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
-      <div className="flex flex-col gap-3 md:gap-5">
-        {viewList.map((coupon) => (
-          <CouponCard key={coupon.id} coupon={coupon} />
-        ))}
-      </div>
-      {DUMMY_COUPONS.length > INITIAL_VISIBLE_COUNT && !showMore && (
-        <MoreButton onClick={() => setShowMore(true)}>더보기</MoreButton>
+      {DUMMY_COUPONS.length === 0 ? (
+        <div className="flex min-h-[60vh] w-full flex-col items-center justify-center md:min-h-[50vh]">
+          <p className="text-xsmall14 text-neutral-40 font-normal">
+            보유하신 쿠폰이 없습니다
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="flex flex-col gap-3 md:gap-5">
+            {viewList.map((coupon) => (
+              <CouponCard key={coupon.id} coupon={coupon} />
+            ))}
+          </div>
+          {DUMMY_COUPONS.length > INITIAL_VISIBLE_COUNT && !showMore && (
+            <MoreButton onClick={() => setShowMore(true)}>더보기</MoreButton>
+          )}
+        </>
       )}
     </main>
   );
