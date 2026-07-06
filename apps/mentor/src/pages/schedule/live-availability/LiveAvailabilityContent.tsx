@@ -11,6 +11,10 @@ import type {
   MentorOpenSlot,
 } from '../challenge-content/mentorOpenScheduleMock';
 import { currentNow } from '../constants/mockNow';
+import {
+  type ScheduleWindow,
+  isWithinWindow,
+} from '../data/feedbackScheduleRules';
 
 // TODO: 실제 운영진 문의 링크로 교체 (예: 슬랙 채널, 카카오톡 고객센터, 내부 요청 폼 등)
 const OPS_CONTACT_URL =
@@ -207,6 +211,13 @@ export interface LiveAvailabilityContentProps {
    * 미지정 시 바를 렌더하지 않는다.
    */
   livePeriods?: LiveFeedbackPeriodInfo[];
+  /**
+   * 슬롯 오픈 허용 기간 — 미션 시작일 -3d 00:00:00 ~ -2d 23:59:59
+   * (`feedbackScheduleRules.computeSlotOpenWindow`로 파생).
+   * 지정 시 기간 밖에서는 슬롯 선택/저장이 비활성화되고 안내가 노출된다.
+   * 미지정/`null`(BE 미션 일자 미반영)이면 게이팅하지 않는다(현행 유지 — forward-compatible).
+   */
+  slotOpenWindow?: ScheduleWindow | null;
 }
 
 /**
@@ -229,8 +240,16 @@ const LiveAvailabilityContent = ({
   showHeader = true,
   onOpenReservation,
   livePeriods = [],
+  slotOpenWindow,
 }: LiveAvailabilityContentProps) => {
   const { alertProps, showConfirm } = useMentorAlert();
+
+  // 슬롯 오픈 기간 게이팅 — window가 있고 현재 시각이 기간 밖이면 편집·저장을 잠근다.
+  // window 미지정(BE 미션 일자 미반영)이면 게이팅하지 않는다(폴백 = 현행 유지).
+  const isSlotOpenClosed = useMemo(
+    () => !!slotOpenWindow && !isWithinWindow(currentNow(), slotOpenWindow),
+    [slotOpenWindow],
+  );
 
   /** 이미 신청 완료된 슬롯 클릭 시 — 챌린지·일시·멘티 정보를 명시 + 운영진 문의 옵션 */
   const handleAppliedSlotClick = (info: {
@@ -374,6 +393,8 @@ const LiveAvailabilityContent = ({
   const changedCount = changedKeys.size;
 
   const handleCellMouseDown = (date: string, time: string) => {
+    // 슬롯 오픈 기간 밖이면 편집 불가
+    if (isSlotOpenClosed) return;
     const key = toKey(date, time);
     // 다른 챌린지 점유 또는 현재 챌린지에서 이미 신청 완료된 슬롯은 토글 불가
     if (blockedMap.has(key) || appliedMap.has(key) || reservedSet.has(key))
@@ -398,6 +419,7 @@ const LiveAvailabilityContent = ({
   };
 
   const handleCellMouseEnter = (date: string, time: string) => {
+    if (isSlotOpenClosed) return;
     if (!isDragging || !dragMode) return;
 
     const key = toKey(date, time);
@@ -427,6 +449,8 @@ const LiveAvailabilityContent = ({
 
   const [isSavingLocal, setIsSavingLocal] = useState(false);
   const handleSave = async () => {
+    // 슬롯 오픈 기간 밖에서는 저장 불가 (버튼도 비활성이나 방어적으로 차단)
+    if (isSlotOpenClosed) return;
     const nextSlots: MentorOpenSlot[] = [];
 
     for (const key of selectedKeys) {
@@ -540,6 +564,27 @@ const LiveAvailabilityContent = ({
             이므로 최소 {requiredSlotCount}개 이상의 시간대를 열어야 저장할 수
             있습니다.
           </p>
+        )}
+        {isSlotOpenClosed && slotOpenWindow && (
+          <div
+            role="alert"
+            className="text-xsmall14 mb-3 flex items-center gap-1.5 break-keep rounded-md bg-amber-50 px-3 py-2 text-amber-700"
+          >
+            <InfoIcon />
+            <span>
+              지금은 슬롯 오픈 기간이 아닙니다. 오픈 가능 기간은{' '}
+              <span className="font-semibold">
+                {format(slotOpenWindow.start, 'M월 d일 (EEE) HH:mm', {
+                  locale: ko,
+                })}{' '}
+                ~{' '}
+                {format(slotOpenWindow.end, 'M월 d일 (EEE) HH:mm', {
+                  locale: ko,
+                })}
+              </span>
+              입니다.
+            </span>
+          </div>
         )}
 
         {/* 주 네비(좌) + 레전드(우) — 한 줄 */}
@@ -670,6 +715,16 @@ const LiveAvailabilityContent = ({
                               ` ${period.generation}기`}
                             {period.th !== undefined && ` ${period.th}회차`}{' '}
                             LIVE 피드백 기간
+                          </span>
+                          {/* 라이브 미션 시작일 ~ 마감일 (예약 기간 = 미션 시작일~종료일) */}
+                          <span className="text-xxsmall12 shrink-0 font-medium tabular-nums opacity-90">
+                            {format(new Date(period.startDate), 'M.d', {
+                              locale: ko,
+                            })}
+                            {' ~ '}
+                            {format(new Date(period.endDate), 'M.d', {
+                              locale: ko,
+                            })}
                           </span>
                           <span className="text-xxsmall12 ml-auto flex shrink-0 items-center gap-1 font-semibold">
                             <PeopleIcon />
@@ -891,6 +946,7 @@ const LiveAvailabilityContent = ({
             onClick={handleSave}
             disabled={
               isSavingLocal ||
+              isSlotOpenClosed ||
               (requiredSlotCount !== undefined &&
                 selectedCount < requiredSlotCount)
             }

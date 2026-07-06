@@ -863,12 +863,17 @@ export const useGetChallengeNotices = (
 };
 
 /** GET 챌린지 홈 (공지·가이드·추천 프로그램) */
-export const useChallengeHome = (challengeId?: number) => {
+export const useChallengeHome = (
+  challengeId?: number,
+  options?: { testDate?: string },
+) => {
   return useQuery({
     enabled: Boolean(challengeId),
-    queryKey: ['challenge', challengeId, 'home'],
+    queryKey: ['challenge', challengeId, 'home', options?.testDate],
     queryFn: async () => {
-      const res = await axios.get(`/challenge/${challengeId}/home`);
+      const res = await axios.get(`/challenge/${challengeId}/home`, {
+        params: { testDate: options?.testDate },
+      });
       return challengeHomeSchema.parse(res.data.data);
     },
   });

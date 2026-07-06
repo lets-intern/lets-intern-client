@@ -13,10 +13,9 @@ import WrittenFeedbackBar from '../calendar-bar/ui/WrittenFeedbackBar';
 import type { PeriodBarData } from '../types';
 import { useTimelineScroll } from './hooks/useInfiniteWeekScroll';
 import { useVisibleDateRange } from './hooks/useVisibleDateRange';
-import CalendarRangeHeader from './ui/CalendarRangeHeader';
+import FloatingCalendarNav from './ui/FloatingCalendarNav';
 import ColumnDividers from './ui/ColumnDividers';
 import DayHeaderCell from './ui/DayHeaderCell';
-import TodayButton from './ui/TodayButton';
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 interface WeeklyCalendarProps {
@@ -126,6 +125,8 @@ const WeeklyCalendar = ({
       startCol: number;
       endCol: number;
       gridRow: number;
+      /** 그룹 내 stacked 위치(0=첫 행). >0 이면 같은 챌린지의 겹치는 미션 → 조금 띄운다. */
+      localRow: number;
     };
 
     // (1) 챌린지 등장 순서를 보존 (Map은 insertion order 유지)
@@ -182,6 +183,7 @@ const WeeklyCalendar = ({
           startCol,
           endCol,
           gridRow: nextStartRow + localRow,
+          localRow,
         });
       }
 
@@ -215,10 +217,12 @@ const WeeklyCalendar = ({
   const bodyMinHeight = useMemo(() => {
     // minHeight는 바닥값만 정하고 그리드는 내용에 맞게 늘어난다(잘림 없음).
     // 바가 적을 때 하단 빈 공간을 줄이기 위해 행 높이/최소 행/여백을 축소.
-    const ROW_H = 56;
+    // [실험] ROW_H를 실제 바 높이(~44px) 이하로 낮춰 minHeight가 행마다
+    // 여백을 얹지 않게 한다 → 그리드 내용(바)이 높이를 정하고, 아래 빈 공간 최소화.
+    const ROW_H = 44;
     const MIN_ROWS = 1;
     const maxRow = barLayouts.reduce((max, l) => Math.max(max, l.gridRow), 0);
-    return Math.max(maxRow, MIN_ROWS) * ROW_H + 8;
+    return Math.max(maxRow, MIN_ROWS) * ROW_H;
   }, [barLayouts]);
 
   const innerWidthPercent = (totalDays / 7) * 100;
@@ -233,12 +237,6 @@ const WeeklyCalendar = ({
       {/* -top-6: 페이지 스크롤 컨테이너(py-6=24px)의 상단 패딩만큼 끌어올려, 그 패딩
           영역으로 본문이 비쳐 보이는 여백 버그를 막는다 (헤더가 패딩 구간까지 덮음). */}
       <div className="sticky -top-6 z-20 overflow-hidden rounded-t-2xl bg-white">
-        <CalendarRangeHeader
-          range={visibleRange}
-          containerRef={containerRef}
-          totalDays={totalDays}
-        />
-
         {/* 요일·날짜 헤더 — body 가로 스크롤을 미러링(자체 스크롤바 숨김) */}
         <div ref={headerScrollRef} className="overflow-x-hidden">
           <div
@@ -278,41 +276,50 @@ const WeeklyCalendar = ({
           }}
         >
           {/* ── 상단: 서면 피드백 period bar 영역 ────────────────────────── */}
-          <div className="flex" style={{ minHeight: `${bodyMinHeight}px` }}>
+          {/* 빈 상태에서는 안내 박스(≈72px)가 짤리지 않도록 최소 높이를 확보한다.
+              (바가 있을 때만 여백 최소화 실험값 bodyMinHeight 적용) */}
+          <div
+            className="flex"
+            style={{ minHeight: `${isEmpty ? 160 : bodyMinHeight}px` }}
+          >
             {/* 바 렌더링 영역 */}
             <div className="relative flex-1">
               <ColumnDividers days={days} gridCols={gridCols} />
               <div
-                className="relative w-full gap-y-1 py-3"
+                className="relative w-full gap-y-1 pb-1 pt-1"
                 style={{ display: 'grid', gridTemplateColumns: gridCols }}
               >
-                {barLayouts.map(({ bar, startCol, endCol, gridRow }, idx) => (
-                  <div
-                    key={`${bar.challengeId}-${bar.missionId}-${idx}`}
-                    style={{
-                      gridColumn: `${startCol} / ${endCol}`,
-                      gridRow,
-                    }}
-                  >
-                    {bar.barType === 'live-feedback-period' ? (
-                      <LiveFeedbackPeriodBar
-                        bar={bar}
-                        onClick={onLiveFeedbackPeriodClick}
-                      />
-                    ) : bar.barType === 'live-feedback-mentor-open' ? (
-                      <LiveFeedbackOpenBar
-                        bar={bar}
-                        onMentorOpenClick={
-                          onMentorOpenPeriodBarClick
-                            ? () => onMentorOpenPeriodBarClick(bar)
-                            : onMentorOpenPeriodClick
-                        }
-                      />
-                    ) : bar.barType === 'written-feedback' ? (
-                      <WrittenFeedbackBar bar={bar} onBarClick={onBarClick} />
-                    ) : null}
-                  </div>
-                ))}
+                {barLayouts.map(
+                  ({ bar, startCol, endCol, gridRow, localRow }, idx) => (
+                    <div
+                      key={`${bar.challengeId}-${bar.missionId}-${idx}`}
+                      style={{
+                        gridColumn: `${startCol} / ${endCol}`,
+                        gridRow,
+                        // 같은 챌린지의 겹치는(같은 날) 미션은 조금 더 띄운다.
+                        marginTop: localRow > 0 ? 6 : undefined,
+                      }}
+                    >
+                      {bar.barType === 'live-feedback-period' ? (
+                        <LiveFeedbackPeriodBar
+                          bar={bar}
+                          onClick={onLiveFeedbackPeriodClick}
+                        />
+                      ) : bar.barType === 'live-feedback-mentor-open' ? (
+                        <LiveFeedbackOpenBar
+                          bar={bar}
+                          onMentorOpenClick={
+                            onMentorOpenPeriodBarClick
+                              ? () => onMentorOpenPeriodBarClick(bar)
+                              : onMentorOpenPeriodClick
+                          }
+                        />
+                      ) : bar.barType === 'written-feedback' ? (
+                        <WrittenFeedbackBar bar={bar} onBarClick={onBarClick} />
+                      ) : null}
+                    </div>
+                  ),
+                )}
               </div>
             </div>
           </div>
@@ -391,7 +398,11 @@ const WeeklyCalendar = ({
         </div>
       )}
 
-      <TodayButton
+      {/* 하단 중앙 플로팅: 날짜 범위 + 주 이동 + 오늘로 이동 (통합) */}
+      <FloatingCalendarNav
+        range={visibleRange}
+        containerRef={containerRef}
+        totalDays={totalDays}
         isTodayVisible={isTodayVisible}
         onGoToToday={scrollToToday}
       />

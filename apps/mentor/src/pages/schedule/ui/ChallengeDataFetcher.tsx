@@ -99,11 +99,12 @@ const MissionAttendanceFetcher = ({
       feedbackDeadline,
     };
 
-    onData(`${challenge.challengeId}-${mission.id}-submit`, submitBar);
-    onData(`${challenge.challengeId}-${mission.id}-review`, reviewBar);
-    // 라이브 피드백 미션의 캘린더 표시는 useLiveFeedbackData(LIVE 바)가 담당한다.
-    // 여기서 서면 피드백 기간 바를 만들면 라이브가 서면으로 중복 노출되므로 제외.
+    // 라이브 피드백 미션의 캘린더 표시는 useLiveFeedbackData(LIVE 바)가 전담한다.
+    // 여기서 서면 바(제출/검수/피드백)를 만들면 라이브 기간·일정오픈 바와 중복
+    // 노출되므로, LIVE_FEEDBACK 미션은 서면 바를 하나도 만들지 않는다.
     if (mission.challengeOptionType !== 'LIVE_FEEDBACK') {
+      onData(`${challenge.challengeId}-${mission.id}-submit`, submitBar);
+      onData(`${challenge.challengeId}-${mission.id}-review`, reviewBar);
       onData(`${challenge.challengeId}-${mission.id}-feedback`, feedbackBar);
     }
   }, [attendanceData, challenge, mission, onData]);

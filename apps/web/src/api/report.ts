@@ -437,6 +437,14 @@ export type ReportPriceDetail = z.infer<typeof getReportPriceDetailSchema>;
 
 export const getReportPriceDetailQueryKey = 'getReportPriceDetail';
 
+export const reportPriceDetailQueryOptions = (reportId: number) => ({
+  queryKey: [getReportPriceDetailQueryKey, reportId],
+  queryFn: async () => {
+    const res = await axios.get(`/report/${reportId}/price`);
+    return getReportPriceDetailSchema.parse(res.data.data);
+  },
+});
+
 export const useGetReportPriceDetail = (reportId?: number) => {
   return useQuery({
     queryKey: [getReportPriceDetailQueryKey, reportId],
@@ -629,36 +637,42 @@ export type MyReportInfoType = z.infer<
 
 export const getMyReportsQueryKey = 'getMyReports';
 
+export const myReportsQueryOptions = (reportType?: ReportType) => ({
+  queryKey: [getMyReportsQueryKey, reportType],
+  queryFn: async () => {
+    const res = await axios.get('/report/my', {
+      params: {
+        reportType,
+        size: 1000,
+      },
+    });
+
+    return getMyReportsSchema.parse(res.data.data);
+  },
+});
+
 export const useGetMyReports = (reportType?: ReportType) => {
   const { isLoggedIn } = useAuthStore();
 
   return useQuery({
+    ...myReportsQueryOptions(reportType),
     enabled: isLoggedIn,
-    queryKey: [getMyReportsQueryKey, reportType],
-    queryFn: async () => {
-      const res = await axios.get('/report/my', {
-        params: {
-          reportType,
-          size: 1000,
-        },
-      });
-
-      return getMyReportsSchema.parse(res.data.data);
-    },
   });
 };
 
 // 유저 - 진단서 faq 목록 조회
 //  GET /api/v1/report/{reportId}/faqs
-export const useGetReportFaqs = (reportId: string | number) => {
-  return useQuery({
-    queryKey: ['useGetReportFaq', reportId],
-    queryFn: async () => {
-      const res = await axios.get(`/report/${reportId}/faqs`);
+export const reportFaqsQueryOptions = (reportId: string | number) => ({
+  queryKey: ['useGetReportFaq', reportId],
+  queryFn: async () => {
+    const res = await axios.get(`/report/${reportId}/faqs`);
 
-      return faqSchema.parse(res.data.data);
-    },
-  });
+    return faqSchema.parse(res.data.data);
+  },
+});
+
+export const useGetReportFaqs = (reportId: string | number) => {
+  return useQuery(reportFaqsQueryOptions(reportId));
 };
 
 const SubmitTypeEnum = z.enum(['NORMAL', 'LATE']);
@@ -1151,24 +1165,13 @@ export type ReportPaymentInfo = z.infer<typeof reportPaymentInfoSchema>;
 
 export const useGetReportPaymentDetailQueryKey = 'getReportPayment';
 
-export const useGetReportPaymentDetailQuery = ({
-  applicationId,
-  enabled,
-}: {
-  applicationId: number;
-  enabled?: boolean;
-}) => {
-  return useQuery({
-    queryKey: [useGetReportPaymentDetailQueryKey, applicationId],
-    queryFn: async () => {
-      const res = await axios.get(
-        `/report/application/${applicationId}/payment`,
-      );
-      return reportPaymentDetailSchema.parse(res.data.data);
-    },
-    enabled,
-  });
-};
+export const reportPaymentDetailQueryOptions = (applicationId: number) => ({
+  queryKey: [useGetReportPaymentDetailQueryKey, applicationId],
+  queryFn: async () => {
+    const res = await axios.get(`/report/application/${applicationId}/payment`);
+    return reportPaymentDetailSchema.parse(res.data.data);
+  },
+});
 
 export const useDeleteReportApplication = ({
   successCallback,

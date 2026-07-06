@@ -2,23 +2,29 @@ import { useMemo } from 'react';
 import { format } from 'date-fns';
 
 import {
-  useFeedbackMentorListQuery,
+  useFeedbackMentorListWithAttendance,
   useFeedbackMentorSlotsQuery,
 } from '@/api/feedback/feedback';
 import type {
-  FeedbackMentor,
+  FeedbackMentorWithAttendance,
   FeedbackSlot,
 } from '@/api/feedback/feedbackSchema';
 
 import type { LiveFeedbackInfo, PeriodBarData } from '../types';
 import { currentNow } from '../constants/mockNow';
+import {
+  type ScheduleWindow,
+  computeReservationWindow,
+  computeSlotOpenWindow,
+  selectSlotOpenWindow,
+} from '../data/feedbackScheduleRules';
 import { resolveLiveSessionStatus } from '@/pages/feedback/utils/liveFeedbackStatus';
 
 /**
  * 라이브 피드백 일정 데이터를 반환하는 훅.
  *
  * 서면 `ChallengeDataFetcher`(실 API → `PeriodBarData` 파생) 패턴을 차용해
- * 라이브 세션(`useFeedbackMentorListQuery`)과 멘토 오픈 슬롯
+ * 라이브 세션(`useFeedbackMentorListWithAttendance`)과 멘토 오픈 슬롯
  * (`useFeedbackMentorSlotsQuery`)을 캘린더 바로 파생한다.
  *
  * ⚠️ BE 한계:
@@ -34,10 +40,18 @@ export function useLiveFeedbackData(
   { enabled = true }: { enabled?: boolean } = {},
 ): {
   bars: PeriodBarData[];
+  /**
+   * 슬롯 오픈 게이팅 윈도 — 모든 미션의 오픈 윈도(-3d~-2d)를 `selectSlotOpenWindow`로
+   * 단일 윈도로 합성한 값. 미션 일자(BE forward-compat)가 없으면 `null`(게이팅 미적용).
+   * `LiveAvailabilityContent.slotOpenWindow`로 그대로 주입한다.
+   */
+  slotOpenWindow: ScheduleWindow | null;
   isLoading: boolean;
 } {
+  // 목록 + 상세 attendanceStatus 병합(N+1) — 미제출(LATE|ABSENT)을 '미진행'으로 반영하기 위함.
+  // 병합 상세엔 missionStartDate도 포함되어 슬롯 오픈 윈도 앵커로 재사용한다.
   const { data: sessions, isLoading: isSessionsLoading } =
-    useFeedbackMentorListQuery({ enabled });
+    useFeedbackMentorListWithAttendance({ enabled });
   const { data: slotsData, isLoading: isSlotsLoading } =
     useFeedbackMentorSlotsQuery({ enabled });
 
@@ -47,7 +61,21 @@ export function useLiveFeedbackData(
     [sessions, slotsData],
   );
 
-  return { bars, isLoading: isSessionsLoading || isSlotsLoading };
+  // 미션 시작일 목록 → 단일 게이팅 윈도. now가 어느 윈도에 들면 통과, 아니면 예정 윈도 안내.
+  const slotOpenWindow = useMemo(
+    () =>
+      selectSlotOpenWindow(
+        (sessions ?? []).map((s) => s.missionStartDate),
+        currentNow(),
+      ),
+    [sessions],
+  );
+
+  return {
+    bars,
+    slotOpenWindow,
+    isLoading: isSessionsLoading || isSlotsLoading,
+  };
 }
 
 /** "YYYY-MM-DD" (날짜 단위) */
@@ -70,6 +98,37 @@ function buildSyntheticChallengeId(groupIndex: number): number {
 }
 
 /**
+ * (programTitle, th) 그룹의 "LIVE 피드백 기간"(예약 기간) 날짜 범위를 확정한다.
+ *
+ * 우선순위:
+ *  1) 그룹 내 미션 일자(`missionStartDate`/`missionEndDate`)가 있으면 그 값으로 확정
+ *     (미션 시작일~종료일 = 예약 기간, `computeReservationWindow` 규칙).
+ *  2) BE 미반영(둘 중 하나라도 없음)이면 세션 시각 min/max로 폴백.
+ *
+ * 같은 (title, th)의 세션은 동일 미션을 공유하므로 첫 유효 값만 사용한다.
+ */
+function resolvePeriodRange(
+  thSessions: FeedbackMentorWithAttendance[],
+  fallbackStart: string,
+  fallbackEnd: string,
+): { startDate: string; endDate: string } {
+  const withMission = thSessions.find(
+    (s) => s.missionStartDate && s.missionEndDate,
+  );
+  if (!withMission?.missionStartDate || !withMission.missionEndDate) {
+    return { startDate: fallbackStart, endDate: fallbackEnd };
+  }
+  const window = computeReservationWindow(
+    withMission.missionStartDate,
+    withMission.missionEndDate,
+  );
+  return {
+    startDate: format(window.start, 'yyyy-MM-dd'),
+    endDate: format(window.end, 'yyyy-MM-dd'),
+  };
+}
+
+/**
  * BE 라이브 세션 상태 → 캘린더 배지 상태 매핑.
  *
  * ⚠️ 종료된 RESERVED 보정: BE는 세션 종료 후에도 `status`를 RESERVED로 유지하고
@@ -79,8 +138,12 @@ function buildSyntheticChallengeId(groupIndex: number): number {
  *  - CANCELED + menteeStatus ABSENT → mentee-absent / + mentorStatus ABSENT → mentor-absent / 그 외 → cancelled
  *  - RESERVED → 시작 전 waiting / 진행 중 in-progress / 종료 후 양측 참여 completed / 그 외 미진행
  */
-function resolveSessionStatus(
-  session: FeedbackMentor,
+/**
+ * BE 세션 → 캘린더 배지 축약 상태(시간+출석 기반 4상태). 캘린더·모달 공용.
+ * 라이브 목록(useLiveFeedbackList)도 이 함수를 재사용해 상태를 통일한다.
+ */
+export function resolveSessionStatus(
+  session: FeedbackMentorWithAttendance,
   now: Date,
 ): LiveFeedbackInfo['status'] {
   // 취소는 불참 주체를 보존(배지·집계 활용).
@@ -94,6 +157,8 @@ function resolveSessionStatus(
     rawStatus: session.status,
     mentorStatus: session.mentorStatus,
     menteeStatus: session.menteeStatus,
+    // 경험정리 미제출(LATE|ABSENT)이면 최우선으로 '미진행' 처리(시각·출석 무관).
+    attendanceStatus: session.attendanceStatus,
     startDate: session.startDate,
     endDate: session.endDate,
     now,
@@ -117,17 +182,20 @@ function resolveSessionStatus(
 /**
  * 라이브 세션·슬롯 → `PeriodBarData[]` 파생.
  *  - 각 세션 → `live-feedback` 바 (`missionId = -feedbackId`)
- *  - `programTitle` 그룹마다 `live-feedback-period` 바 (min/max, th=1)
- *  - 슬롯 전체 min/max → `live-feedback-mentor-open` 바 1개 (글로벌 슬롯 운영)
+ *  - `(programTitle, th)` 그룹마다 `live-feedback-period` 바 (예약 기간 = 미션 시작일~종료일)
+ *  - `(programTitle, th)` 그룹마다 `live-feedback-mentor-open` 바 (슬롯 오픈 기간 = 미션 시작일 -3d~-2d)
+ *    · 미션 일자가 없으면(BE 미배포) 슬롯 전체 min/max로 글로벌 폴백 바 1개
  *
  * 테스트 가능하도록 순수 함수로 분리 (쿼리 데이터를 인자로 받음).
  */
 export function deriveLiveFeedbackBars(
-  sessions: FeedbackMentor[],
+  sessions: FeedbackMentorWithAttendance[],
   slots: FeedbackSlot[],
 ): PeriodBarData[] {
   const now = currentNow();
   const bars: PeriodBarData[] = [];
+  // 미션 일자 기반 오픈 기간 바를 하나라도 만들었는지 — 폴백(슬롯 min/max) 여부 판단용.
+  let emittedMissionOpenBar = false;
 
   // programTitle 그룹 → 안정적 인덱스. 정렬로 입력 순서 무관 결정성 확보.
   const groupTitles = Array.from(
@@ -167,6 +235,7 @@ export function deriveLiveFeedbackBars(
         startTime: toTime(session.startDate),
         endTime: toTime(session.endDate),
         status: resolveSessionStatus(session, now),
+        attendanceStatus: session.attendanceStatus,
       },
     });
   }
@@ -179,7 +248,7 @@ export function deriveLiveFeedbackBars(
     const groupIndex = groupIndexByTitle.get(title) ?? 0;
 
     // 회차(th)별 버킷
-    const byTh = new Map<number, FeedbackMentor[]>();
+    const byTh = new Map<number, FeedbackMentorWithAttendance[]>();
     for (const s of groupSessions) {
       const th = s.th ?? 1;
       const bucket = byTh.get(th);
@@ -193,6 +262,11 @@ export function deriveLiveFeedbackBars(
       const min = dates.reduce((a, b) => (a < b ? a : b));
       const max = endDates.reduce((a, b) => (a > b ? a : b));
 
+      // "LIVE 피드백 기간"(예약 기간) = 미션 시작일~종료일 (PRD §4·§6-2 표).
+      // BE가 상세 VO에 미션 일자를 내려주면 그 값으로 기간을 확정하고,
+      // 미반영(null/undefined)이면 세션 시각 min/max로 폴백한다.
+      const { startDate, endDate } = resolvePeriodRange(thSessions, min, max);
+
       bars.push({
         barType: 'live-feedback-period',
         // 같은 챌린지의 세션과 동일 challengeId 유지(회차는 challengeId가 아닌 th로 구분)
@@ -201,19 +275,44 @@ export function deriveLiveFeedbackBars(
         missionId: -(2_000_000 + groupIndex * 100 + th),
         challengeTitle: title,
         th,
-        startDate: min,
-        endDate: max,
-        feedbackStartDate: min,
-        feedbackDeadline: max,
+        startDate,
+        endDate,
+        feedbackStartDate: startDate,
+        feedbackDeadline: endDate,
         ...zeroCounts,
         submittedCount: thSessions.length,
         waitingCount: thSessions.length,
       });
+
+      // ── 슬롯 오픈 기간 바 (미션 시작일 -3d 00:00 ~ -2d 23:59, PRD §4 표) ──
+      // BE 미션 일자가 있을 때만 표 기준으로 확정한다. 없으면(BE 미배포) 아래 폴백.
+      const missionStart = thSessions.find(
+        (s) => s.missionStartDate,
+      )?.missionStartDate;
+      if (missionStart) {
+        const open = computeSlotOpenWindow(missionStart);
+        const openStart = format(open.start, 'yyyy-MM-dd');
+        const openEnd = format(open.end, 'yyyy-MM-dd');
+        bars.push({
+          barType: 'live-feedback-mentor-open',
+          challengeId: buildSyntheticChallengeId(groupIndex),
+          missionId: -(3_100_000 + groupIndex * 100 + th),
+          challengeTitle: title,
+          th,
+          startDate: openStart,
+          endDate: openEnd,
+          feedbackStartDate: openStart,
+          feedbackDeadline: openEnd,
+          ...zeroCounts,
+        });
+        emittedMissionOpenBar = true;
+      }
     }
   }
 
-  // ── 멘토 오픈 슬롯 전체 → 글로벌 오픈기간 바 1개 ──
-  if (slots.length > 0) {
+  // ── 폴백: 미션 일자 미반영(BE 미배포)일 때만 기존 슬롯 min/max 오픈 바 유지 ──
+  // (미션 일자가 있으면 위에서 미션 그룹별 정확한 오픈 기간 바를 이미 생성했다.)
+  if (!emittedMissionOpenBar && slots.length > 0) {
     const starts = slots.map((s) => toDate(s.startDate));
     const ends = slots.map((s) => toDate(s.endDate));
     const min = starts.reduce((a, b) => (a < b ? a : b));

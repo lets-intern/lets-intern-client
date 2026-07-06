@@ -3,11 +3,11 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { FeedbackMentor } from '@/api/feedback/feedbackSchema';
+import type { FeedbackMentorWithAttendance } from '@/api/feedback/feedbackSchema';
 
 import ReservationListContent from '../ReservationListContent';
 
-const useFeedbackMentorListQueryMock = vi.fn();
+const useFeedbackMentorListWithAttendanceMock = vi.fn();
 const useUserQueryMock = vi.fn();
 const useFeedbackMentorDetailQueryMock = vi.fn();
 const useFeedbackMentorSlotsQueryMock = vi.fn();
@@ -18,7 +18,8 @@ const noopMutation = {
 };
 
 vi.mock('@/api/feedback/feedback', () => ({
-  useFeedbackMentorListQuery: () => useFeedbackMentorListQueryMock(),
+  useFeedbackMentorListWithAttendance: () =>
+    useFeedbackMentorListWithAttendanceMock(),
   useFeedbackMentorDetailQuery: (id: number | null) =>
     useFeedbackMentorDetailQueryMock(id),
   useFeedbackMentorSlotsQuery: () => useFeedbackMentorSlotsQueryMock(),
@@ -30,7 +31,9 @@ vi.mock('@/api/user/user', () => ({
   useUserQuery: () => useUserQueryMock(),
 }));
 
-function makeFeedback(overrides: Partial<FeedbackMentor> = {}): FeedbackMentor {
+function makeFeedback(
+  overrides: Partial<FeedbackMentorWithAttendance> = {},
+): FeedbackMentorWithAttendance {
   return {
     feedbackId: 1,
     startDate: '2026-05-20T10:00:00',
@@ -61,8 +64,8 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-function mockBase(list: FeedbackMentor[]) {
-  useFeedbackMentorListQueryMock.mockReturnValue({
+function mockBase(list: FeedbackMentorWithAttendance[]) {
+  useFeedbackMentorListWithAttendanceMock.mockReturnValue({
     data: list,
     isLoading: false,
     isError: false,
@@ -199,7 +202,7 @@ describe('ReservationListContent', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('예약 목록 테이블 헤더는 "신청 시간" 없이 6컬럼(날짜/시간·프로그램·멘토·멘티·상세·예약 변경 내역)이다', () => {
+  it('예약 목록 테이블 헤더는 7컬럼(날짜/시간·프로그램·멘토·멘티·상태·상세·예약 변경 내역)이다', () => {
     mockBase([makeFeedback({ feedbackId: 1, status: 'RESERVED' })]);
     renderContent();
     const headers = within(getReservedTable())
@@ -210,9 +213,56 @@ describe('ReservationListContent', () => {
       '프로그램',
       '멘토',
       '멘티',
+      '상태',
       '상세',
       '예약 변경 내역',
     ]);
+  });
+
+  // 2.3.T1 — 상태 뱃지 컬럼: 미제출(ABSENT/LATE)→미진행, 제출+미래→진행 예정.
+  it('미제출(attendanceStatus ABSENT) RESERVED 건은 "미진행" 뱃지로 표시된다', () => {
+    mockBase([
+      makeFeedback({
+        feedbackId: 1,
+        status: 'RESERVED',
+        startDate: '2099-01-01T10:00:00',
+        endDate: '2099-01-01T10:30:00',
+        attendanceStatus: 'ABSENT',
+      }),
+    ]);
+    renderContent();
+    expect(within(getReservedTable()).getByText('미진행')).toBeInTheDocument();
+  });
+
+  it('제출 완료(attendanceStatus PRESENT) + 미래 RESERVED 건은 "진행 예정" 뱃지로 표시된다', () => {
+    mockBase([
+      makeFeedback({
+        feedbackId: 1,
+        status: 'RESERVED',
+        startDate: '2099-01-01T10:00:00',
+        endDate: '2099-01-01T10:30:00',
+        attendanceStatus: 'PRESENT',
+      }),
+    ]);
+    renderContent();
+    expect(
+      within(getReservedTable()).getByText('진행 예정'),
+    ).toBeInTheDocument();
+  });
+
+  it('미제출 RESERVED 건도 예약 목록에서 누락되지 않는다(필터 정책)', () => {
+    mockBase([
+      makeFeedback({
+        feedbackId: 1,
+        status: 'RESERVED',
+        menteeName: '누락검증',
+        attendanceStatus: 'ABSENT',
+      }),
+    ]);
+    renderContent();
+    expect(
+      within(getReservedTable()).getByText('누락검증'),
+    ).toBeInTheDocument();
   });
 
   it('멘토 컬럼은 로그인 멘토 본인 이름으로 모든 행 동일하다', () => {
@@ -299,7 +349,7 @@ describe('ReservationListContent', () => {
   });
 
   it('로딩 중이면 안내 문구를 노출한다', () => {
-    useFeedbackMentorListQueryMock.mockReturnValue({
+    useFeedbackMentorListWithAttendanceMock.mockReturnValue({
       data: undefined,
       isLoading: true,
       isError: false,
@@ -316,7 +366,7 @@ describe('ReservationListContent', () => {
   });
 
   it('에러면 실패 안내를 노출한다', () => {
-    useFeedbackMentorListQueryMock.mockReturnValue({
+    useFeedbackMentorListWithAttendanceMock.mockReturnValue({
       data: undefined,
       isLoading: false,
       isError: true,
