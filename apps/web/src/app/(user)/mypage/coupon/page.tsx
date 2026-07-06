@@ -1,5 +1,7 @@
+import CouponSection from '@/domain/mypage/coupon/CouponSection';
+
 const CouponPage = () => {
-  return <div>쿠폰페이지</div>;
+  return <CouponSection />;
 };
 
 export default CouponPage;
