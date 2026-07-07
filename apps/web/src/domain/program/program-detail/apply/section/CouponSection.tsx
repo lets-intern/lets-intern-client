@@ -1,103 +1,55 @@
+'use client';
+
+import { DUMMY_COUPONS } from '@/domain/mypage/coupon/constants';
 import { ICouponForm } from '@/types/interface';
-import axios from '@/utils/axios';
-import { isAxiosError } from 'axios';
 import { useState } from 'react';
-import Input from '../../../../../common/input/v2/Input';
 
 export interface CouponSectionProps {
   setCoupon: (
     coupon: ((prevCoupon: ICouponForm) => ICouponForm) | ICouponForm,
   ) => void;
-  maxAmount?: number; // 최대로 적용할 수 있는 쿠폰 금액
+  maxAmount?: number;
   programType: string;
 }
 
 const CouponSection = ({
   setCoupon,
-  programType,
-  maxAmount = Infinity,
+  maxAmount: _maxAmount = Infinity,
 }: CouponSectionProps) => {
-  const [code, setCode] = useState('');
-  const [validationMsg, setValidationMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
-  const [isCoupon, setIsCoupon] = useState(false);
+  const [selectedCoupon, setSelectedCoupon] = useState<
+    (typeof DUMMY_COUPONS)[number] | null
+  >(null);
 
-  const clickApply = async () => {
-    if (isCoupon) {
-      setCoupon({
-        id: null,
-        price: 0,
-      });
-      setCode('');
-      setIsCoupon(false);
-      setSuccessMsg('');
-      setValidationMsg('');
-      return;
-    }
+  const availableCount = DUMMY_COUPONS.length;
 
-    if (code === '') return;
-    await fetchCouponAvailability();
-  };
-
-  const fetchCouponAvailability = async () => {
-    try {
-      const res = await axios.get(`/coupon`, {
-        params: {
-          code,
-          programType: programType.toUpperCase(),
-        },
-      });
-      const { couponId, discount } = res.data.data;
-      setCoupon({
-        id: couponId,
-        price: discount === -1 ? maxAmount : Math.min(discount, maxAmount),
-      });
-      setValidationMsg('');
-      setSuccessMsg('쿠폰이 등록되었습니다.');
-      setIsCoupon(true);
-    } catch (error) {
-      if (isAxiosError(error)) {
-        setSuccessMsg('');
-        setValidationMsg(error.response?.data.message);
-      }
-      setCoupon((prevCoupon: ICouponForm) => ({
-        ...prevCoupon,
-        couponId: null,
-        couponPrice: 0,
-      }));
-      setIsCoupon(false);
-    }
-  };
-
-  const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCode(e.target.value);
-    setValidationMsg('');
+  const handleCancel = () => {
+    setSelectedCoupon(null);
+    setCoupon({ id: null, price: 0 });
   };
 
   return (
-    <div className="flex w-full flex-col gap-3">
-      <div className="flex gap-2.5">
-        <Input
-          className="w-full"
-          type="text"
-          placeholder="쿠폰 번호를 입력해주세요."
-          value={code}
-          onChange={handleCodeChange}
-        />
-        <button
-          className={`flex shrink-0 items-center justify-center rounded-sm ${isCoupon ? 'border-primary text-primary border-2 bg-neutral-100' : 'bg-primary text-neutral-100'} px-4 py-1.5 text-sm font-medium`}
-          onClick={clickApply}
-        >
-          {isCoupon ? '쿠폰 취소' : '쿠폰 적용'}
-        </button>
-      </div>
-      {validationMsg && (
-        <div className="text-0.875 text-system-error h-3">{validationMsg}</div>
-      )}
-      {successMsg && (
-        <div className="text-0.875 text-system-positive-blue h-3">
-          {successMsg}
+    <div className="flex items-center justify-between px-3">
+      <span>쿠폰</span>
+      {selectedCoupon ? (
+        <div className="flex items-center gap-2">
+          <span className="text-xsmall14 text-primary font-medium">
+            {selectedCoupon.discount === -1
+              ? '전액 할인'
+              : `-${selectedCoupon.discount.toLocaleString()}원`}
+          </span>
+          <button
+            className="text-xsmall14 text-neutral-45 underline"
+            onClick={handleCancel}
+          >
+            취소
+          </button>
         </div>
+      ) : (
+        <button className="flex items-center gap-0.5">
+          <span>적용 가능</span>{' '}
+          <span className="text-primary font-semibold">{availableCount}장</span>
+          <img src="/icons/Chevron_Right_MD.svg" alt="" className="h-5 w-5" />
+        </button>
       )}
     </div>
   );
