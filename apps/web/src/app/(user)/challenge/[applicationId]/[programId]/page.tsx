@@ -2,6 +2,7 @@
 
 import { useChallengeHome } from '@/api/challenge/challenge';
 import { useUserQuery } from '@/api/user/user';
+import CouponBanner from '@/common/banner/CouponBanner';
 import { AsyncBoundary } from '@/common/boundary/AsyncBoundary';
 import LoadingContainer from '@/common/loading/LoadingContainer';
 import { useCurrentChallenge } from '@/context/CurrentChallengeProvider';
@@ -133,7 +134,7 @@ function ChallengeDashboardContent() {
   const isChallengeSubmitDone = getIsChallengeSubmitDone(programEndDate);
 
   return (
-    <main className="px-5 pt-8 md:pl-12 md:pr-0 md:pt-0">
+    <main className="px-5 py-8 md:pb-0 md:pl-12 md:pr-0 md:pt-0">
       <header>
         <h1 className="text-[22px] font-semibold">{user?.name}님의 대시보드</h1>
       </header>
@@ -184,6 +185,11 @@ function ChallengeDashboardContent() {
               />
             )}
           </section>
+        </div>
+
+        {/* 모바일: 쿠폰 배너 */}
+        <div className="md:hidden">
+          <CouponBanner />
         </div>
       </div>
     </main>

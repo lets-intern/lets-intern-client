@@ -1,3 +1,4 @@
+import CouponBanner from '@/common/banner/CouponBanner';
 import useChallengeNav from '@/domain/challenge/hooks/useChallengeNav';
 import clsx from 'clsx';
 import Link from 'next/link';
@@ -22,7 +23,7 @@ const NavBar = () => {
   return (
     <>
       {/* 모바일: 상단 수평 탭, 데스크톱: 사이드 네비게이션 */}
-      <nav className="w-full md:w-[220px]">
+      <nav className="flex w-full flex-col md:h-[613px] md:w-[220px] md:justify-between">
         <ul className="scrollbar-hide flex h-[40px] flex-row gap-4 overflow-x-auto border-b bg-white px-5 py-2 md:sticky md:flex-col md:gap-0 md:overflow-x-visible md:border-b-0 md:bg-transparent md:px-0 md:py-0">
           <li className="flex-shrink-0 md:flex-shrink">
             <Link
@@ -91,6 +92,10 @@ const NavBar = () => {
             </Link>
           </li>
         </ul>
+        {/* 데스크탑: 사이드바 하단 쿠폰 배너 */}
+        <div className="hidden md:mt-4 md:block">
+          <CouponBanner />
+        </div>
       </nav>
     </>
   );
