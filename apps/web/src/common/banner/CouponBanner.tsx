@@ -21,7 +21,9 @@ const CouponBanner = ({ compact = false }: CouponBannerProps) => {
         className="absolute left-8 top-0"
       />
       <div className="relative z-10 flex flex-col items-center gap-3 p-3 pt-[18px] text-center">
-        <p className="text-static-100 text-xsmall16 whitespace-pre-line leading-snug">
+        <p
+          className={`text-static-100 whitespace-pre-line leading-snug tracking-[-0.084px] ${compact ? 'text-xsmall14' : 'text-xsmall16'}`}
+        >
           <span className="font-bold">재구매 할인 쿠폰</span>
           <span className="font-medium">{rest}</span>
         </p>
