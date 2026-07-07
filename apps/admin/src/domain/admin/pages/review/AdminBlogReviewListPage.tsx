@@ -119,10 +119,8 @@ export default function AdminBlogReviewListPage() {
       editable: false,
       // 서버 페이지네이션이라 페이지가 넘어가도 이어지는 절대 순번(예: 6페이지 → 101~)
       renderCell: (params) => {
-        const idx = rows.findIndex((row) => row.id === params.id);
-        return idx < 0
-          ? ''
-          : paginationModel.page * paginationModel.pageSize + idx + 1;
+        const idx = params.api.getRowIndexRelativeToVisibleRows(params.id);
+        return paginationModel.page * paginationModel.pageSize + idx + 1;
       },
     },
     {
@@ -319,14 +317,30 @@ export default function AdminBlogReviewListPage() {
   const reactToPrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: '블로그 후기 목록',
+    // 인쇄 후 화면 밖 대량 DOM 을 정리(불필요한 리렌더 방지)
+    onAfterPrint: () => setPrintReviews([]),
   });
 
   const totalElements = data?.pageInfo.totalElements ?? 0;
 
   // 전체 후기 조회 (화면 목록은 page/size 만 쓰므로 필터 없이 전량)
+  // BE 최대 페이지 크기 제한을 고려해 청크 단위로 순회하며 병합한다.
   const fetchAllReviews = async () => {
-    const res = await getAdminBlogReviewList({ page: 0, size: totalElements });
-    return res.reviewList;
+    const CHUNK_SIZE = 1000;
+    const all: AdminBlogReview[] = [];
+    let page = 0;
+    while (true) {
+      const res = await getAdminBlogReviewList({ page, size: CHUNK_SIZE });
+      all.push(...res.reviewList);
+      if (
+        res.reviewList.length < CHUNK_SIZE ||
+        all.length >= res.pageInfo.totalElements
+      ) {
+        break;
+      }
+      page += 1;
+    }
+    return all;
   };
 
   const handleExportCsv = async () => {

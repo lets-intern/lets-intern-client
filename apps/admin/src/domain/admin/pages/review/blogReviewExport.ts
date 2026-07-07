@@ -58,7 +58,7 @@ export function buildBlogReviewCsv(reviews: AdminBlogReview[]): string {
 
 /** BOM 포함 CSV Blob 다운로드 (엑셀 한글 깨짐 방지). */
 export function downloadBlogReviewCsv(reviews: AdminBlogReview[]): void {
-  const BOM = '﻿';
+  const BOM = '\uFEFF';
   const blob = new Blob([BOM + buildBlogReviewCsv(reviews)], {
     type: 'text/csv',
   });
