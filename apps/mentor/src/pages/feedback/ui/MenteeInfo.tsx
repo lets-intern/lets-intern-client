@@ -242,7 +242,7 @@ const MenteeInfo = ({
               <span className="text-xs text-neutral-500">피드백 상태</span>
               <span className="flex items-center gap-1.5">
                 <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${feedbackBadge.badgeClass}`}
+                  className={`rounded-[4px] px-2 py-0.5 text-xs font-medium ${feedbackBadge.badgeClass}`}
                 >
                   {feedbackBadge.label}
                 </span>

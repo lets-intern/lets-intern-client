@@ -44,14 +44,6 @@ describe('live-mentoring imports', () => {
     expect(src).not.toContain('WRITTEN_FEEDBACK_MOCK_DATA');
   });
 
-  it('FeedbackSummary 는 서면 mock 을 import 하지 않는다', () => {
-    const src = readFileSync(
-      path.join(SCHEDULE_DIR, '../feedback-management/ui/FeedbackSummary.tsx'),
-      'utf-8',
-    );
-    expect(src).not.toContain('useWrittenFeedbackMockData');
-  });
-
   it('라이브 피드백 데이터 훅이 import 된다', async () => {
     const mod = await import('../hooks/useLiveFeedbackData');
     expect(typeof mod.useLiveFeedbackData).toBe('function');

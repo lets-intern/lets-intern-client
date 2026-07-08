@@ -3,7 +3,7 @@
  *
  * feedback-management 응답엔 미션 날짜가 없어 서면 행 일정이 '-'로 비는데,
  * useWrittenMissionRangeMap 이 챌린지별 미션 목록(GET /challenge/:id/mission/feedback)을
- * 병렬 조회해 missionId→{start,end}(endDate+2~+4) 맵을 채운다.
+ * 병렬 조회해 missionId→{start,end}(endDate+1~+3) 맵을 채운다.
  */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
@@ -26,7 +26,7 @@ function makeWrapper() {
 }
 
 describe('useWrittenMissionRangeMap', () => {
-  it('challengeId 별 미션 endDate에서 +2~+4 기간을 파생해 합친다', async () => {
+  it('challengeId 별 미션 endDate에서 +1~+3 기간을 파생해 합친다', async () => {
     const { result } = renderHook(() => useWrittenMissionRangeMap([1, 2]), {
       wrapper: makeWrapper(),
     });
@@ -36,15 +36,15 @@ describe('useWrittenMissionRangeMap', () => {
       expect(result.current.size).toBe(2);
     });
 
-    // challenge 1: 4/25 +2~+4 = 4/27~4/29
+    // challenge 1: 4/25 +1~+3 = 4/26~4/28
     expect(result.current.get(1001)).toEqual({
-      start: '2026-04-27',
-      end: '2026-04-29',
+      start: '2026-04-26',
+      end: '2026-04-28',
     });
-    // challenge 2: 4/27 +2~+4 = 4/29~5/1
+    // challenge 2: 4/27 +1~+3 = 4/28~4/30
     expect(result.current.get(2001)).toEqual({
-      start: '2026-04-29',
-      end: '2026-05-01',
+      start: '2026-04-28',
+      end: '2026-04-30',
     });
   });
 

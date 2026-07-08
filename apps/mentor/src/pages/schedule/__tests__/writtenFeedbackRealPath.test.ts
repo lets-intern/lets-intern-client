@@ -23,7 +23,7 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe('서면 바 실 경로(MSW) 파생', () => {
-  it('challenge 1 미션 endDate(4/25)로 written-feedback 바가 4/27~4/29 로 파생된다', async () => {
+  it('challenge 1 미션 endDate(4/25)로 written-feedback 바가 4/26~4/28 로 파생된다', async () => {
     const res = await fetch(`${BASE}/challenge/1/mission/feedback`);
     const body = await res.json();
     const { missionList } = challengeMissionFeedbackListSchema.parse(body.data);
@@ -33,12 +33,11 @@ describe('서면 바 실 경로(MSW) 파생', () => {
       WRITTEN_FEEDBACK_CONFIG,
       mission.endDate,
     );
-    // 과거 WRITTEN_FEEDBACK_MOCK_DATA challenge1 feedback 4/27~4/29 와 동등
-    expect(feedbackStartDate).toBe('2026-04-27');
-    expect(feedbackDeadline).toBe('2026-04-29');
+    expect(feedbackStartDate).toBe('2026-04-26');
+    expect(feedbackDeadline).toBe('2026-04-28');
   });
 
-  it('challenge 2 미션 endDate(4/27)로 written-feedback 바가 4/29~5/1 로 파생된다', async () => {
+  it('challenge 2 미션 endDate(4/27)로 written-feedback 바가 4/28~4/30 로 파생된다', async () => {
     const res = await fetch(`${BASE}/challenge/2/mission/feedback`);
     const body = await res.json();
     const { missionList } = challengeMissionFeedbackListSchema.parse(body.data);
@@ -48,8 +47,8 @@ describe('서면 바 실 경로(MSW) 파생', () => {
       WRITTEN_FEEDBACK_CONFIG,
       mission.endDate,
     );
-    expect(feedbackStartDate).toBe('2026-04-29');
-    expect(feedbackDeadline).toBe('2026-05-01');
+    expect(feedbackStartDate).toBe('2026-04-28');
+    expect(feedbackDeadline).toBe('2026-04-30');
   });
 
   it('attendance 응답으로 제출/미제출 카운트가 파생 가능하다', async () => {

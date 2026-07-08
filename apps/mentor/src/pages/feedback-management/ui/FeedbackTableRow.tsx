@@ -1,3 +1,4 @@
+import { LiveFeedbackIcon, WrittenFeedbackIcon } from '@/common/icon/feedback';
 import { STATUS_BADGE } from '@/constants/statusColors';
 import type { FeedbackRow } from '../types';
 
@@ -93,20 +94,7 @@ const RowKindIcon = ({ type }: { type: FeedbackRow['type'] }) => {
         role="img"
         className="inline-flex h-6 w-6 items-center justify-center rounded border border-gray-200 bg-white text-gray-500"
       >
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path
-            d="M3.5 1.5h6L12.5 4.5v10h-9v-13z"
-            stroke="currentColor"
-            strokeWidth="1.2"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M5 6.5h6M5 9h6M5 11.5h3.5"
-            stroke="currentColor"
-            strokeWidth="1.2"
-            strokeLinecap="round"
-          />
-        </svg>
+        <WrittenFeedbackIcon size={14} />
       </span>
     );
   }
@@ -116,18 +104,7 @@ const RowKindIcon = ({ type }: { type: FeedbackRow['type'] }) => {
       role="img"
       className="inline-flex h-6 w-6 items-center justify-center rounded border border-gray-200 bg-white text-gray-500"
     >
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-        <rect
-          x="1.5"
-          y="2.5"
-          width="13"
-          height="11"
-          rx="1.5"
-          stroke="currentColor"
-          strokeWidth="1.2"
-        />
-        <path d="M7 6.5l3 1.5-3 1.5v-3z" fill="currentColor" />
-      </svg>
+      <LiveFeedbackIcon size={14} />
     </span>
   );
 };
@@ -142,7 +119,7 @@ const StatusCell = ({
   if (!label || !tone) return <EmptyCell />;
   return (
     <span
-      className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[tone]}`}
+      className={`inline-block rounded-[4px] px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[tone]}`}
     >
       {label}
     </span>
