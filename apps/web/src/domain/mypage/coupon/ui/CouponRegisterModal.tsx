@@ -10,32 +10,87 @@ interface CouponRegisterModalProps {
 
 const CouponRegisterModal = ({ isOpen, onClose }: CouponRegisterModalProps) => {
   const [code, setCode] = useState('');
+  const [isError, setIsError] = useState(false);
+
+  const handleClose = () => {
+    setCode('');
+    setIsError(false);
+    onClose();
+  };
+
+  const handleRegister = () => {
+    // TODO: API 연동 시 서버 응답으로 교체
+    setIsError(true);
+  };
 
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose} className="mx-4 max-w-[400px]">
-      <div className="relative flex flex-col gap-6 px-4 pb-6 pt-9 md:px-6 md:pt-10">
-        <img
-          src="/icons/menu_close_md.svg"
-          alt="close"
-          onClick={onClose}
-          className="absolute right-6 top-6 h-6 w-6 cursor-pointer md:h-6 md:w-6"
-        />
-        <p className="text-neutral-0 text-lg font-bold">쿠폰 등록</p>
-        <div className="flex flex-col gap-2">
-          <input
-            type="text"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            placeholder="쿠폰 코드를 입력해주세요"
-            className="border-neutral-80 rounded-xs placeholder:text-neutral-70 focus:border-primary w-full border px-4 py-3 text-sm outline-none"
-          />
+    <BaseModal
+      isOpen={isOpen}
+      onClose={handleClose}
+      className="mx-4 max-w-[560px]"
+    >
+      <div className="flex flex-col">
+        <div className="flex flex-col gap-8 px-5 pb-6 pt-6">
+          <div className="flex items-center justify-between">
+            <p className="text-neutral-0 text-small18 font-semibold">
+              쿠폰 등록
+            </p>
+            <button onClick={handleClose}>
+              <img
+                src="/icons/menu_close_md.svg"
+                alt="close"
+                className="h-6 w-6"
+              />
+            </button>
+          </div>
+          <div className="flex flex-col gap-[60px]">
+            <div className="flex flex-col gap-1">
+              <input
+                type="text"
+                value={code}
+                onChange={(e) => {
+                  setCode(e.target.value);
+                  setIsError(false);
+                }}
+                placeholder="쿠폰 코드를 입력해주세요."
+                className="bg-neutral-95 text-xsmall16 placeholder:text-neutral-45 rounded-md p-3 outline-none"
+              />
+              {isError && (
+                <span className="text-xxsmall12 mt-1 text-red-500">
+                  유효하지 않은 쿠폰 번호입니다.
+                </span>
+              )}
+            </div>
+            <ul className="text-xsmall14 text-neutral-45 flex flex-col gap-1">
+              <li className="flex gap-2">
+                <span>•</span>
+                <span>유효기간이 지난 쿠폰은 등록할 수 없습니다.</span>
+              </li>
+              <li className="flex gap-2">
+                <span>•</span>
+                <span>
+                  쿠폰 등록 내역은 &apos;마이페이지 → 쿠폰함&apos;에서 확인할 수
+                  있습니다.
+                </span>
+              </li>
+            </ul>
+          </div>
         </div>
-        <button
-          className="bg-primary rounded-xs w-full py-3 font-semibold text-white"
-          onClick={onClose}
-        >
-          등록
-        </button>
+        <div className="border-neutral-85 flex gap-3 border-t px-5 py-4">
+          <button
+            className="border-neutral-80 rounded-xs flex-1 border py-3 font-medium text-neutral-50"
+            onClick={handleClose}
+          >
+            닫기
+          </button>
+          <button
+            className="rounded-xs bg-primary disabled:bg-neutral-85 flex-1 py-3 font-medium text-white disabled:cursor-not-allowed disabled:text-neutral-50"
+            disabled={!code.trim()}
+            onClick={handleRegister}
+          >
+            등록하기
+          </button>
+        </div>
       </div>
     </BaseModal>
   );
