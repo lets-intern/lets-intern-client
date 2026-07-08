@@ -1,6 +1,7 @@
 'use client';
 
 import BaseModal from '@/common/modal/BaseModal';
+import { useToast } from '@letscareer/ui';
 import { useState } from 'react';
 
 interface CouponRegisterModalProps {
@@ -9,6 +10,7 @@ interface CouponRegisterModalProps {
 }
 
 const CouponRegisterModal = ({ isOpen, onClose }: CouponRegisterModalProps) => {
+  const toast = useToast();
   const [code, setCode] = useState('');
   const [isError, setIsError] = useState(false);
 
@@ -19,8 +21,9 @@ const CouponRegisterModal = ({ isOpen, onClose }: CouponRegisterModalProps) => {
   };
 
   const handleRegister = () => {
-    // TODO: API 연동 시 서버 응답으로 교체
-    setIsError(true);
+    // API 연동 후 서버 응답 기반 분기처리 교체 필요
+    toast.success('쿠폰이 등록되었습니다');
+    handleClose();
   };
 
   return (
