@@ -40,13 +40,20 @@ const CouponSection = ({
 
   return (
     <>
-      <div className="flex items-center justify-between px-3">
-        <span>쿠폰</span>
-        {selectedCoupon ? (
-          <div className="flex items-center gap-1">
-            <button className="underline" onClick={() => setIsModalOpen(true)}>
-              {selectedCoupon.name}
-            </button>
+      <div className="flex items-center gap-3">
+        <div className="bg-neutral-95 flex flex-1 items-center justify-between rounded-md p-3">
+          <span className="text-xsmall14 md:text-xsmall16 font-normal">
+            {selectedCoupon ? (
+              <span className="font-medium">{selectedCoupon.name}</span>
+            ) : (
+              <>
+                적용 가능한 쿠폰이{' '}
+                <span className="text-primary">{availableCount}장</span>
+                있습니다.
+              </>
+            )}
+          </span>
+          {selectedCoupon && (
             <button
               className="text-neutral-45"
               onClick={() => {
@@ -56,20 +63,15 @@ const CouponSection = ({
             >
               <CloseIcon className="h-4 w-4" />
             </button>
-          </div>
-        ) : (
-          <button
-            className="flex items-center gap-0.5 disabled:cursor-not-allowed disabled:opacity-40"
-            onClick={() => setIsModalOpen(true)}
-            disabled={availableCount === 0}
-          >
-            <span>적용 가능</span>{' '}
-            <span className="text-primary font-semibold">
-              {availableCount}장
-            </span>
-            <img src="/icons/Chevron_Right_MD.svg" alt="" className="h-5 w-5" />
-          </button>
-        )}
+          )}
+        </div>
+        <button
+          className="bg-primary text-xsmall16 rounded-sm px-5 py-[9px] text-neutral-100 disabled:cursor-not-allowed disabled:opacity-40"
+          onClick={() => setIsModalOpen(true)}
+          disabled={availableCount === 0}
+        >
+          쿠폰 적용
+        </button>
       </div>
       <CouponSelectModal
         isOpen={isModalOpen}

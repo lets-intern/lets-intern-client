@@ -129,7 +129,7 @@ const CouponSelectModal = ({
                       : `${coupon.discount.toLocaleString()}원`}
                   </p>
                   <p className="text-xsmall16 font-semibold">{coupon.name}</p>
-                  <p className="md:text-xsmall14 text-neutral-30 text-[14px] tracking-tight">
+                  <p className="md:text-xsmall14 text-neutral-30 text-xxsmall12 tracking-tighter md:tracking-tight">
                     유효기간 : {formatDate(coupon.startDate)} ~{' '}
                     {formatDate(coupon.endDate)}
                   </p>
