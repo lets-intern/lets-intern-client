@@ -60,6 +60,7 @@ function formatLiveSchedule(
 
 /**
  * 서면 멘티 1명 행 — 제출(status)/피드백(feedbackStatus) 기준 상태 라벨.
+ * 라벨은 서면 어휘(진행 전/진행 중/완료), 색(tone)만 라이브에 맞춘다(statusColors.ts 재사용).
  * - status === 'ABSENT' → 미제출 (피드백 미시작이므로 '진행 전')
  * - feedbackStatus COMPLETED/CONFIRMED → 완료
  * - feedbackStatus IN_PROGRESS → 진행 중
@@ -74,13 +75,21 @@ function summarizeWrittenMentee(mentee: WrittenMenteeAttendance): {
     mentee.status === 'ABSENT' ? '미제출' : '제출';
 
   if (submissionLabel === '미제출') {
-    return { submissionLabel, statusLabel: '진행 전', statusTone: 'waiting' };
+    return {
+      submissionLabel,
+      statusLabel: '진행 전',
+      statusTone: 'liveWaiting',
+    };
   }
   if (
     mentee.feedbackStatus === 'COMPLETED' ||
     mentee.feedbackStatus === 'CONFIRMED'
   ) {
-    return { submissionLabel, statusLabel: '완료', statusTone: 'completed' };
+    return {
+      submissionLabel,
+      statusLabel: '완료',
+      statusTone: 'liveCompleted',
+    };
   }
   if (mentee.feedbackStatus === 'IN_PROGRESS') {
     return {
@@ -89,7 +98,11 @@ function summarizeWrittenMentee(mentee: WrittenMenteeAttendance): {
       statusTone: 'inProgress',
     };
   }
-  return { submissionLabel, statusLabel: '진행 전', statusTone: 'waiting' };
+  return {
+    submissionLabel,
+    statusLabel: '진행 전',
+    statusTone: 'liveWaiting',
+  };
 }
 
 /**
@@ -231,7 +244,7 @@ export function buildMissionRangeMap(
   };
   for (const m of apiMissions) {
     if (!m.endDate) continue;
-    map.set(m.id, { start: addDays(m.endDate, 2), end: addDays(m.endDate, 4) });
+    map.set(m.id, { start: addDays(m.endDate, 1), end: addDays(m.endDate, 3) });
   }
   return map;
 }
@@ -385,7 +398,7 @@ export function useMergedFeedbackRows(
  * feedback-management 응답에는 미션 날짜가 없어 서면 행 일정이 '-'로 비어 있는데,
  * 이 hook 결과를 `useMergedFeedbackRows`에 주입하면 `scheduleLabel`이 채워진다.
  *
- * useQueries 로 challengeId 별 fan-out(N+1 허용). 도착한 미션만 endDate+2~+4로 파생한다.
+ * useQueries 로 challengeId 별 fan-out(N+1 허용). 도착한 미션만 endDate+1~+3로 파생한다.
  */
 export function useWrittenMissionRangeMap(
   challengeIds: number[],

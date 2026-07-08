@@ -172,10 +172,10 @@ describe('useMergedFeedbackRows', () => {
     const inProgress = result.current.find((r) => r.id === 'written-1-1001-12');
     const absent = result.current.find((r) => r.id === 'written-1-1001-13');
 
-    // 제출 + COMPLETED → 완료, 상세 열림
+    // 제출 + COMPLETED → 완료(서면 어휘·라이브 색), 상세 열림
     expect(completed?.submissionLabel).toBe('제출');
     expect(completed?.statusLabel).toBe('완료');
-    expect(completed?.statusTone).toBe('completed');
+    expect(completed?.statusTone).toBe('liveCompleted');
     expect(completed?.canOpenDetail).toBe(true);
 
     // 제출 + IN_PROGRESS → 진행 중
@@ -183,10 +183,10 @@ describe('useMergedFeedbackRows', () => {
     expect(inProgress?.statusLabel).toBe('진행 중');
     expect(inProgress?.statusTone).toBe('inProgress');
 
-    // ABSENT → 미제출, 진행 전, 상세 닫힘
+    // ABSENT → 미제출, 진행 전(서면 어휘·라이브 색), 상세 닫힘
     expect(absent?.submissionLabel).toBe('미제출');
     expect(absent?.statusLabel).toBe('진행 전');
-    expect(absent?.statusTone).toBe('waiting');
+    expect(absent?.statusTone).toBe('liveWaiting');
     expect(absent?.canOpenDetail).toBe(false);
   });
 

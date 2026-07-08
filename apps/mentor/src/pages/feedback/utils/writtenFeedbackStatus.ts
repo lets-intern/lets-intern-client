@@ -1,7 +1,4 @@
-import {
-  FeedbackStatusMapping,
-  type FeedbackStatus,
-} from '@/api/challenge/challengeSchema';
+import { type FeedbackStatus } from '@/api/challenge/challengeSchema';
 import { STATUS_BADGE } from '@/constants/statusColors';
 
 /**
@@ -10,17 +7,29 @@ import { STATUS_BADGE } from '@/constants/statusColors';
  * 두 모달의 상태 배지 디자인을 일치시킨다.
  */
 export interface WrittenFeedbackBadgeVisual {
-  /** 화면 표기 라벨 (진행전 / 진행중 / 진행완료 / 확인완료 / 미제출) */
+  /** 화면 표기 라벨 (진행 전 / 진행 중 / 완료 / 미제출) */
   label: string;
-  /** STATUS_BADGE 토큰 (border + bg + text) */
+  /** STATUS_BADGE 토큰 (bg + text) */
   badgeClass: string;
 }
 
 const BADGE_BY_STATUS: Record<FeedbackStatus, string> = {
-  WAITING: STATUS_BADGE.waiting,
+  WAITING: STATUS_BADGE.liveWaiting,
   IN_PROGRESS: STATUS_BADGE.inProgress,
-  COMPLETED: STATUS_BADGE.completed,
-  CONFIRMED: STATUS_BADGE.completed,
+  COMPLETED: STATUS_BADGE.liveCompleted,
+  CONFIRMED: STATUS_BADGE.liveCompleted,
+};
+
+/**
+ * 서면 상태 라벨(서면 어휘). 색(tone)만 라이브에 맞추고 이름은 서면대로 둔다.
+ * 공유 상수 `FeedbackStatusMapping`(진행전/진행중/진행완료/확인완료)은 수정하지 않고
+ * 이 파일 내부에서만 서면 어휘로 치환한다: 진행 전 / 진행 중 / 완료.
+ */
+const LABEL_BY_STATUS: Record<FeedbackStatus, string> = {
+  WAITING: '진행 전',
+  IN_PROGRESS: '진행 중',
+  COMPLETED: '완료',
+  CONFIRMED: '완료',
 };
 
 /**
@@ -37,7 +46,7 @@ export function getWrittenFeedbackBadgeVisual(
   }
   const resolved = status ?? 'WAITING';
   return {
-    label: FeedbackStatusMapping[resolved],
+    label: LABEL_BY_STATUS[resolved],
     badgeClass: BADGE_BY_STATUS[resolved],
   };
 }

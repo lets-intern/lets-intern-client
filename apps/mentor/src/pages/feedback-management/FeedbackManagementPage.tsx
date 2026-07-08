@@ -6,7 +6,6 @@ import FeedbackModal from '@/pages/feedback/FeedbackModal';
 import MobileFeedbackPage from '@/pages/feedback/ui/MobileFeedbackPage';
 import LiveFeedbackReservationModal from '@/pages/schedule/modal/LiveFeedbackReservationModal';
 import type { PeriodBarData } from '@/pages/schedule/types';
-import FeedbackSummary from './ui/FeedbackSummary';
 import FeedbackTabs from './ui/FeedbackTabs';
 import FeedbackTable from './ui/FeedbackTable';
 import WrittenMenteeAttendanceFetcher from './ui/WrittenMenteeAttendanceFetcher';
@@ -113,14 +112,12 @@ const FeedbackManagementPage = () => {
     <div className="flex flex-col gap-4 pb-20 md:gap-6 md:pb-0">
       <div className="flex flex-col gap-1">
         <h1 className="text-lg font-semibold leading-7 text-neutral-900 md:text-xl md:leading-8">
-          피드백 현황
+          피드백 내역
         </h1>
         <p className="text-xs text-neutral-500 md:text-sm">
-          서면 피드백, LIVE 피드백 현황을 확인하세요.
+          서면 피드백, LIVE 피드백 내역을 확인하세요.
         </p>
       </div>
-
-      <FeedbackSummary />
 
       <FeedbackTabs activeTab={activeTab} onChange={setActiveTab} />
 

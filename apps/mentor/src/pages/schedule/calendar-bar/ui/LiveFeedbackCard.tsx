@@ -1,3 +1,4 @@
+import { LiveFeedbackIcon } from '@/common/icon/feedback';
 import { twMerge } from '@/lib/twMerge';
 import {
   resolveLiveSessionStatus,
@@ -112,25 +113,7 @@ export const LiveFeedbackTimeBlock = ({ bar }: { bar: PeriodBarData }) => {
 
       {/* Row 2: ▶ LIVE 피드백 (빨강 비디오 아이콘 + 검정 라벨) */}
       <div className="flex min-w-0 items-center gap-1.5">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 20 20"
-          fill="none"
-          className="shrink-0"
-          aria-hidden
-        >
-          <rect
-            x="2"
-            y="4.5"
-            width="16"
-            height="11"
-            rx="3"
-            stroke="#f64e39"
-            strokeWidth="1.4"
-          />
-          <path d="M8.5 7.5L12.5 10L8.5 12.5V7.5Z" fill="#f64e39" />
-        </svg>
+        <LiveFeedbackIcon size={18} className="shrink-0" />
         <span className="text-xxsmall12 text-neutral-10 shrink-0 font-bold leading-none">
           {bar.th}회차 LIVE 피드백
         </span>

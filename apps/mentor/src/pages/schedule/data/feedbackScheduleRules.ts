@@ -14,12 +14,13 @@ import {
  * | --------------- | ------------------------------------------- |
  * | LIVE 슬롯 오픈  | 미션 시작일 -3일 00:00:00 ~ -2일 23:59:59   |
  * | LIVE 예약(멘티) | 미션 시작일 ~ 미션 종료일                   |
- * | LIVE/서면 진행  | 미션 종료일 +2일 00:00:00 ~ +4일 23:59:59   |
+ * | LIVE 진행       | 미션 종료일 +2일 00:00:00 ~ +4일 23:59:59   |
  *
- * BE 산식 일치 확인(`domain/mission/vo/LiveFeedbackMissionVo.java`):
+ * BE 산식 근거(멘토 피드백 마감 알림 배치 `MentorFeedback*NotificationTasklet`):
  *  - slotDeadline  = missionStartDate.minusDays(2) 23:59
  *  - feedbackStart = missionEndDate.plusDays(2) 00:00
  *  - feedbackEnd   = missionEndDate.plusDays(4)
+ * (⚠️ 서면 피드백 진행기간은 별도 +1~+3 규칙 — writtenFeedback.ts / buildMissionRangeMap 참조)
  * → 경계 시각은 위 표(±N일 00:00:00 / 23:59:59)를 FE 기준으로 삼는다.
  *   즉 여는 경계는 해당 일자의 하루 시작(00:00:00), 닫는 경계는 하루 끝(23:59:59)으로 취한다.
  *
