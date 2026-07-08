@@ -14,12 +14,13 @@ import {
  * | --------------- | ------------------------------------------- |
  * | LIVE 슬롯 오픈  | 미션 시작일 -3일 00:00:00 ~ -2일 23:59:59   |
  * | LIVE 예약(멘티) | 미션 시작일 ~ 미션 종료일                   |
- * | LIVE/서면 진행  | 미션 종료일 +1일 00:00:00 ~ +3일 23:59:59   |
+ * | LIVE 진행       | 미션 종료일 +2일 00:00:00 ~ +4일 23:59:59   |
  *
- * BE 산식 일치 확인(`domain/mission/vo/LiveFeedbackMissionVo.java`):
+ * BE 산식 근거(멘토 피드백 마감 알림 배치 `MentorFeedback*NotificationTasklet`):
  *  - slotDeadline  = missionStartDate.minusDays(2) 23:59
- *  - feedbackStart = missionEndDate.plusDays(1) 00:00
- *  - feedbackEnd   = missionEndDate.plusDays(3)
+ *  - feedbackStart = missionEndDate.plusDays(2) 00:00
+ *  - feedbackEnd   = missionEndDate.plusDays(4)
+ * (⚠️ 서면 피드백 진행기간은 별도 +1~+3 규칙 — writtenFeedback.ts / buildMissionRangeMap 참조)
  * → 경계 시각은 위 표(±N일 00:00:00 / 23:59:59)를 FE 기준으로 삼는다.
  *   즉 여는 경계는 해당 일자의 하루 시작(00:00:00), 닫는 경계는 하루 끝(23:59:59)으로 취한다.
  *
@@ -29,8 +30,8 @@ import {
 /** 슬롯 오픈 기간 오프셋(일) — 미션 시작일 기준. start=-3일 시작, end=-2일 끝. */
 export const SLOT_OPEN_OFFSET_DAYS = { start: -3, end: -2 } as const;
 
-/** 진행 기간 오프셋(일) — 미션 종료일 기준. start=+1일 시작, end=+3일 끝. */
-export const PROGRESS_OFFSET_DAYS = { start: 1, end: 3 } as const;
+/** 진행 기간 오프셋(일) — 미션 종료일 기준. start=+2일 시작, end=+4일 끝. */
+export const PROGRESS_OFFSET_DAYS = { start: 2, end: 4 } as const;
 
 /** 파생된 기간 구간. `start`/`end`는 경계 시각까지 포함한 Date. */
 export interface ScheduleWindow {
@@ -53,7 +54,7 @@ export function computeSlotOpenWindow(
 }
 
 /**
- * 진행 기간: 미션 종료일 +1일 00:00:00 ~ +3일 23:59:59.
+ * 진행 기간: 미션 종료일 +2일 00:00:00 ~ +4일 23:59:59.
  * @param missionEndDate BE 미션 종료 일시(ISO LocalDateTime 문자열)
  *
  * TODO(미배선): 현재 정의만 있고 캘린더에 "진행 기간" 바로 배선되지 않았다(PRD §4 표의

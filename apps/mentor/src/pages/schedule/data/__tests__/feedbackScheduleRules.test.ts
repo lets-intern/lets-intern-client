@@ -3,7 +3,7 @@
  *
  * PRD §4·§6-2 표 근거:
  *  - 슬롯 오픈: 미션 시작 -3일 00:00:00 ~ -2일 23:59:59
- *  - 진행:     미션 종료 +1일 00:00:00 ~ +3일 23:59:59
+ *  - 진행(LIVE): 미션 종료 +2일 00:00:00 ~ +4일 23:59:59
  *  - 예약:     미션 시작일 00:00:00 ~ 미션 종료일 23:59:59
  */
 import { describe, expect, it } from 'vitest';
@@ -25,9 +25,9 @@ function fmt(d: Date): string {
 }
 
 describe('오프셋 상수', () => {
-  it('슬롯 오픈은 -3일 시작 ~ -2일 끝, 진행은 +1일 시작 ~ +3일 끝', () => {
+  it('슬롯 오픈은 -3일 시작 ~ -2일 끝, 진행은 +2일 시작 ~ +4일 끝', () => {
     expect(SLOT_OPEN_OFFSET_DAYS).toEqual({ start: -3, end: -2 });
-    expect(PROGRESS_OFFSET_DAYS).toEqual({ start: 1, end: 3 });
+    expect(PROGRESS_OFFSET_DAYS).toEqual({ start: 2, end: 4 });
   });
 });
 
@@ -40,10 +40,10 @@ describe('computeSlotOpenWindow', () => {
 });
 
 describe('computeProgressWindow', () => {
-  it('미션 종료 +1일 00:00:00 ~ +3일 23:59:59 구간을 만든다', () => {
+  it('미션 종료 +2일 00:00:00 ~ +4일 23:59:59 구간을 만든다', () => {
     const w = computeProgressWindow('2026-07-15T18:00:00');
-    expect(fmt(w.start)).toBe('2026-07-16 00:00:00');
-    expect(fmt(w.end)).toBe('2026-07-18 23:59:59');
+    expect(fmt(w.start)).toBe('2026-07-17 00:00:00');
+    expect(fmt(w.end)).toBe('2026-07-19 23:59:59');
   });
 });
 

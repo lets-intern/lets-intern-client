@@ -9,7 +9,7 @@ import { STATUS_BADGE } from '@/constants/statusColors';
 export interface WrittenFeedbackBadgeVisual {
   /** 화면 표기 라벨 (진행 전 / 진행 중 / 완료 / 미제출) */
   label: string;
-  /** STATUS_BADGE 토큰 (border + bg + text) */
+  /** STATUS_BADGE 토큰 (bg + text) */
   badgeClass: string;
 }
 
