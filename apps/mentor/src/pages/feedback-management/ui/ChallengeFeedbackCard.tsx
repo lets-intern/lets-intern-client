@@ -117,7 +117,7 @@ export const MissionRow = ({
 
         {statusConfig[missionStatus] && (
           <span
-            className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusConfig[missionStatus].className}`}
+            className={`shrink-0 rounded-[4px] px-2.5 py-0.5 text-xs font-medium ${statusConfig[missionStatus].className}`}
           >
             {statusConfig[missionStatus].label}
           </span>
@@ -189,7 +189,7 @@ const ChallengeFeedbackCard = ({
 
   /**
    * missionId → 서면 피드백 기간 {start, end}.
-   * 1) API 응답 — mission.endDate + 2 ~ endDate + 4 (WRITTEN_FEEDBACK_CONFIG 기준)
+   * 1) API 응답 — mission.endDate + 1 ~ endDate + 3 (WRITTEN_FEEDBACK_CONFIG 기준)
    * 2) override — mock 챌린지 등 API에 없는 항목 덮어쓰기
    */
   const missionRangeMap = useMemo(() => {
@@ -202,8 +202,8 @@ const ChallengeFeedbackCard = ({
     for (const m of missionListData?.missionList ?? []) {
       if (!m.endDate) continue;
       map.set(m.id, {
-        start: addDays(m.endDate, 2),
-        end: addDays(m.endDate, 4),
+        start: addDays(m.endDate, 1),
+        end: addDays(m.endDate, 3),
       });
     }
     if (missionDateOverrides) {

@@ -46,7 +46,7 @@ export const LiveRoundRow = ({
 
         {activeLabel && (
           <span
-            className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${activeLabel.className}`}
+            className={`shrink-0 rounded-[4px] px-2.5 py-0.5 text-xs font-medium ${activeLabel.className}`}
           >
             {activeLabel.label}
           </span>

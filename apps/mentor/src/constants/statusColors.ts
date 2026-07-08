@@ -4,22 +4,20 @@
  */
 
 export const STATUS_BADGE = {
-  completed: 'border border-green-200 bg-green-50 text-green-700',
-  inProgress: 'border border-blue-200 bg-blue-50 text-blue-600',
-  waiting: 'border border-red-200 bg-red-50 text-red-500',
-  late: 'border border-amber-200 bg-amber-50 text-amber-700',
-  absent: 'border border-neutral-300 bg-neutral-100 text-neutral-600',
-  submitted: 'border border-sky-200 bg-sky-50 text-sky-700',
-  notSubmitted: 'border border-orange-200 bg-orange-50 text-orange-600',
+  completed: 'bg-green-50 text-green-700',
+  inProgress: 'bg-blue-50 text-blue-600',
+  waiting: 'bg-red-50 text-red-500',
+  late: 'bg-amber-50 text-amber-700',
+  absent: 'bg-neutral-100 text-neutral-600',
+  submitted: 'bg-sky-50 text-sky-700',
+  notSubmitted: 'bg-orange-50 text-orange-600',
   none: 'bg-gray-100 text-gray-500',
   // 라이브 피드백 상태 전용.
-  // 서면 피드백과 색 규칙이 달라 공용 토큰을 재사용하지 않고 별도 유지한다.
-  // - 미진행(멘토 미입장) = 진한 빨강 배경 + 흰 글자(solid)
-  // - 취소(예약 후 미제출·예약취소) = 연빨강 배경 + 빨강 글자(light)
-  liveWaiting: 'border border-indigo-200 bg-indigo-50 text-indigo-500',
-  liveCompleted: 'border border-neutral-300 bg-neutral-100 text-neutral-600',
-  liveMissed: 'border border-red-500 bg-red-500 text-white',
-  liveCancelled: 'border border-red-200 bg-red-50 text-red-500',
+  // 미진행·취소는 동일 색(연빨강)으로 통일한다. 배지는 테두리 없이 옅은 배경만 사용.
+  liveWaiting: 'bg-indigo-50 text-indigo-500',
+  liveCompleted: 'bg-neutral-100 text-neutral-600',
+  liveMissed: 'bg-red-50 text-red-500',
+  liveCancelled: 'bg-red-50 text-red-500',
 } as const;
 
 /**
@@ -30,8 +28,8 @@ export const STATUS_BADGE = {
 export const LIVE_CARD_BADGE = {
   waiting: 'bg-indigo-50 text-indigo-500',
   inProgress: 'bg-blue-50 text-blue-600',
-  completed: 'border border-neutral-300 bg-white text-neutral-500',
-  missed: 'bg-red-500 text-white',
+  completed: 'bg-white text-neutral-500',
+  missed: 'bg-red-50 text-red-500',
   cancelled: 'bg-red-50 text-red-500',
 } as const;
 
