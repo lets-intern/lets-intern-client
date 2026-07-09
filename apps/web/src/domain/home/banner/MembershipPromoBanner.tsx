@@ -24,23 +24,131 @@ type Spark = {
  */
 const SPARKLES: Spark[] = [
   // 왼쪽 배경 여백
-  { left: 6, top: 23, size: 11, color: '#ffffff', glow: 'rgba(255,255,255,.95)', dur: 3.6, delay: 0.0 },
-  { left: 4, top: 50, size: 9, color: '#c9d1ff', glow: 'rgba(150,165,255,.9)', dur: 4.4, delay: 1.4 },
-  { left: 12, top: 62, size: 20, color: '#ffffff', glow: 'rgba(255,255,255,1)', dur: 3.8, delay: 0.7, pop: true },
-  { left: 15, top: 35, size: 10, color: '#ffffff', glow: 'rgba(255,255,255,.95)', dur: 4.1, delay: 2.3 },
+  {
+    left: 6,
+    top: 23,
+    size: 11,
+    color: '#ffffff',
+    glow: 'rgba(255,255,255,.95)',
+    dur: 3.6,
+    delay: 0.0,
+  },
+  {
+    left: 4,
+    top: 50,
+    size: 9,
+    color: '#c9d1ff',
+    glow: 'rgba(150,165,255,.9)',
+    dur: 4.4,
+    delay: 1.4,
+  },
+  {
+    left: 12,
+    top: 62,
+    size: 20,
+    color: '#ffffff',
+    glow: 'rgba(255,255,255,1)',
+    dur: 3.8,
+    delay: 0.7,
+    pop: true,
+  },
+  {
+    left: 15,
+    top: 35,
+    size: 10,
+    color: '#ffffff',
+    glow: 'rgba(255,255,255,.95)',
+    dur: 4.1,
+    delay: 2.3,
+  },
   // 헤드라인 위 여백
-  { left: 26, top: 10, size: 9, color: '#c9d1ff', glow: 'rgba(150,165,255,.9)', dur: 4.2, delay: 1.8 },
-  { left: 46, top: 9, size: 11, color: '#ffffff', glow: 'rgba(255,255,255,.95)', dur: 3.5, delay: 2.7 },
+  {
+    left: 26,
+    top: 10,
+    size: 9,
+    color: '#c9d1ff',
+    glow: 'rgba(150,165,255,.9)',
+    dur: 4.2,
+    delay: 1.8,
+  },
+  {
+    left: 46,
+    top: 9,
+    size: 11,
+    color: '#ffffff',
+    glow: 'rgba(255,255,255,.95)',
+    dur: 3.5,
+    delay: 2.7,
+  },
   // 헤드라인–티켓 사이 세로 통로 (글자 없는 여백)
-  { left: 62, top: 21, size: 22, color: '#ffffff', glow: 'rgba(255,255,255,1)', dur: 3.6, delay: 0.4, pop: true },
-  { left: 61, top: 45, size: 10, color: '#c9d1ff', glow: 'rgba(150,165,255,.95)', dur: 4.5, delay: 1.2 },
-  { left: 63, top: 64, size: 12, color: '#ffffff', glow: 'rgba(255,255,255,.95)', dur: 3.9, delay: 2.4 },
+  {
+    left: 62,
+    top: 21,
+    size: 22,
+    color: '#ffffff',
+    glow: 'rgba(255,255,255,1)',
+    dur: 3.6,
+    delay: 0.4,
+    pop: true,
+  },
+  {
+    left: 61,
+    top: 45,
+    size: 10,
+    color: '#c9d1ff',
+    glow: 'rgba(150,165,255,.95)',
+    dur: 4.5,
+    delay: 1.2,
+  },
+  {
+    left: 63,
+    top: 64,
+    size: 12,
+    color: '#ffffff',
+    glow: 'rgba(255,255,255,.95)',
+    dur: 3.9,
+    delay: 2.4,
+  },
   // 티켓 위쪽 여백
-  { left: 70, top: 9, size: 10, color: '#ffffff', glow: 'rgba(255,255,255,.95)', dur: 4.3, delay: 2.9 },
-  { left: 84, top: 11, size: 20, color: '#ffffff', glow: 'rgba(255,255,255,1)', dur: 3.7, delay: 1.0, pop: true },
+  {
+    left: 70,
+    top: 9,
+    size: 10,
+    color: '#ffffff',
+    glow: 'rgba(255,255,255,.95)',
+    dur: 4.3,
+    delay: 2.9,
+  },
+  {
+    left: 84,
+    top: 11,
+    size: 20,
+    color: '#ffffff',
+    glow: 'rgba(255,255,255,1)',
+    dur: 3.7,
+    delay: 1.0,
+    pop: true,
+  },
   // 티켓 오른쪽 shine 영역
-  { left: 97, top: 39, size: 22, color: '#ffffff', glow: 'rgba(255,255,255,1)', dur: 3.5, delay: 1.6, pop: true },
-  { left: 96, top: 59, size: 10, color: '#c9d1ff', glow: 'rgba(150,165,255,.9)', dur: 4.4, delay: 0.8 },
+  {
+    left: 97,
+    top: 39,
+    size: 22,
+    color: '#ffffff',
+    glow: 'rgba(255,255,255,1)',
+    dur: 3.5,
+    delay: 1.6,
+    pop: true,
+  },
+  {
+    left: 96,
+    top: 59,
+    size: 10,
+    color: '#c9d1ff',
+    glow: 'rgba(150,165,255,.9)',
+    dur: 4.4,
+    delay: 0.8,
+  },
 ];
 
 /** 큰 글린트: 얇은 4방향 광선 + 밝은 코어(✨). 작은 별: 통통한 4각 반짝이(✦). */
@@ -48,7 +156,7 @@ const Sparkle = ({ s }: { s: Spark }) => (
   <svg
     aria-hidden="true"
     viewBox="0 0 100 100"
-    className={`promo-banner-sparkle${s.pop ? ' is-pop' : ''} pointer-events-none absolute`}
+    className={`promo-banner-sparkle${s.pop ? 'is-pop' : ''} pointer-events-none absolute`}
     style={
       {
         left: `${s.left}%`,
