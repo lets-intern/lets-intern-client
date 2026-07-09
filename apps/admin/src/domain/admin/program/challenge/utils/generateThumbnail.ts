@@ -74,6 +74,11 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
+// JSDOM 등 CSS Font Loading API 미구현 환경(document.fonts === undefined) 방어
+function loadFont(font: string, text: string): Promise<FontFace[] | void> {
+  return document.fonts ? document.fonts.load(font, text) : Promise.resolve();
+}
+
 export async function drawBadgeOnCanvas(
   challengeType: ChallengeType,
   title: string,
@@ -92,17 +97,9 @@ export async function drawBadgeOnCanvas(
 
   const [img] = await Promise.all([
     loadImage(imagePath),
-    document.fonts.load(
-      `bold ${FONT_SIZE}px "Pretendard Variable"`,
-      generation,
-    ),
+    loadFont(`bold ${FONT_SIZE}px "Pretendard Variable"`, generation),
     ...(titleText
-      ? [
-          document.fonts.load(
-            `bold ${TITLE_FONT_SIZE}px "Pretendard Variable"`,
-            titleText,
-          ),
-        ]
+      ? [loadFont(`bold ${TITLE_FONT_SIZE}px "Pretendard Variable"`, titleText)]
       : []),
   ]);
 
