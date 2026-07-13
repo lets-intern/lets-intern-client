@@ -157,6 +157,20 @@ const ReservationInfoSection = ({
           onClose={() => setIsJitsiOpen(false)}
           meetingUrl={meetingUrl ?? null}
           spaceName={mentor.nickname}
+          // 입장 후 현재 서버가 죽어있으면(external_api.js 로드 실패) 다음 후보로 자동
+          // 재등록(failover). BE 는 base + meetingRoom 을 덮어써 합성한다.
+          baseCandidates={[
+            process.env.NEXT_PUBLIC_JITSI_BASE_URL,
+            process.env.NEXT_PUBLIC_JITSI_FALLBACK_URL,
+          ]}
+          registerBaseUrl={async (base) => {
+            await patchMeetingUrl.mutateAsync({ meetingUrl: base });
+          }}
+          onExhausted={() =>
+            window.alert(
+              '회의실 서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.',
+            )
+          }
         />
       )}
     </div>
