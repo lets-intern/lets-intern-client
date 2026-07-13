@@ -102,3 +102,82 @@ export async function ensureLiveMeetingUrl(
   await options.registerBaseUrl(healthyBase);
   return { ok: true };
 }
+
+/** URL 에서 host 를 안전하게 뽑는다. 파싱 실패면 null. */
+export function safeHost(url: string): string | null {
+  try {
+    return new URL(url).host || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 후보 base 목록에서 **아직 시도하지 않은(triedHosts 에 없는)** 첫 우선순위 base 를 고른다.
+ * 없으면 null. (failover: 실패한 도메인을 제외하고 다음 서버로 넘어갈 때 사용)
+ */
+export function pickNextBase(
+  candidates: ReadonlyArray<string | undefined>,
+  triedHosts: ReadonlySet<string>,
+): string | null {
+  for (const candidate of candidates) {
+    if (!candidate || candidate.trim() === '') continue;
+    const base = normalizeBase(candidate);
+    const host = safeHost(base);
+    if (!host || triedHosts.has(host)) continue;
+    return base;
+  }
+  return null;
+}
+
+/** external_api.js 프로브 타임아웃 (ms) — 스크립트 로드+파싱 여유. */
+const EXTERNAL_API_PROBE_TIMEOUT_MS = 8000;
+
+/**
+ * 대상 도메인에서 Jitsi `external_api.js` 를 실제로 로드해 본다.
+ *
+ * no-cors HEAD 헬스체크(isDomainHealthy)는 opaque 응답이라 503 을 못 거르지만,
+ * 이 프로브는 SDK 가 겪는 것과 **동일한 `<script>` 로드**를 수행하므로 죽은 도메인·
+ * 오타 URL 을 결정적으로 감지한다. `onload` 라도 `window.JitsiMeetExternalAPI` 가
+ * 실제로 정의됐는지까지 확인해, 200 이지만 Jitsi 가 아닌 응답도 실패로 처리한다.
+ *
+ * 성공 시 주입한 `<script>` 를 남겨 SDK(`fetchExternalApi`)가 재사용하게 하고(중복
+ * 주입 방지), 실패 시 죽은 태그를 제거한다(싱글톤 오염 방지).
+ *
+ * @param roomOrBaseUrl 회의실 URL 또는 base URL — host 만 사용한다.
+ */
+export function probeJitsiExternalApi(
+  roomOrBaseUrl: string,
+  timeoutMs: number = EXTERNAL_API_PROBE_TIMEOUT_MS,
+): Promise<boolean> {
+  if (typeof document === 'undefined') return Promise.resolve(false);
+  const host = safeHost(roomOrBaseUrl);
+  if (!host) return Promise.resolve(false);
+
+  const w = window as typeof window & { JitsiMeetExternalAPI?: unknown };
+  // 이미 로드됨 — SDK 와 동일하게 재사용 가능(External API 는 도메인 무관 클래스).
+  if (w.JitsiMeetExternalAPI) return Promise.resolve(true);
+
+  return new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = `https://${host}/external_api.js`;
+
+    let settled = false;
+    const finish = (ok: boolean) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      script.onload = null;
+      script.onerror = null;
+      if (!ok) script.remove();
+      resolve(ok);
+    };
+
+    const timer = setTimeout(() => finish(false), timeoutMs);
+    // onload 라도 스크립트가 실제로 API 를 정의했을 때만 성공으로 본다.
+    script.onload = () => finish(!!w.JitsiMeetExternalAPI);
+    script.onerror = () => finish(false);
+    document.head.appendChild(script);
+  });
+}
