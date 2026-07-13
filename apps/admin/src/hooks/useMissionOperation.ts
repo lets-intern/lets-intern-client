@@ -112,8 +112,26 @@ export const useMissionOperations = (
       action: 'create' | 'edit' | 'delete' | 'cancel';
       row: Row;
     }) => {
+      // 미션 title 은 선택한 템플릿에서만 파생한다. 템플릿이 확정되지 않으면
+      // title 이 빈 문자열로 저장돼 목록·피드백에서 미션명이 공백이 되므로 저장을 막는다.
+      const resolvedTitle = row.missionTemplateId
+        ? row.missionTemplatesOptions?.find(
+            (t) => t.id === row.missionTemplateId,
+          )?.title
+        : undefined;
+
       switch (action) {
         case 'create':
+          if (!row.missionTemplateId) {
+            setSnackbar('미션 템플릿을 선택해주세요.');
+            return;
+          }
+          if (!resolvedTitle) {
+            setSnackbar(
+              '존재하지 않거나 삭제된 미션 템플릿입니다. 다른 템플릿을 선택해주세요.',
+            );
+            return;
+          }
           await createMissionMutation.mutateAsync({
             additionalContentsIdList:
               row.additionalContentsList
@@ -132,10 +150,7 @@ export const useMissionOperations = (
               .tz()
               .format('YYYY-MM-DDTHH:mm:ss'),
             th: row.th,
-            title:
-              row.missionTemplatesOptions.find(
-                (t) => t.id === row.missionTemplateId,
-              )?.title ?? '',
+            title: resolvedTitle,
             missionType: row.missionType,
           });
           if (apiRef?.current?.getRowMode(row.id) === 'edit') {
@@ -147,7 +162,16 @@ export const useMissionOperations = (
           return;
 
         case 'edit':
+          // 템플릿 목록 미로딩·템플릿 삭제 등으로 title 이 해석되지 않으면
+          // 기존 title 을 빈 문자열로 덮어쓰지 않도록 저장을 막는다.
           if (!row.missionTemplateId) {
+            setSnackbar('미션 템플릿을 선택해주세요.');
+            return;
+          }
+          if (!resolvedTitle) {
+            setSnackbar(
+              '존재하지 않거나 삭제된 미션 템플릿입니다. 다른 템플릿을 선택해주세요.',
+            );
             return;
           }
           await updateMission.mutateAsync({
@@ -170,10 +194,7 @@ export const useMissionOperations = (
               .tz()
               .format('YYYY-MM-DDTHH:mm:ss'),
             th: row.th,
-            title:
-              row.missionTemplatesOptions.find(
-                (t) => t.id === row.missionTemplateId,
-              )?.title ?? '',
+            title: resolvedTitle,
           });
           if (apiRef?.current?.getRowMode(row.id) === 'edit') {
             apiRef.current?.stopRowEditMode({ id: row.id });
@@ -236,6 +257,8 @@ export const useMissionOperations = (
   const rows = useMemo((): Row[] => {
     const result: Row[] = (missions ?? []).map((m) => ({
       ...m,
+      challengeOptionId: m.challengeOptionId ?? null,
+      challengeOptionCode: m.challengeOptionCode ?? null,
       mode: 'normal',
       additionalContentsOptions: additionalContents,
       essentialContentsOptions: essentialContents,
@@ -246,6 +269,8 @@ export const useMissionOperations = (
     if (editingMission) {
       result.push({
         ...editingMission,
+        challengeOptionId: editingMission.challengeOptionId ?? null,
+        challengeOptionCode: editingMission.challengeOptionCode ?? null,
         mode: 'create',
         additionalContentsOptions: additionalContents,
         essentialContentsOptions: essentialContents,
