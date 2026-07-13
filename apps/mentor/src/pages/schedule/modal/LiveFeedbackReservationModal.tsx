@@ -213,6 +213,12 @@ const LiveFeedbackReservationModal = ({
       // invalidate 로 feedbackDetail.meetingUrl 이 곧 채워지지만, 즉시 입장 경험을 위해
       // 모달을 바로 연다(JitsiEmbedModal 이 갱신된 URL 수신).
       setIsJitsiOpen(true);
+    } catch (error) {
+      // 헬스체크/등록 중 네트워크·서버 오류 — 미처리 시 unhandled rejection.
+      console.error('라이브 입장 준비 중 오류:', error);
+      window.alert(
+        '회의실 연결을 준비하는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
+      );
     } finally {
       setIsPreparingRoom(false);
     }
