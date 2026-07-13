@@ -197,8 +197,17 @@ export function JitsiEmbed({
                 console.warn(`[JitsiEmbed] ${event}`, payload);
               });
             }
-            // 접속 자체가 실패(서버 다운 등)하면 다음 후보 서버로 failover.
-            api.addListener('connectionFailed', () => reportRuntimeError());
+            // 회의 참가 성공 여부 추적 — 참가 후의 일시적 connectionFailed(네트워크
+            // 블립)에는 서버를 갈아타지 않는다(멘토·멘티 방이 통째로 바뀌는 것 방지).
+            // 참가 전 실패(external_api.js 는 떴지만 회의 백엔드가 죽은 경우)만 다음
+            // 후보 서버로 failover 한다.
+            let joined = false;
+            api.addListener('videoConferenceJoined', () => {
+              joined = true;
+            });
+            api.addListener('connectionFailed', () => {
+              if (!joined) reportRuntimeError();
+            });
           }}
           getIFrameRef={(node) => {
             node.style.height = '100%';

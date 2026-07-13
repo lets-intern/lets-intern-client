@@ -184,5 +184,58 @@ describe('JitsiEmbed', () => {
       await waitFor(() => expect(onExhausted).toHaveBeenCalledTimes(1));
       expect(registerBaseUrl).not.toHaveBeenCalled();
     });
+
+    /** onApiReady 로 넘어온 api mock — addListener 로 등록된 콜백을 캡처한다. */
+    function captureApiListeners() {
+      const listeners: Record<string, () => void> = {};
+      const onApiReady = capturedProps.current?.onApiReady as (api: {
+        addListener: (event: string, cb: () => void) => void;
+      }) => void;
+      onApiReady({
+        addListener: (event, cb) => {
+          listeners[event] = cb;
+        },
+      });
+      return listeners;
+    }
+
+    it('회의 참가 전 connectionFailed는 다음 서버로 failover한다', async () => {
+      const registerBaseUrl = vi.fn().mockResolvedValue(undefined);
+      await renderReady({
+        baseCandidates: [
+          'https://jitsi-letscareer.supabin.com/',
+          'https://healthy.example.com/',
+        ],
+        registerBaseUrl,
+      });
+
+      const listeners = captureApiListeners();
+      listeners['connectionFailed']();
+
+      await waitFor(() =>
+        expect(registerBaseUrl).toHaveBeenCalledWith(
+          'https://healthy.example.com/',
+        ),
+      );
+    });
+
+    it('회의 참가 후 connectionFailed는 서버를 갈아타지 않는다(블립 무시)', async () => {
+      const registerBaseUrl = vi.fn().mockResolvedValue(undefined);
+      await renderReady({
+        baseCandidates: [
+          'https://jitsi-letscareer.supabin.com/',
+          'https://healthy.example.com/',
+        ],
+        registerBaseUrl,
+      });
+
+      const listeners = captureApiListeners();
+      listeners['videoConferenceJoined']();
+      listeners['connectionFailed']();
+
+      // 참가 후 실패는 무시되어야 하므로 재등록이 일어나지 않는다.
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(registerBaseUrl).not.toHaveBeenCalled();
+    });
   });
 });
