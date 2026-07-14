@@ -973,11 +973,10 @@ export const missionAdmin = z
   .transform((data) => {
     return {
       missionList: data.missionList.map((mission) => ({
-          ...mission,
-          startDate: dayjs(mission.startDate),
-          endDate: dayjs(mission.endDate),
-        }),
-      ),
+        ...mission,
+        startDate: dayjs(mission.startDate),
+        endDate: dayjs(mission.endDate),
+      })),
     };
   });
 

@@ -43,10 +43,7 @@ describe('missionAdmin 스키마 - v2 응답 내성', () => {
 
   it('missionType 이 null 인 미션이 섞여도 throw 하지 않고 전량 파싱한다', () => {
     const result = missionAdmin.parse({
-      missionList: [
-        baseMission,
-        { ...baseMission, id: 2, missionType: null },
-      ],
+      missionList: [baseMission, { ...baseMission, id: 2, missionType: null }],
     });
 
     // 두 미션 모두 살아남아 목록이 유지된다(=No rows 회귀 방지).
