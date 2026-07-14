@@ -10,8 +10,6 @@
   "exports": {
     ".": "./src/index.ts",
     "./*": "./src/*/index.tsx",
-    "./Link": "./src/Link/index.tsx",
-    "./Image": "./src/Image/index.tsx",
     "./JitsiEmbed": "./src/JitsiEmbed/index.tsx",
     "./JitsiEmbed/buildRoomUrl": "./src/JitsiEmbed/buildRoomUrl.ts",
     "./JitsiEmbed/jitsiHealthCheck": "./src/JitsiEmbed/jitsiHealthCheck.ts",
