@@ -62,7 +62,11 @@ export const useMissionOperations = (
     queryKey: ['admin', 'challenge', 'missionTemplates'],
     enabled: Boolean(currentChallenge),
     queryFn: async (): Promise<MissionTemplateResItem[]> => {
-      const res = await axios.get(`/mission-template/admin`);
+      // BE 가 /mission-template/admin 을 size 20 으로 페이지네이션(LC-3067)한 이후
+      // size 없이 호출하면 최신 20개만 수신돼 옛 템플릿 미션의 미션명이 공백이 된다.
+      // /admin/simple 은 {id, title} 만 반환해 missionTag 파생(태그 컬럼)이 깨지므로
+      // 기존 스키마를 유지한 채 size 를 크게 부여해 전량 로드한다.
+      const res = await axios.get(`/mission-template/admin?size=1000`);
       return missionTemplateAdmin.parse(res.data.data).missionTemplateAdminList;
     },
   });
