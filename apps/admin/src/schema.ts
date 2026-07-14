@@ -1217,10 +1217,26 @@ export const missionTemplateAdmin = z
       z.object({
         id: z.number(),
         createDate: z.string(),
-        missionTag: z.string(),
-        title: z.string(),
-        description: z.string(),
-        guide: z.string(),
+        // 전량 로드(size=1000) 시 과거 레거시 템플릿까지 파싱한다.
+        // 옛 데이터는 이 문자열 필드들이 null 일 수 있는데, 필수 z.string() 이면
+        // 항목 하나가 배열 전체 parse 를 throw 시켜 미션명 드롭다운이 전멸한다.
+        // null 을 허용하고 '' 로 방어해 한 건의 레거시가 기능을 죽이지 않게 한다.
+        missionTag: z
+          .string()
+          .nullish()
+          .transform((v) => v ?? ''),
+        title: z
+          .string()
+          .nullish()
+          .transform((v) => v ?? ''),
+        description: z
+          .string()
+          .nullish()
+          .transform((v) => v ?? ''),
+        guide: z
+          .string()
+          .nullish()
+          .transform((v) => v ?? ''),
         templateLink: z.string().nullish(),
         vodLink: z.string().nullish(),
       }),
