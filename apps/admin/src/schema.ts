@@ -921,6 +921,11 @@ export const missionAdmin = z
       z.object({
         id: z.number(),
         th: z.number(),
+        // 레거시/누락 데이터로 title 이 null 이어도 전체 파싱이 깨지지 않도록 방어한다.
+        title: z
+          .string()
+          .nullish()
+          .transform((val) => val ?? ''),
         missionTag: z.string(),
         missionType: MissionTypeEnum,
         missionStatusType: MissionStatusEnum,
