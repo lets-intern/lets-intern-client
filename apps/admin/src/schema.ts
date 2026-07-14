@@ -921,6 +921,7 @@ export const missionAdmin = z
       z.object({
         id: z.number(),
         th: z.number(),
+        title: z.string(),
         missionTag: z.string(),
         missionType: MissionTypeEnum,
         missionStatusType: MissionStatusEnum,

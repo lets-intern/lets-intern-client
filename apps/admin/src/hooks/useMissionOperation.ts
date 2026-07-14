@@ -245,6 +245,7 @@ export const useMissionOperations = (
       lateScore: 5,
       score: 10,
       th: 1,
+      title: '',
       missionTemplateId: null,
       missionStatusType: 'WAITING',
       lateAttendanceCount: 0,
