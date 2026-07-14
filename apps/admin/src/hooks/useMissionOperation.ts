@@ -20,6 +20,9 @@ import { GridApiCommunity } from '@mui/x-data-grid/internals';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 
+// 페이지네이션된 /mission-template/admin 에서 전체 템플릿을 한 번에 받기 위한 큰 페이지 크기.
+const ALL_TEMPLATES_PAGE_SIZE = 1000;
+
 export const useMissionOperations = (
   apiRef: React.RefObject<GridApiCommunity>,
 ) => {
@@ -66,7 +69,9 @@ export const useMissionOperations = (
       // size 없이 호출하면 최신 20개만 수신돼 옛 템플릿 미션의 미션명이 공백이 된다.
       // /admin/simple 은 {id, title} 만 반환해 missionTag 파생(태그 컬럼)이 깨지므로
       // 기존 스키마를 유지한 채 size 를 크게 부여해 전량 로드한다.
-      const res = await axios.get(`/mission-template/admin?size=1000`);
+      const res = await axios.get(
+        `/mission-template/admin?size=${ALL_TEMPLATES_PAGE_SIZE}`,
+      );
       return missionTemplateAdmin.parse(res.data.data).missionTemplateAdminList;
     },
   });
