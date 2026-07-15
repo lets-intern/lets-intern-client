@@ -26,10 +26,10 @@ const MentorCard = ({ mentor, onClick, className }: MentorCardProps) => {
           />
         ) : (
           <div className="bg-neutral-90 flex h-full w-full items-center justify-center">
-            <img src="/icons/user.svg" alt="" className="h-15 w-15" />
+            <img src="/icons/user.svg" alt="" className="h-14 w-14" />
           </div>
         )}
-        {mentor.profileImgUrl && (
+        {!!mentor.profileImgUrl && (
           <div className="absolute inset-0 flex items-end bg-black/70 p-[15px]">
             <span className="text-xxsmall16 text-bold leading-none text-neutral-100">
               {mentor.nickname}

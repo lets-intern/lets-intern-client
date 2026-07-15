@@ -25,15 +25,15 @@ export type FeedbackAttendanceStatus = z.infer<
 export const challengeMentorInfoSchema = z.object({
   nickname: z
     .string()
-    .nullable()
+    .nullish()
     .transform((val) => val ?? '멘토명'),
   introduction: z
     .string()
-    .nullable()
+    .nullish()
     .transform((val) => val ?? '등록된 멘토 소개글이 없습니다.'),
   profileImgUrl: z
     .string()
-    .nullable()
+    .nullish()
     .transform((val) => val ?? ''),
 });
 
