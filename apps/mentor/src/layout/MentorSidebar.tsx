@@ -32,10 +32,12 @@ const navItems: NavItem[] = [
         name: 'LIVE 슬롯 오픈',
         url: '/feedback/live-availability',
       },
-      { type: 'leaf', name: '예약 현황', url: '/feedback/live-reservation' },
+      // 임시 숨김: 예약 현황 메뉴 (추후 복원 예정)
+      // { type: 'leaf', name: '예약 현황', url: '/feedback/live-reservation' },
     ],
   },
-  { type: 'leaf', name: '참여중인 챌린지', url: '/challenges' },
+  // 임시 숨김: 참여중인 챌린지 메뉴 (추후 복원 예정)
+  // { type: 'leaf', name: '참여중인 챌린지', url: '/challenges' },
   { type: 'leaf', name: '프로필', url: '/profile' },
 ];
 
