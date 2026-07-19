@@ -8,6 +8,7 @@ import { useSeminarStatusParam } from '../hooks/useSeminarStatusParam';
 import { SeminarStatus } from '../utils/seminarStatus';
 import SeminarListEmptyState from './SeminarListEmptyState';
 import SeminarStatusTabs from './SeminarStatusTabs';
+import SuggestSeminarCta from './SuggestSeminarCta';
 
 const ERROR_MESSAGE =
   "세미나 조회 중 오류가 발생했습니다.\n새로고침 후에도 문제가 지속되면 아래 '채팅문의'를 통해 문의해주세요.";
@@ -45,13 +46,17 @@ const SeminarListContent = ({
   }
 
   return (
-    <div className="grid grid-cols-2 gap-x-5 gap-y-8 md:grid-cols-4 md:gap-y-11">
-      {programs.map((program) => (
-        <ProgramCard
-          key={program.programInfo.programType + program.programInfo.id}
-          program={program}
-        />
-      ))}
+    <div className="flex flex-col gap-11 md:gap-14">
+      <div className="grid grid-cols-2 gap-x-5 gap-y-8 md:grid-cols-4 md:gap-y-11">
+        {programs.map((program) => (
+          <ProgramCard
+            key={program.programInfo.programType + program.programInfo.id}
+            program={program}
+          />
+        ))}
+      </div>
+      {/* 모집 중/종료 세미나가 있어도 제안 CTA는 항상 노출(figma 4_0) */}
+      <SuggestSeminarCta variant="banner" />
     </div>
   );
 };

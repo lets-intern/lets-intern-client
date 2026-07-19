@@ -8,7 +8,6 @@ import PlusSection from './section/PlusSection';
 import ReviewSection from './section/ReviewSection';
 import SeminarListSection from './section/SeminarListSection';
 import SubBannerSection from './section/SubBannerSection';
-import SuggestSeminarCta from './section/SuggestSeminarCta';
 
 /**
  * 무료 세미나 랜딩 페이지 (도메인 루트).
@@ -16,9 +15,10 @@ import SuggestSeminarCta from './section/SuggestSeminarCta';
  * 섹션 순서(figma 기준, 위→아래):
  *  S1 히어로 → S2 서브 배너 → S3 필터 탭 + S4 리스트(SeminarListSection) →
  *  S5 무료 참여 VOD → S6 차별점 3종 → S7 여기에 더해서 → S8 지난 세미나 →
- *  S9 후기 → S10 FAQ → 제안하기 CTA(magnet 출시알림).
+ *  S9 후기 → S10 FAQ.
  *
- * 리스트/후기/지난세미나/CTA 등 상호작용 섹션만 'use client'이고 나머지는 정적 RSC.
+ * "듣고 싶은 챌린지 제안하기" CTA는 리스트 하단(배너)·빈 상태(카드)에서 노출한다(figma 4_0·4_1).
+ * 리스트/후기/지난세미나 등 상호작용 섹션만 'use client'이고 나머지는 정적 RSC.
  */
 const SeminarLandingPage = () => {
   return (
@@ -41,10 +41,6 @@ const SeminarLandingPage = () => {
       <PastSeminarShowcaseSection />
       <ReviewSection />
       <FaqSection />
-
-      <section className="w-full px-5 pb-16 md:pb-24">
-        <SuggestSeminarCta />
-      </section>
     </div>
   );
 };
