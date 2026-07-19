@@ -31,6 +31,7 @@ import MagnetApplyInfoCard from './MagnetApplyInfoCard';
 import MagnetSurveySection, {
   MagnetQuestion,
   MagnetSurveyAnswer,
+  OTHER_ITEM_VALUE,
 } from './MagnetSurveySection';
 
 interface MagnetApplyContentProps {
@@ -270,7 +271,12 @@ const MagnetApplyContent = ({
         } else {
           const selectedValues = (question?.items ?? [])
             .filter((item) => a.selectedItemIds.includes(item.itemId))
-            .map((item) => item.value);
+            .map((item) =>
+              // "기타(직접입력)"은 사용자가 입력한 직접 입력값으로 치환.
+              item.value === OTHER_ITEM_VALUE
+                ? a.subjectiveText.trim() || item.value
+                : item.value,
+            );
           answer = selectedValues.join(',');
         }
         return { magnetQuestionId: a.questionId, answer };

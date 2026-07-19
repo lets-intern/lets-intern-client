@@ -37,7 +37,9 @@ function formatTimeRange(startDate?: string, endDate?: string): string {
   return `${startTime} ~ ${endTime}`;
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+/** 값이 없으면(빈 문자열/undefined) 행 자체를 렌더하지 않는다 — 값이 온 항목만 표시. */
+function Row({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null;
   return (
     <div className="flex items-start justify-between gap-3 py-3">
       <span className="text-xsmall14 text-neutral-45 shrink-0">{label}</span>
@@ -95,12 +97,16 @@ const ScheduleSummaryCard = ({
           </div>
         ) : (
           <div className="divide-neutral-90 flex flex-col divide-y">
-            <Row label="프로그램" value={programTitle ?? '-'} />
-            <Row label="미션" value={missionLabel ?? '-'} />
-            <Row label={counterpartLabel} value={counterpartName ?? '-'} />
+            <Row label="프로그램" value={programTitle} />
+            <Row label="미션" value={missionLabel} />
+            <Row label={counterpartLabel} value={counterpartName} />
             <Row
               label="일시"
-              value={`${formatDay(startDate)} ${formatTimeRange(startDate, endDate)}`}
+              value={
+                startDate
+                  ? `${formatDay(startDate)} ${formatTimeRange(startDate, endDate)}`
+                  : undefined
+              }
             />
           </div>
         )}

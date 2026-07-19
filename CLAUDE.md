@@ -26,6 +26,7 @@
 │   ├── dev-docs-updater/                 # .claude/docs 개발문서 갱신·3계층 동기화
 │   ├── folder-structure/                 # DDD + 프랙탈 폴더 구조
 │   ├── git-branch-report/                # 브랜치 작업 → 팀 공유 HTML/PDF 보고서
+│   ├── headless-component/               # 헤드리스 컴포넌트 제작·공용화 기준
 │   ├── quality-check/                     # 변경 파일 포맷·린트·타입체크 실행
 │   ├── seo/                              # SEO 규칙
 │   ├── server-code-reference/            # 백엔드(Spring) 실제 소스 직접 확인
@@ -51,6 +52,8 @@
 │   └── letscareer/
 │       ├── README.md                     # 프로젝트 문서 인덱스
 │       ├── architecture.md               # 시스템 아키텍처 개요
+│       ├── design-system.md              # 디자인 토큰·스타일링 컨벤션 (공유 preset)
+│       ├── headless-components.md        # 헤드리스 컴포넌트 패턴·코드 사례집
 │       ├── API_docs/                     # Swagger URL 등
 │       ├── tech-stack/                   # 라이브러리 버전·설정
 │       ├── apps/                         # 앱별 도메인·로컬 모듈
@@ -84,6 +87,8 @@
 | 코드 리뷰 | `skills/code-review/SKILL.md` |
 | 커밋 전 포맷·린트·타입체크 | `skills/quality-check/SKILL.md` |
 | 공유 훅/컴포넌트 찾기 | `docs/letscareer/packages/` |
+| 디자인 토큰·스타일링 컨벤션 | `docs/letscareer/design-system.md` |
+| 헤드리스 컴포넌트 제작·공용화 판단 | `skills/headless-component/SKILL.md` (사례집: `docs/letscareer/headless-components.md`) |
 | 도메인 로직 이해 | `docs/letscareer/apps/<app>/domain/<도메인>.md` |
 | API 엔드포인트·요청/응답 스펙 찾기 | `skills/swagger-api-finder/SKILL.md` (원문 URL: `docs/letscareer/API_docs/swagger_url.md`) |
 | BE 실제 동작·DB 저장 구조·쿼리 확인 | `skills/server-code-reference/SKILL.md` (소스: `../lets-career-server`) |

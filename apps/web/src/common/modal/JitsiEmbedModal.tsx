@@ -18,6 +18,12 @@ interface JitsiEmbedModalProps {
   meetingUrl: string | null;
   /** 모달 헤더 표시용 라벨 (선택). URL 에는 영향 없음. */
   spaceName?: string;
+  /** 우선순위 순 jitsi base 후보 — 현재 서버 실패 시 다음 후보로 failover. */
+  baseCandidates?: ReadonlyArray<string | undefined>;
+  /** 다음 base 를 BE 에 재등록하는 콜백 (`PATCH /feedback/{id}/meeting-url`). */
+  registerBaseUrl?: (base: string) => Promise<void>;
+  /** 모든 후보 소진(입장 가능한 서버 없음) 시 호출. */
+  onExhausted?: () => void;
 }
 
 const JitsiEmbedModal = ({
@@ -25,6 +31,9 @@ const JitsiEmbedModal = ({
   onClose,
   meetingUrl,
   spaceName,
+  baseCandidates,
+  registerBaseUrl,
+  onExhausted,
 }: JitsiEmbedModalProps) => {
   return (
     <BaseModal
@@ -37,6 +46,9 @@ const JitsiEmbedModal = ({
           roomUrl={meetingUrl}
           spaceName={spaceName}
           onClose={onClose}
+          baseCandidates={baseCandidates}
+          registerBaseUrl={registerBaseUrl}
+          onExhausted={onExhausted}
         />
       ) : (
         <div className="flex h-full items-center justify-center p-8 text-center text-sm text-neutral-500">

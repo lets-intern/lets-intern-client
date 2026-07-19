@@ -30,6 +30,12 @@ interface LiveFeedbackModalProps {
   menteeStatus?: AttendanceStatus;
   /** 출석 저장(모달 닫힘/종료 시 일괄). */
   onSaveAttendance?: (status: AttendanceStatus) => void;
+  /** 우선순위 순 jitsi base 후보 — 현재 서버 실패 시 다음 후보로 failover. */
+  baseCandidates?: ReadonlyArray<string | undefined>;
+  /** 다음 base 를 BE 에 재등록하는 콜백 (`PATCH /feedback/{id}/meeting-url`). */
+  registerBaseUrl?: (base: string) => Promise<void>;
+  /** 모든 후보 소진(입장 가능한 서버 없음) 시 호출. */
+  onExhausted?: () => void;
 }
 
 type MaterialPanel = 'qna' | 'submission';
@@ -210,6 +216,9 @@ const LiveFeedbackModal = ({
   endDate,
   menteeStatus,
   onSaveAttendance,
+  baseCandidates,
+  registerBaseUrl,
+  onExhausted,
 }: LiveFeedbackModalProps) => {
   const [openPanel, setOpenPanel] = useState<MaterialPanel | null>(null);
 
@@ -278,6 +287,9 @@ const LiveFeedbackModal = ({
               roomUrl={meetingUrl}
               spaceName={spaceName}
               onClose={handleClose}
+              baseCandidates={baseCandidates}
+              registerBaseUrl={registerBaseUrl}
+              onExhausted={onExhausted}
               topLeftSlot={
                 startDate && endDate ? (
                   <LiveSessionTimer startDate={startDate} endDate={endDate} />

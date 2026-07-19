@@ -47,6 +47,12 @@ interface JitsiEmbedModalProps {
   onSaveAttendance?: (status: FeedbackAttendanceStatus) => void;
   /** 출석 저장 진행 중 여부 — 버튼 로딩. */
   isSavingAttendance?: boolean;
+  /** 우선순위 순 jitsi base 후보 — 현재 서버 실패 시 다음 후보로 failover. */
+  baseCandidates?: ReadonlyArray<string | undefined>;
+  /** 다음 base 를 BE 에 재등록하는 콜백 (`PATCH /feedback/{id}/meeting-url`). */
+  registerBaseUrl?: (base: string) => Promise<void>;
+  /** 모든 후보 소진(입장 가능한 서버 없음) 시 호출. */
+  onExhausted?: () => void;
 }
 
 interface MenteeAttendanceBarProps {
@@ -224,6 +230,9 @@ const JitsiEmbedModal = ({
   isMentor,
   menteeStatus,
   onSaveAttendance,
+  baseCandidates,
+  registerBaseUrl,
+  onExhausted,
 }: JitsiEmbedModalProps) => {
   const [openPanel, setOpenPanel] = useState<MaterialPanel | null>(null);
 
@@ -290,6 +299,9 @@ const JitsiEmbedModal = ({
               roomUrl={meetingUrl}
               spaceName={spaceName}
               onClose={handleClose}
+              baseCandidates={baseCandidates}
+              registerBaseUrl={registerBaseUrl}
+              onExhausted={onExhausted}
               topLeftSlot={
                 startDate && endDate ? (
                   <LiveSessionTimer startDate={startDate} endDate={endDate} />
