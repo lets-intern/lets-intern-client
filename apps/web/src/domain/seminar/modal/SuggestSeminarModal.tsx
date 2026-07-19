@@ -10,17 +10,14 @@ import { SelectButton } from '@/common/button/SelectButton';
 import LineInput from '@/common/input/LineInput';
 import ModalOverlay from '@/common/ModalOverlay';
 import ModalPortal from '@/common/ModalPortal';
-import MagnetSurveySection, {
-  MagnetQuestion,
-  MagnetSurveyAnswer,
-} from '@/domain/library/apply/MagnetSurveySection';
+import type { MagnetQuestion } from '@/domain/library/apply/MagnetSurveySection';
 import CareerModals from '@/domain/mypage/career/CareerModal';
 import { useCareerModals } from '@/hooks/useCareerModals';
 import { extractHttpStatus } from '@/utils/sentry';
 import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-/** 마그넷 질문 응답 → MagnetSurveySection용 형태 (library apply 페이지와 동일 매핑). */
+/** 마그넷 질문 응답 → 내부 형태 (library apply 페이지와 동일 매핑). */
 function toMagnetQuestion(item: UserMagnetQuestionItem): MagnetQuestion {
   const options = item.options
     ? item.options.split(',').map((v) => v.trim())
@@ -46,9 +43,9 @@ interface SuggestSeminarModalProps {
  *
  * - 연락처: 유저 프로필(읽기 전용).
  * - 이메일: 유저 프로필 기본값(수정 가능) → 변경 시 프로필에 반영.
- * - 희망 직군: 유저 프로필의 희망 직군 세팅을 그대로 사용(JOB_FIELD_ROLES 옵션, CareerModal 재사용).
- *   마그넷은 직군을 받지 않으므로, 프로필에 값이 없을 때 여기서 받아 프로필에 저장한다.
- * - 듣고 싶은 세미나 주제: 마그넷의 실제 질문(주관식) → `POST /magnet-application/{id}` magnetAnswerList로 전송.
+ * - 희망 직군: 유저 프로필의 희망 직군 세팅 재사용(JOB_FIELD_ROLES, CareerModal). 프로필에 값이 없을 때 여기서 받아 저장.
+ * - 듣고 싶은 세미나 주제: 항상 노출되는 자유 텍스트. 마그넷의 주관식 질문에 매핑해
+ *   `POST /magnet-application/{id}` magnetAnswerList로 전송한다.
  * 로그인 사용자 전제(CTA에서 가드).
  */
 const SuggestSeminarModal = ({
@@ -56,8 +53,7 @@ const SuggestSeminarModal = ({
   onClose,
 }: SuggestSeminarModalProps) => {
   const { data: user } = useUserQuery();
-  const { data: questionsData, isLoading } =
-    useGetUserMagnetQuestionsQuery(magnetId);
+  const { data: questionsData } = useGetUserMagnetQuestionsQuery(magnetId);
   const { mutateAsync: postApplication, isPending: submitting } =
     usePostMagnetApplicationMutation();
   const { mutateAsync: patchUser } = usePatchUser();
@@ -79,9 +75,11 @@ const SuggestSeminarModal = ({
   const questions = (questionsData?.magnetQuestionList ?? []).map(
     toMagnetQuestion,
   );
+  // 세미나 주제 자유 텍스트를 담을 마그넷 주관식 질문.
+  const topicQuestion = questions.find((q) => q.questionType === 'SUBJECTIVE');
 
   const [email, setEmail] = useState('');
-  const [answers, setAnswers] = useState<MagnetSurveyAnswer[]>([]);
+  const [topic, setTopic] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -102,48 +100,17 @@ const SuggestSeminarModal = ({
     };
   }, []);
 
-  const handleAnswerChange = (
-    questionId: number,
-    answer: MagnetSurveyAnswer,
-  ) => {
-    setAnswers((prev) => {
-      const exists = prev.find((a) => a.questionId === questionId);
-      if (exists) {
-        return prev.map((a) => (a.questionId === questionId ? answer : a));
-      }
-      return [...prev, answer];
-    });
-  };
-
-  const hasUnansweredRequired = questions.some((q) => {
-    if (q.isRequired !== 'REQUIRED') return false;
-    const a = answers.find((x) => x.questionId === q.questionId);
-    if (!a) return true;
-    return q.questionType === 'SUBJECTIVE'
-      ? !a.subjectiveText.trim()
-      : a.selectedItemIds.length === 0;
-  });
-
-  const canSubmit =
-    !!email.trim() && !!selectedField && !hasUnansweredRequired && !submitting;
+  const canSubmit = !!email.trim() && !!selectedField && !submitting;
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setErrorMsg(null);
 
-    const magnetAnswerList = answers.map((a) => {
-      const question = questions.find((q) => q.questionId === a.questionId);
-      let answer = '';
-      if (question?.questionType === 'SUBJECTIVE') {
-        answer = a.subjectiveText;
-      } else {
-        answer = (question?.items ?? [])
-          .filter((item) => a.selectedItemIds.includes(item.itemId))
-          .map((item) => item.value)
-          .join(',');
-      }
-      return { magnetQuestionId: a.questionId, answer };
-    });
+    // 세미나 주제 텍스트를 마그넷 주관식 질문 답변으로 매핑.
+    const magnetAnswerList =
+      topicQuestion && topic.trim()
+        ? [{ magnetQuestionId: topicQuestion.questionId, answer: topic.trim() }]
+        : [];
 
     try {
       // 프로필 변경분(이메일·희망 직군)만 반영 — 마그넷은 직군을 받지 않으므로 프로필에 저장.
@@ -261,14 +228,22 @@ const SuggestSeminarModal = ({
                 onClick={() => setModalStep('field')}
               />
 
-              {/* 듣고 싶은 세미나 주제 — 마그넷 질문(주관식) */}
-              {!isLoading && questions.length > 0 && (
-                <MagnetSurveySection
-                  questions={questions}
-                  answers={answers}
-                  onAnswerChange={handleAnswerChange}
+              {/* 듣고 싶은 세미나 주제 — 항상 노출되는 자유 텍스트 */}
+              <div className="flex flex-col gap-2">
+                <label
+                  htmlFor="seminar-suggest-topic"
+                  className="text-xsmall14 md:text-xsmall16 text-neutral-0 font-medium"
+                >
+                  듣고 싶은 세미나 주제를 작성해 주세요
+                </label>
+                <LineInput
+                  id="seminar-suggest-topic"
+                  name="topic"
+                  placeholder="듣고 싶은 세미나를 자유롭게 적어주세요"
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
                 />
-              )}
+              </div>
 
               {errorMsg && (
                 <p className="text-xsmall14 text-system-error">{errorMsg}</p>
