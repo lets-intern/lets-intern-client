@@ -15,7 +15,7 @@ const CouponBanner = ({ compact = false }: CouponBannerProps) => {
   return (
     <div className="bg-primary-90 relative overflow-hidden rounded-sm">
       <img
-        src="/images/coupon.svg"
+        src="/images/coupon-rotation.svg"
         alt=""
         aria-hidden="true"
         className="absolute left-8 top-0"
