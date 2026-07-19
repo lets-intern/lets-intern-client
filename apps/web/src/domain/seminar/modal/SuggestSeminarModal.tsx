@@ -5,7 +5,8 @@ import {
   usePostMagnetApplicationMutation,
 } from '@/api/magnet/magnet';
 import { UserMagnetQuestionItem } from '@/api/magnet/magnetSchema';
-import { usePatchUser, useUserQuery } from '@/api/user/user';
+import { PatchUserBody, usePatchUser, useUserQuery } from '@/api/user/user';
+import { SelectButton } from '@/common/button/SelectButton';
 import LineInput from '@/common/input/LineInput';
 import ModalOverlay from '@/common/ModalOverlay';
 import ModalPortal from '@/common/ModalPortal';
@@ -13,6 +14,8 @@ import MagnetSurveySection, {
   MagnetQuestion,
   MagnetSurveyAnswer,
 } from '@/domain/library/apply/MagnetSurveySection';
+import CareerModals from '@/domain/mypage/career/CareerModal';
+import { useCareerModals } from '@/hooks/useCareerModals';
 import { extractHttpStatus } from '@/utils/sentry';
 import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -40,16 +43,38 @@ interface SuggestSeminarModalProps {
 
 /**
  * "듣고 싶은 챌린지 제안하기" 모달 — 마그넷(SEMINAR_MAGNET_ID) 신청 폼.
- * 연락처(읽기전용)·이메일 + 마그넷 질문(희망 직군·세미나 주제 등)을 받아
- * `POST /magnet-application/{magnetId}` 로 전송한다. 로그인 사용자 전제(CTA에서 가드).
+ *
+ * - 연락처: 유저 프로필(읽기 전용).
+ * - 이메일: 유저 프로필 기본값(수정 가능) → 변경 시 프로필에 반영.
+ * - 희망 직군: 유저 프로필의 희망 직군 세팅을 그대로 사용(JOB_FIELD_ROLES 옵션, CareerModal 재사용).
+ *   마그넷은 직군을 받지 않으므로, 프로필에 값이 없을 때 여기서 받아 프로필에 저장한다.
+ * - 듣고 싶은 세미나 주제: 마그넷의 실제 질문(주관식) → `POST /magnet-application/{id}` magnetAnswerList로 전송.
+ * 로그인 사용자 전제(CTA에서 가드).
  */
-const SuggestSeminarModal = ({ magnetId, onClose }: SuggestSeminarModalProps) => {
+const SuggestSeminarModal = ({
+  magnetId,
+  onClose,
+}: SuggestSeminarModalProps) => {
   const { data: user } = useUserQuery();
   const { data: questionsData, isLoading } =
     useGetUserMagnetQuestionsQuery(magnetId);
   const { mutateAsync: postApplication, isPending: submitting } =
     usePostMagnetApplicationMutation();
   const { mutateAsync: patchUser } = usePatchUser();
+
+  // 희망 직군 선택 — 프로필과 동일한 CareerModal 흐름 재사용(직군 단계만 사용).
+  const {
+    modalStep,
+    setModalStep,
+    selectedField,
+    setSelectedField,
+    selectedPositions,
+    setSelectedPositions,
+    selectedIndustries,
+    setSelectedIndustries,
+    getFieldDisplayText,
+    closeModal,
+  } = useCareerModals();
 
   const questions = (questionsData?.magnetQuestionList ?? []).map(
     toMagnetQuestion,
@@ -63,6 +88,10 @@ const SuggestSeminarModal = ({ magnetId, onClose }: SuggestSeminarModalProps) =>
   useEffect(() => {
     if (user?.email) setEmail(user.email);
   }, [user?.email]);
+
+  useEffect(() => {
+    if (user?.wishField) setSelectedField(user.wishField);
+  }, [user?.wishField, setSelectedField]);
 
   // 모달 열림 동안 배경 스크롤 잠금
   useEffect(() => {
@@ -95,7 +124,8 @@ const SuggestSeminarModal = ({ magnetId, onClose }: SuggestSeminarModalProps) =>
       : a.selectedItemIds.length === 0;
   });
 
-  const canSubmit = !!email.trim() && !hasUnansweredRequired && !submitting;
+  const canSubmit =
+    !!email.trim() && !!selectedField && !hasUnansweredRequired && !submitting;
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
@@ -116,18 +146,24 @@ const SuggestSeminarModal = ({ magnetId, onClose }: SuggestSeminarModalProps) =>
     });
 
     try {
-      // 이메일이 바뀌었으면 프로필에 반영(부가 작업 — 실패해도 제안 전송은 진행).
+      // 프로필 변경분(이메일·희망 직군)만 반영 — 마그넷은 직군을 받지 않으므로 프로필에 저장.
+      const patchBody: PatchUserBody = {};
       if (email.trim() && email.trim() !== (user?.email ?? '')) {
+        patchBody.email = email.trim();
+      }
+      if (selectedField && selectedField !== (user?.wishField ?? '')) {
+        patchBody.wishField = selectedField;
+      }
+      if (Object.keys(patchBody).length > 0) {
         try {
-          await patchUser({ email: email.trim() });
+          await patchUser(patchBody);
         } catch {
-          // 이메일 저장 실패는 무시하고 제안 전송을 계속한다.
+          // 프로필 저장 실패는 무시하고 제안 전송을 계속한다.
         }
       }
       await postApplication({ magnetId, body: { magnetAnswerList } });
       setSubmitted(true);
     } catch (e) {
-      // 이미 신청(409)한 경우도 사용자 입장에선 완료로 처리한다.
       if (extractHttpStatus(e) === 409) {
         setSubmitted(true);
         return;
@@ -138,7 +174,7 @@ const SuggestSeminarModal = ({ magnetId, onClose }: SuggestSeminarModalProps) =>
 
   return (
     <ModalPortal>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center px-5">
+      <div className="fixed inset-0 z-40 flex items-center justify-center px-5">
         <ModalOverlay onClose={onClose} />
         <div
           role="dialog"
@@ -216,7 +252,16 @@ const SuggestSeminarModal = ({ magnetId, onClose }: SuggestSeminarModalProps) =>
                 />
               </div>
 
-              {/* 마그넷 질문 (희망 직군·듣고 싶은 세미나 주제 등) */}
+              {/* 희망 직군 — 프로필 세팅 재사용 */}
+              <SelectButton
+                label="희망 직군"
+                isRequired
+                value={getFieldDisplayText()}
+                placeholder="희망 직군을 선택해 주세요."
+                onClick={() => setModalStep('field')}
+              />
+
+              {/* 듣고 싶은 세미나 주제 — 마그넷 질문(주관식) */}
               {!isLoading && questions.length > 0 && (
                 <MagnetSurveySection
                   questions={questions}
@@ -240,6 +285,30 @@ const SuggestSeminarModal = ({ magnetId, onClose }: SuggestSeminarModalProps) =>
             </div>
           )}
         </div>
+
+        {/* 희망 직군 선택 모달 (직군 단계만 사용) */}
+        <CareerModals
+          setModalStep={setModalStep}
+          modalStep={modalStep}
+          initialField={selectedField}
+          initialPositions={selectedPositions}
+          initialIndustries={selectedIndustries}
+          userGrade=""
+          onGradeComplete={() => closeModal()}
+          onFieldComplete={(field) => {
+            setSelectedField(field);
+            closeModal();
+          }}
+          onPositionsComplete={(positions) => {
+            setSelectedPositions(positions);
+            closeModal();
+          }}
+          onIndustriesComplete={(industries) => {
+            setSelectedIndustries(industries);
+            closeModal();
+          }}
+          onClose={closeModal}
+        />
       </div>
     </ModalPortal>
   );
