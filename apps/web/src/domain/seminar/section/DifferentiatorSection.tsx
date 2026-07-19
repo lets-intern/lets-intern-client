@@ -39,12 +39,19 @@ const DifferentiatorSection = () => {
             title="오직 라이브에서만 제공하는 히든 쿠폰"
             desc="세미나 참여자 한정 히든 쿠폰과 취업에 도움되는 자료를 받아보세요."
           />
-          <img
-            src="/images/seminar/differentiator/hidden-coupon.png"
-            alt="세미나 참여자 한정 히든 할인 쿠폰 안내"
-            loading="lazy"
-            className="w-full max-w-[900px]"
-          />
+          {/* 모바일 세로형 / 데스크톱(md↑) 가로형 쿠폰 안내 전환 */}
+          <picture className="block w-full max-w-[900px]">
+            <source
+              media="(min-width: 768px)"
+              srcSet="/images/seminar/differentiator/hidden-coupon.png"
+            />
+            <img
+              src="/images/seminar/differentiator/hidden-coupon-mobile.png"
+              alt="세미나 참여자 한정 히든 할인 쿠폰 안내"
+              loading="lazy"
+              className="w-full"
+            />
+          </picture>
         </div>
 
         {/* 차별점 2 — 현직자 합격 전략 (멘토 6인) */}
@@ -54,7 +61,7 @@ const DifferentiatorSection = () => {
             title="내가 원하는 직무 현직자의 합격 전략"
             desc="서류부터 면접까지, 실제 합격에 도움이 되는 노하우를 직접 들어보세요."
           />
-          <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid w-full grid-cols-2 gap-3 md:gap-5 lg:grid-cols-3">
             {DIFFERENTIATOR_MENTORS.map((mentor) => (
               <MentorProfileCard key={mentor.id} mentor={mentor} />
             ))}
