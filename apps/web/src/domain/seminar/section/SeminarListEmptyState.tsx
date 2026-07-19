@@ -2,6 +2,7 @@
 
 import ProgramCard from '@/domain/program/programs/card/ProgramCard';
 import { useSeminarList } from '../hooks/useSeminarList';
+import SuggestSeminarCta from './SuggestSeminarCta';
 
 /** 지난 세미나 미리보기로 노출할 최대 개수(한 줄) */
 const PREVIEW_COUNT = 4;
@@ -33,24 +34,7 @@ const SeminarListEmptyState = ({ onGoClosed }: SeminarListEmptyStateProps) => {
         </h3>
       </div>
 
-      {/* TODO(Push4): magnet CTA — 출시알림(LAUNCH_ALERT) 신청 연결 */}
-      <div className="bg-primary-5 flex w-full max-w-[720px] flex-col items-center gap-4 rounded-md px-6 py-8 md:py-10">
-        <div className="flex flex-col items-center gap-1 text-center">
-          <p className="text-xsmall16 md:text-small18 text-primary font-bold">
-            듣고 싶은 챌린지 주제가 있으신가요?
-          </p>
-          <p className="text-xxsmall12 md:text-xsmall14 text-neutral-45">
-            보고 싶은 기업·직무 현직자와 세미나 주제를 알려주세요!
-          </p>
-        </div>
-        <button
-          type="button"
-          disabled
-          className="bg-primary text-xsmall14 md:text-xsmall16 rounded-xs px-5 py-3 font-semibold text-neutral-100"
-        >
-          듣고 싶은 챌린지 제안하기
-        </button>
-      </div>
+      <SuggestSeminarCta />
 
       {previewPrograms.length > 0 && (
         <div className="flex w-full flex-col items-center gap-6">
