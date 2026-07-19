@@ -99,7 +99,7 @@ const SuggestSeminarModal = ({
     const a = answers.find((x) => x.questionId === q.questionId);
     if (!a) return true;
     return q.questionType === 'SUBJECTIVE'
-      ? !a.subjectiveText.trim()
+      ? !a.subjectiveText?.trim()
       : a.selectedItemIds.length === 0;
   });
 
@@ -119,7 +119,7 @@ const SuggestSeminarModal = ({
           .filter((item) => a.selectedItemIds.includes(item.itemId))
           .map((item) =>
             item.value === OTHER_ITEM_VALUE
-              ? a.subjectiveText.trim() || item.value
+              ? a.subjectiveText?.trim() || item.value
               : item.value,
           )
           .join(',');
