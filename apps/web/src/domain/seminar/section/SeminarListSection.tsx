@@ -6,6 +6,7 @@ import { ProgramInfo } from '@/schema';
 import { useSeminarList } from '../hooks/useSeminarList';
 import { useSeminarStatusParam } from '../hooks/useSeminarStatusParam';
 import { SeminarStatus } from '../utils/seminarStatus';
+import SeminarListEmptyState from './SeminarListEmptyState';
 import SeminarStatusTabs from './SeminarStatusTabs';
 
 const ERROR_MESSAGE =
@@ -16,13 +17,16 @@ interface SeminarListContentProps {
   isLoading: boolean;
   isError: boolean;
   programs: ProgramInfo[];
+  onGoClosed: () => void;
 }
 
 /** 세미나 리스트 본문 — 로딩/에러/빈 상태를 early return으로 가드한 뒤 카드 그리드를 렌더한다. */
 const SeminarListContent = ({
+  status,
   isLoading,
   isError,
   programs,
+  onGoClosed,
 }: SeminarListContentProps) => {
   if (isLoading) return <LoadingContainer text="세미나 조회 중" />;
 
@@ -31,8 +35,13 @@ const SeminarListContent = ({
   }
 
   if (programs.length === 0) {
-    // TODO(2.5): 모집중 0건 빈 상태 UI로 대체
-    return null;
+    return status === 'recruiting' ? (
+      <SeminarListEmptyState onGoClosed={onGoClosed} />
+    ) : (
+      <p className="text-xsmall14 md:text-xsmall16 text-neutral-45 py-10 text-center">
+        종료된 무료 세미나가 없어요.
+      </p>
+    );
   }
 
   return (
@@ -49,7 +58,7 @@ const SeminarListContent = ({
 
 /** 세미나 리스트 섹션(S4) — 모집상태 필터 탭 + LIVE 프로그램 카드 그리드. */
 const SeminarListSection = () => {
-  const [status] = useSeminarStatusParam();
+  const [status, setStatus] = useSeminarStatusParam();
   const { data, isLoading, isFetching, isError } = useSeminarList(status);
   const programs = data?.programList ?? [];
 
@@ -61,6 +70,7 @@ const SeminarListSection = () => {
         isLoading={isLoading || isFetching}
         isError={isError}
         programs={programs}
+        onGoClosed={() => setStatus('closed')}
       />
     </section>
   );
