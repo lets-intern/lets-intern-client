@@ -175,7 +175,7 @@ function ChallengeDashboardContent() {
               </h2>
               <MissionTooltipQuestion />
             </div>
-            {filteredSchedules && (
+            {filteredSchedules.length > 0 && (
               // myChallenge 에 있는 미션캘린더 가져옴
               <MissionCalendar
                 className="mt-3 gap-2"

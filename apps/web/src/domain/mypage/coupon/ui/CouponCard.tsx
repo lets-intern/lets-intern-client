@@ -1,21 +1,15 @@
+import dayjs from '@/lib/dayjs';
 import { CouponItem } from '../constants';
 
 interface CouponCardProps {
   coupon: CouponItem;
 }
 
-const formatDate = (dateStr: string) => {
-  const date = new Date(dateStr);
-  return `${date.getFullYear()}년 ${String(date.getMonth() + 1).padStart(2, '0')}월 ${String(date.getDate()).padStart(2, '0')}일`;
-};
+const formatDate = (dateStr: string) =>
+  dayjs(dateStr).format('YYYY년 MM월 DD일');
 
-const calcDDay = (endDate: string) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const end = new Date(endDate);
-  end.setHours(0, 0, 0, 0);
-  return Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-};
+const calcDDay = (endDate: string) =>
+  dayjs(endDate).startOf('day').diff(dayjs().startOf('day'), 'day');
 
 const CouponCard = ({ coupon }: CouponCardProps) => {
   const dDay = calcDDay(coupon.endDate);

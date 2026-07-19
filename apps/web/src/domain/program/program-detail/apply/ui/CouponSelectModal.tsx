@@ -1,5 +1,6 @@
 'use client';
 
+import dayjs from '@/lib/dayjs';
 import OutlinedButton from '@/common/button/OutlinedButton';
 import SolidButton from '@/common/button/SolidButton';
 import BaseModal from '@/common/modal/BaseModal';
@@ -18,10 +19,8 @@ interface CouponSelectModalProps {
   maxAmount?: number;
 }
 
-const formatDate = (dateStr: string) => {
-  const date = new Date(dateStr);
-  return `${date.getFullYear()}년 ${String(date.getMonth() + 1).padStart(2, '0')}월 ${String(date.getDate()).padStart(2, '0')}일`;
-};
+const formatDate = (dateStr: string) =>
+  dayjs(dateStr).format('YYYY년 MM월 DD일');
 
 const getDiscountValue = (discount: number) =>
   discount === -1 ? Infinity : discount;
