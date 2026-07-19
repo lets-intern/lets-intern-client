@@ -15,7 +15,7 @@ const ReviewSection = () => {
   const { activeIndex, scrollToSlide } = useCarouselDots(trackRef);
 
   return (
-    <section className="bg-neutral-95 w-full px-5 py-16 md:py-24">
+    <section className="w-full bg-[#EFEFEF] px-5 py-16 md:py-24">
       <div className="mx-auto flex w-full max-w-[1120px] flex-col gap-10">
         <div className="flex flex-col items-center gap-3 text-center">
           <p className="text-xsmall14 md:text-xsmall16 text-neutral-45 font-semibold">

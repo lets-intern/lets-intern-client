@@ -4,7 +4,7 @@
  */
 const PlusSection = () => {
   return (
-    <section className="w-full px-5 py-16 md:py-24">
+    <section className="w-full bg-gradient-to-b from-[#EFEFEF] to-[#DBDDFD] px-5 py-16 md:py-24">
       <div className="mx-auto flex w-full max-w-[1120px] flex-col items-center gap-12">
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="flex flex-col items-center gap-2">

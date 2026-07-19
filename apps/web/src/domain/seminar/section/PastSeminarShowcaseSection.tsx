@@ -14,7 +14,7 @@ const PastSeminarShowcaseSection = () => {
   const { activeIndex, scrollToSlide } = useCarouselDots(trackRef);
 
   return (
-    <section className="w-full px-5 py-16 md:py-24">
+    <section className="w-full bg-[#EFEFEF] px-5 py-16 md:py-24">
       <div className="mx-auto flex w-full max-w-[1120px] flex-col gap-10">
         <h2 className="text-small20 md:text-large26 text-neutral-0 text-center font-bold">
           지난 세미나 멘토 하이라이트
