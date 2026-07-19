@@ -5,7 +5,7 @@
  */
 const HeroSection = () => {
   return (
-    <section className="bg-primary-5 w-full overflow-hidden px-5 py-14 md:py-20">
+    <section className="w-full overflow-hidden bg-gradient-to-br from-[#E8E9FE] via-[#F5F6FF] to-[#DBDDFD] px-5 py-14 md:py-20">
       <div className="relative mx-auto flex w-full max-w-[1120px] flex-col items-start gap-6">
         <div className="flex items-center gap-2">
           <img
@@ -34,6 +34,15 @@ const HeroSection = () => {
           들어보세요.
         </p>
 
+        {/* 모바일: 카피 아래 세미나 카드 스트립 (lg↑는 우측 플로팅으로 대체) */}
+        <img
+          src="/images/seminar/hero-cards-mobile.png"
+          alt=""
+          aria-hidden
+          className="mt-2 w-full lg:hidden"
+        />
+
+        {/* 데스크톱: 우측 플로팅 세미나 카드 (lg↑) */}
         <img
           src="/images/seminar/hero-cards.png"
           alt=""

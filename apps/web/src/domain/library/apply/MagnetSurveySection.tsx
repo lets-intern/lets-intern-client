@@ -22,14 +22,14 @@ function OtherInput({
   const otherSelected = question.items.some(
     (item) =>
       item.value === OTHER_ITEM_VALUE &&
-      currentAnswer.selectedItemIds.includes(item.itemId),
+      currentAnswer?.selectedItemIds.includes(item.itemId),
   );
   if (!otherSelected) return null;
   return (
     <LineInput
       className="text-xsmall14 md:text-xsmall16 mt-1"
       placeholder="기타 내용을 직접 입력해 주세요."
-      value={currentAnswer.subjectiveText}
+      value={currentAnswer?.subjectiveText ?? ''}
       onChange={(e) =>
         onAnswerChange(question.questionId, {
           ...currentAnswer,

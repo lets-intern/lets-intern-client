@@ -274,7 +274,7 @@ const MagnetApplyContent = ({
             .map((item) =>
               // "기타(직접입력)"은 사용자가 입력한 직접 입력값으로 치환.
               item.value === OTHER_ITEM_VALUE
-                ? a.subjectiveText.trim() || item.value
+                ? a.subjectiveText?.trim() || item.value
                 : item.value,
             );
           answer = selectedValues.join(',');

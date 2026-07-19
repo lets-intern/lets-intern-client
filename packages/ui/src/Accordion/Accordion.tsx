@@ -7,6 +7,7 @@ import {
   useContext,
   useId,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -91,6 +92,10 @@ function Accordion(props: AccordionProps) {
       : [props.defaultValue];
   });
 
+  // onValueChange 최신 참조를 ref로 추적해 toggleItem이 매 렌더 재생성되지 않도록 한다.
+  const onValueChangeRef = useRef(props.onValueChange);
+  onValueChangeRef.current = props.onValueChange;
+
   const isControlled = props.value != null;
   const openValues: string[] = isControlled
     ? Array.isArray(props.value)
@@ -112,7 +117,9 @@ function Accordion(props: AccordionProps) {
       if (type === 'single') {
         const next = isOpen ? '' : value;
         if (!isControlled) setUncontrolled(next ? [next] : []);
-        (props as AccordionSingleProps).onValueChange?.(next);
+        (onValueChangeRef.current as AccordionSingleProps['onValueChange'])?.(
+          next,
+        );
         return;
       }
 
@@ -120,9 +127,11 @@ function Accordion(props: AccordionProps) {
         ? openValues.filter((v) => v !== value)
         : [...openValues, value];
       if (!isControlled) setUncontrolled(next);
-      (props as AccordionMultipleProps).onValueChange?.(next);
+      (onValueChangeRef.current as AccordionMultipleProps['onValueChange'])?.(
+        next,
+      );
     },
-    [openValues, type, isControlled, props],
+    [openValues, type, isControlled],
   );
 
   const ctx = useMemo<AccordionContextValue>(

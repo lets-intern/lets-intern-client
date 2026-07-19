@@ -50,13 +50,18 @@ export function useSectionAnchor(
       .filter((el): el is HTMLElement => el != null);
     if (!elements.length) return;
 
+    // entries 는 "이번 틱에 교차 상태가 바뀐" 요소만 담기므로, 각 섹션의 최신
+    // 교차 상태를 Map 에 누적하고 sectionIds 선언 순서(=문서 순서)상 먼저 보이는
+    // 섹션을 활성으로 삼는다.
+    const isIntersectingMap = new Map<string, boolean>();
+
     const observer = new IntersectionObserver(
       (entries) => {
-        // 화면에 보이는 섹션 중 가장 위쪽(문서 순서상 먼저) 것을 활성으로 삼는다.
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-        const next = visible[0]?.target.id;
+        entries.forEach((entry) => {
+          isIntersectingMap.set(entry.target.id, entry.isIntersecting);
+        });
+
+        const next = sectionIds.find((id) => isIntersectingMap.get(id));
         if (!next) return;
         setActiveId((prev) => {
           if (prev === next) return prev;
@@ -69,8 +74,8 @@ export function useSectionAnchor(
 
     elements.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-    // threshold 가 배열이면 참조가 매번 바뀌므로 직렬화해 안정화한다.
-  }, [sectionIds, rootMargin, JSON.stringify(threshold)]);
+    // sectionIds·threshold 가 인라인 배열이면 참조가 매번 바뀌므로 직렬화해 안정화한다.
+  }, [JSON.stringify(sectionIds), rootMargin, JSON.stringify(threshold)]);
 
   const scrollTo = useCallback((id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });

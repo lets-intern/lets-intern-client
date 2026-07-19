@@ -15,6 +15,7 @@ import MagnetSurveySection, {
   OTHER_ITEM_VALUE,
 } from '@/domain/library/apply/MagnetSurveySection';
 import { extractHttpStatus } from '@/utils/sentry';
+import { isValidEmail } from '@/utils/valid';
 import { useToast } from '@letscareer/ui';
 import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -99,11 +100,12 @@ const SuggestSeminarModal = ({
     const a = answers.find((x) => x.questionId === q.questionId);
     if (!a) return true;
     return q.questionType === 'SUBJECTIVE'
-      ? !a.subjectiveText.trim()
+      ? !a.subjectiveText?.trim()
       : a.selectedItemIds.length === 0;
   });
 
-  const canSubmit = !!email.trim() && !hasUnansweredRequired && !submitting;
+  const canSubmit =
+    isValidEmail(email.trim()) && !hasUnansweredRequired && !submitting;
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
@@ -119,7 +121,7 @@ const SuggestSeminarModal = ({
           .filter((item) => a.selectedItemIds.includes(item.itemId))
           .map((item) =>
             item.value === OTHER_ITEM_VALUE
-              ? a.subjectiveText.trim() || item.value
+              ? a.subjectiveText?.trim() || item.value
               : item.value,
           )
           .join(',');
