@@ -23,8 +23,7 @@ import SuggestSeminarCta from './section/SuggestSeminarCta';
 const SeminarLandingPage = () => {
   return (
     <div className="w-full">
-      <h1 className="sr-only">무료 세미나</h1>
-
+      {/* 페이지 h1 은 HeroSection 이 키워드 포함 가시 헤딩으로 렌더한다(중복 h1 방지). */}
       <HeroSection />
       <SubBannerSection />
 
