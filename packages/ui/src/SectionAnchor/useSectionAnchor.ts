@@ -69,8 +69,8 @@ export function useSectionAnchor(
 
     elements.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-    // threshold 가 배열이면 참조가 매번 바뀌므로 직렬화해 안정화한다.
-  }, [sectionIds, rootMargin, JSON.stringify(threshold)]);
+    // sectionIds·threshold 가 인라인 배열이면 참조가 매번 바뀌므로 직렬화해 안정화한다.
+  }, [JSON.stringify(sectionIds), rootMargin, JSON.stringify(threshold)]);
 
   const scrollTo = useCallback((id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });

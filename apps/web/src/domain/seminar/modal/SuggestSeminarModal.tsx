@@ -15,6 +15,7 @@ import MagnetSurveySection, {
   OTHER_ITEM_VALUE,
 } from '@/domain/library/apply/MagnetSurveySection';
 import { extractHttpStatus } from '@/utils/sentry';
+import { isValidEmail } from '@/utils/valid';
 import { useToast } from '@letscareer/ui';
 import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -103,7 +104,8 @@ const SuggestSeminarModal = ({
       : a.selectedItemIds.length === 0;
   });
 
-  const canSubmit = !!email.trim() && !hasUnansweredRequired && !submitting;
+  const canSubmit =
+    isValidEmail(email.trim()) && !hasUnansweredRequired && !submitting;
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
