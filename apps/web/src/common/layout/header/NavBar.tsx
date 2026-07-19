@@ -153,6 +153,16 @@ const NavBar = ({ isLoginPage, disableFixed, ...props }: NavBarProps) => {
                   프로그램
                 </GlobalNavItem>
               </SwiperSlide>
+              <SwiperSlide className="!w-auto">
+                <GlobalNavItem
+                  className="text-xsmall14"
+                  isNew
+                  href="/seminar"
+                  active={activeLink === 'SEMINAR'}
+                >
+                  무료 세미나
+                </GlobalNavItem>
+              </SwiperSlide>
               {/*
                 [레거시 · 삭제 예정] 서류 피드백 REPORT 메뉴 (모바일 Swiper)
                 - 1:1 라이브 멘토링 상품이 이 흐름을 대체하므로 삭제 대상.
@@ -204,6 +214,14 @@ const NavBar = ({ isLoginPage, disableFixed, ...props }: NavBarProps) => {
               >
                 프로그램
                 <span>&nbsp;카테고리</span>
+              </GlobalNavItem>
+              <GlobalNavItem
+                className="text-xsmall16"
+                isNew
+                href="/seminar"
+                active={activeLink === 'SEMINAR'}
+              >
+                무료 세미나
               </GlobalNavItem>
               {/*
                 [레거시 · 삭제 예정] 서류 피드백 REPORT 메뉴 (데스크톱 GNB)
@@ -282,6 +300,9 @@ const NavBar = ({ isLoginPage, disableFixed, ...props }: NavBarProps) => {
         </SideNavItem>
         <hr className="bg-neutral-80 h-0.5" aria-hidden="true" />
         <SideNavItem href="/program">전체 프로그램</SideNavItem>
+        <SideNavItem href="/seminar" isNew>
+          무료 세미나
+        </SideNavItem>
         {/*
           [레거시 · 삭제 예정] 서류 피드백 REPORT 메뉴 (사이드 네비)
           - 1:1 라이브 멘토링 상품이 이 흐름을 대체하므로 삭제 대상.
