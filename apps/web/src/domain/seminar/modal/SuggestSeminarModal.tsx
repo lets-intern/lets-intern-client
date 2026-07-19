@@ -12,8 +12,10 @@ import ModalPortal from '@/common/ModalPortal';
 import MagnetSurveySection, {
   MagnetQuestion,
   MagnetSurveyAnswer,
+  OTHER_ITEM_VALUE,
 } from '@/domain/library/apply/MagnetSurveySection';
 import { extractHttpStatus } from '@/utils/sentry';
+import { useToast } from '@letscareer/ui';
 import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -43,14 +45,15 @@ interface SuggestSeminarModalProps {
  *
  * - 연락처: 유저 프로필(읽기 전용).
  * - 이메일: 유저 프로필 기본값(수정 가능) → 변경 시 프로필에 반영.
- * - 희망 직군·듣고 싶은 세미나 주제 등 나머지 질문: **어드민 신청폼에 세팅한 마그넷 질문을 그대로 렌더**한다.
- *   질문명·객관식 선택지·주관식 입력 모두 어드민 세팅과 완전히 동기화되며, 답변은 magnetAnswerList로 전송된다.
- * 로그인 사용자 전제(CTA에서 가드).
+ * - 나머지 질문(희망 직군·듣고 싶은 세미나 주제 등): 어드민 신청폼 세팅을 그대로 렌더한다.
+ *   질문명·객관식 선택지·주관식 입력·"기타(직접입력)"까지 어드민과 완전 동기화. 답변은 magnetAnswerList로 전송.
+ * - 제출 결과는 패키지 헤드리스 토스트(useToast)로 알린다. 로그인 사용자 전제(CTA에서 가드).
  */
 const SuggestSeminarModal = ({
   magnetId,
   onClose,
 }: SuggestSeminarModalProps) => {
+  const toast = useToast();
   const { data: user } = useUserQuery();
   const { data: questionsData, isLoading } =
     useGetUserMagnetQuestionsQuery(magnetId);
@@ -64,8 +67,6 @@ const SuggestSeminarModal = ({
 
   const [email, setEmail] = useState('');
   const [answers, setAnswers] = useState<MagnetSurveyAnswer[]>([]);
-  const [submitted, setSubmitted] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.email) setEmail(user.email);
@@ -106,9 +107,8 @@ const SuggestSeminarModal = ({
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
-    setErrorMsg(null);
 
-    // 답변 → magnetAnswerList (질문 세팅 그대로 매핑).
+    // 답변 → magnetAnswerList. "기타(직접입력)"은 직접 입력값으로 치환.
     const magnetAnswerList = answers.map((a) => {
       const question = questions.find((q) => q.questionId === a.questionId);
       let answer = '';
@@ -117,7 +117,11 @@ const SuggestSeminarModal = ({
       } else {
         answer = (question?.items ?? [])
           .filter((item) => a.selectedItemIds.includes(item.itemId))
-          .map((item) => item.value)
+          .map((item) =>
+            item.value === OTHER_ITEM_VALUE
+              ? a.subjectiveText.trim() || item.value
+              : item.value,
+          )
           .join(',');
       }
       return { magnetQuestionId: a.questionId, answer };
@@ -134,13 +138,17 @@ const SuggestSeminarModal = ({
         }
       }
       await postApplication({ magnetId, body: { magnetAnswerList } });
-      setSubmitted(true);
+      toast.success(
+        '제안이 전송되었어요! 무료 세미나가 열리면 먼저 알려드릴게요.',
+      );
+      onClose();
     } catch (e) {
       if (extractHttpStatus(e) === 409) {
-        setSubmitted(true);
+        toast.success('이미 제안해 주셨어요. 소중한 의견 감사합니다!');
+        onClose();
         return;
       }
-      setErrorMsg('제안 전송에 실패했어요. 잠시 후 다시 시도해 주세요.');
+      toast.error('제안 전송에 실패했어요. 잠시 후 다시 시도해 주세요.');
     }
   };
 
@@ -163,96 +171,72 @@ const SuggestSeminarModal = ({
             <X className="h-6 w-6" />
           </button>
 
-          {submitted ? (
-            <div className="flex flex-col items-center gap-4 py-8 text-center">
-              <p className="text-small18 md:text-medium22 text-neutral-0 font-bold">
-                제안이 전송되었어요!
-              </p>
-              <p className="text-xsmall14 md:text-xsmall16 text-neutral-40">
-                가장 빠르게 섭외하고, 무료 세미나가 열리면
+          <div className="flex flex-col gap-6 pr-6">
+            <div className="flex flex-col gap-2">
+              <h2 className="text-small18 md:text-medium22 text-neutral-0 font-bold">
+                보고 싶은 기업·직무 현직자와
                 <br />
-                누구보다 먼저 알려드릴게요.
+                세미나 주제를 알려주세요!
+              </h2>
+              <p className="text-xsmall14 md:text-xsmall16 text-neutral-40">
+                가장 빠르게 섭외하고,
+                <br />
+                무료 세미나가 열리면 누구보다 먼저 알려드립니다.
               </p>
-              <button
-                type="button"
-                onClick={onClose}
-                className="bg-primary rounded-xs mt-2 min-h-[48px] w-full px-5 py-3 font-semibold text-neutral-100"
-              >
-                확인
-              </button>
             </div>
-          ) : (
-            <div className="flex flex-col gap-6 pr-6">
-              <div className="flex flex-col gap-2">
-                <h2 className="text-small18 md:text-medium22 text-neutral-0 font-bold">
-                  보고 싶은 기업·직무 현직자와
-                  <br />
-                  세미나 주제를 알려주세요!
-                </h2>
-                <p className="text-xsmall14 md:text-xsmall16 text-neutral-40">
-                  가장 빠르게 섭외하고,
-                  <br />
-                  무료 세미나가 열리면 누구보다 먼저 알려드립니다.
-                </p>
-              </div>
 
-              {/* 연락처 (읽기 전용) */}
-              <div className="bg-primary-5 rounded-xs flex flex-col gap-1 px-4 py-3">
-                <span className="text-xxsmall12 md:text-xsmall14 text-neutral-40">
-                  연락처
-                </span>
-                <span className="text-xsmall16 text-neutral-0 font-medium">
-                  {user?.phoneNum || '등록된 연락처가 없어요'}
-                </span>
-              </div>
+            {/* 연락처 (읽기 전용) */}
+            <div className="bg-primary-5 rounded-xs flex flex-col gap-1 px-4 py-3">
+              <span className="text-xxsmall12 md:text-xsmall14 text-neutral-40">
+                연락처
+              </span>
+              <span className="text-xsmall16 text-neutral-0 font-medium">
+                {user?.phoneNum || '등록된 연락처가 없어요'}
+              </span>
+            </div>
 
-              {/* 이메일 */}
-              <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="seminar-suggest-email"
-                  className="text-xsmall14 md:text-xsmall16 text-neutral-0 font-medium"
-                >
-                  이메일
-                </label>
-                <LineInput
-                  id="seminar-suggest-email"
-                  name="email"
-                  type="email"
-                  placeholder="이메일을 입력해 주세요."
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+            {/* 이메일 */}
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="seminar-suggest-email"
+                className="text-xsmall14 md:text-xsmall16 text-neutral-0 font-medium"
+              >
+                이메일
+              </label>
+              <LineInput
+                id="seminar-suggest-email"
+                name="email"
+                type="email"
+                placeholder="이메일을 입력해 주세요."
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            {/* 마그넷 질문 — 어드민 신청폼 세팅 그대로 렌더 */}
+            {isLoading ? (
+              <p className="text-xsmall14 text-neutral-40">
+                질문을 불러오는 중이에요…
+              </p>
+            ) : (
+              questions.length > 0 && (
+                <MagnetSurveySection
+                  questions={questions}
+                  answers={answers}
+                  onAnswerChange={handleAnswerChange}
                 />
-              </div>
+              )
+            )}
 
-              {/* 마그넷 질문 — 어드민 신청폼 세팅 그대로 렌더(희망 직군·듣고 싶은 세미나 주제 등) */}
-              {isLoading ? (
-                <p className="text-xsmall14 text-neutral-40">
-                  질문을 불러오는 중이에요…
-                </p>
-              ) : (
-                questions.length > 0 && (
-                  <MagnetSurveySection
-                    questions={questions}
-                    answers={answers}
-                    onAnswerChange={handleAnswerChange}
-                  />
-                )
-              )}
-
-              {errorMsg && (
-                <p className="text-xsmall14 text-system-error">{errorMsg}</p>
-              )}
-
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={!canSubmit}
-                className={`rounded-xs text-xsmall16 mt-2 min-h-[48px] w-full px-5 py-3 font-semibold text-neutral-100 ${canSubmit ? 'bg-primary' : 'bg-neutral-70 cursor-not-allowed'}`}
-              >
-                {submitting ? '전송 중…' : '보내기'}
-              </button>
-            </div>
-          )}
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={!canSubmit}
+              className={`rounded-xs text-xsmall16 mt-2 min-h-[48px] w-full px-5 py-3 font-semibold text-neutral-100 ${canSubmit ? 'bg-primary' : 'bg-neutral-70 cursor-not-allowed'}`}
+            >
+              {submitting ? '전송 중…' : '보내기'}
+            </button>
+          </div>
         </div>
       </div>
     </ModalPortal>
