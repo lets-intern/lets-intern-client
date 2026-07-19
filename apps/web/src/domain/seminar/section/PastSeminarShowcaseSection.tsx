@@ -43,20 +43,23 @@ const MaterialThumbnails = ({ mentor }: { mentor: PastSeminarMentor }) => (
 /** 멘토 한 명 슬라이드 — 프로필·이력·강의자료 + 3분 미리보기 카드. */
 const PastSeminarSlide = ({ mentor }: { mentor: PastSeminarMentor }) => (
   <article className="border-neutral-90 shadow-03 w-[85%] shrink-0 snap-center rounded-xl border bg-white p-6 md:w-full md:p-8">
-    <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-10">
-      <div className="flex flex-1 flex-col gap-5">
-        <div className="flex items-center gap-4">
+    <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
+      <div className="flex flex-1 flex-col gap-6">
+        <div className="flex items-start gap-5">
           <img
             src={mentor.profile}
             alt=""
             aria-hidden
-            className="bg-primary-5 h-20 w-20 shrink-0 rounded-full object-cover object-top"
+            className="bg-primary-5 rounded-lg md:h-28 md:w-28 h-24 w-24 shrink-0 object-cover object-top"
           />
-          <span className="text-xsmall14 md:text-xsmall16 bg-primary rounded-xs w-fit px-3 py-1.5 font-bold text-neutral-100">
-            {mentor.badge}
-          </span>
+          <div className="flex flex-col items-start gap-3 pt-1">
+            <span className="text-xsmall14 md:text-xsmall16 bg-primary rounded-xs w-fit px-3 py-1.5 font-bold text-neutral-100">
+              {mentor.badge}
+            </span>
+            <CredentialList items={mentor.credentials} />
+          </div>
         </div>
-        <CredentialList items={mentor.credentials} />
+        <div className="bg-neutral-90 h-px w-full" />
         <MaterialThumbnails mentor={mentor} />
       </div>
 
@@ -64,7 +67,7 @@ const PastSeminarSlide = ({ mentor }: { mentor: PastSeminarMentor }) => (
         src={mentor.preview}
         alt={mentor.previewAlt}
         loading="lazy"
-        className="w-full rounded-lg lg:w-80"
+        className="w-full shrink-0 rounded-lg lg:w-80"
       />
     </div>
   </article>
