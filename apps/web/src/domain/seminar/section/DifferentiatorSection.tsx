@@ -26,11 +26,11 @@ const DifferentiatorHead = ({
 
 /**
  * S6 차별점 섹션 — 3가지 차별점(히든 쿠폰 · 현직자 합격 전략(멘토 6인) · 실시간 질의응답).
- * 다크 배경 위 정적 그래픽 + 멘토 카드 그리드. 정적 RSC.
+ * 배경은 위(검정)→아래(#4138A3) 세로 그라데이션. 바로 위 S5(FreeVod)는 검정이라 자연스레 이어진다. 정적 RSC.
  */
 const DifferentiatorSection = () => {
   return (
-    <section className="bg-neutral-0 w-full px-5 py-16 md:py-24">
+    <section className="w-full bg-gradient-to-b from-black to-[#4138A3] px-5 py-16 md:py-24">
       <div className="mx-auto flex w-full max-w-[1120px] flex-col gap-20 md:gap-28">
         {/* 차별점 1 — 히든 쿠폰 (정적 그래픽) */}
         <div className="flex flex-col items-center gap-8">

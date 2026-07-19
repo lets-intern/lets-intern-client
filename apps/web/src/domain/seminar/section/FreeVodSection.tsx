@@ -1,10 +1,10 @@
 /**
  * S5 무료 참여 안내 섹션 — "누구나 무료로 참여 가능한 라이브 세미나".
- * 다크 배경 위 카피 + 라이브 세미나 슬라이드 예시 그래픽. 정적 RSC.
+ * 검정 배경(바로 아래 S6 차별점 그라데이션 최상단과 이어짐) 위 카피 + 라이브 세미나 슬라이드 예시. 정적 RSC.
  */
 const FreeVodSection = () => {
   return (
-    <section className="bg-neutral-0 w-full px-5 py-16 md:py-24">
+    <section className="w-full bg-black px-5 py-16 md:py-24">
       <div className="mx-auto flex w-full max-w-[1120px] flex-col items-center gap-12">
         <div className="flex flex-col items-center gap-3 text-center">
           <p className="text-xsmall14 md:text-xsmall16 text-primary-light font-semibold">

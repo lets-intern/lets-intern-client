@@ -19,6 +19,7 @@ const SeminarStatusTabs = () => {
       selected={status}
       onChange={setStatus}
       size="large"
+      className="justify-center !pl-0"
     />
   );
 };

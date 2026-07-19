@@ -42,7 +42,7 @@ const MaterialThumbnails = ({ mentor }: { mentor: PastSeminarMentor }) => (
 
 /** 멘토 한 명 슬라이드 — 프로필·이력·강의자료 + 3분 미리보기 카드. */
 const PastSeminarSlide = ({ mentor }: { mentor: PastSeminarMentor }) => (
-  <article className="w-[85%] shrink-0 snap-center md:w-full">
+  <article className="border-neutral-90 shadow-03 w-[85%] shrink-0 snap-center rounded-xl border bg-white p-6 md:w-full md:p-8">
     <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-10">
       <div className="flex flex-1 flex-col gap-5">
         <div className="flex items-center gap-4">
