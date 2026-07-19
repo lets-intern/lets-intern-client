@@ -16,6 +16,7 @@ interface Props {
 
 const MissionCalendar = ({ schedules, todayTh, isDone }: Props) => {
   const swiperRef = useRef<SwiperType | null>(null);
+  const barRef = useRef<HTMLDivElement>(null);
   const { selectedMissionTh } = useMissionStore();
   const pathname = usePathname();
 
@@ -50,9 +51,39 @@ const MissionCalendar = ({ schedules, todayTh, isDone }: Props) => {
 
   return (
     <div>
-      <MissionProgressBar totalCards={schedules.length} progress={progress} />
+      <div
+        className="hidden md:block"
+        style={{ overflow: 'hidden', padding: '4px 0', margin: '-4px 0' }}
+      >
+        <div ref={barRef}>
+          <MissionProgressBar
+            totalCards={schedules.length}
+            progress={progress}
+          />
+        </div>
+      </div>
       <Swiper
         onSwiper={(swiper) => (swiperRef.current = swiper)}
+        onTouchMove={(swiper) => {
+          if (barRef.current) {
+            barRef.current.style.transition = 'none';
+            barRef.current.style.transform = `translateX(${swiper.translate}px)`;
+          }
+        }}
+        onTransitionStart={(swiper) => {
+          const s = swiper as SwiperType;
+          if (barRef.current) {
+            barRef.current.style.transition = `transform ${s.params.speed}ms ease`;
+            barRef.current.style.transform = `translateX(${s.translate}px)`;
+          }
+        }}
+        onTransitionEnd={(swiper) => {
+          const s = swiper as SwiperType;
+          if (barRef.current) {
+            barRef.current.style.transition = 'none';
+            barRef.current.style.transform = `translateX(${s.translate}px)`;
+          }
+        }}
         slidesPerView="auto"
         breakpoints={{
           768: {
@@ -89,8 +120,8 @@ const MissionProgressBar = ({
   progress: number;
 }) => (
   <div
-    className="bg-neutral-70 relative mt-3 hidden h-1 rounded-full md:block"
-    style={{ width: `${totalCards * SLIDE_WIDTH_PX}px`, maxWidth: '100%' }}
+    className="bg-neutral-70 relative mt-3 h-1 rounded-full"
+    style={{ width: `${totalCards * SLIDE_WIDTH_PX}px` }}
   >
     <div
       className="bg-primary absolute h-1 rounded-full"
