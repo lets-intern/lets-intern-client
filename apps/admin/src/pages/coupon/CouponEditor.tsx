@@ -178,6 +178,12 @@ const CouponEditor = ({ editorMode }: CouponEditorProps) => {
       alert('이미 사용 중인 쿠폰 코드입니다.');
     } else if (errorCode === 'COUPON_400_3') {
       alert('쿠폰 코드는 영문 대문자와 숫자로만 구성되어야 합니다.');
+    } else if (errorCode === 'COUPON_NOT_FOUND') {
+      alert('존재하지 않는 쿠폰입니다.');
+    } else if (errorCode === 'COUPON_ISSUE_TARGET_NOT_FOUND') {
+      alert('존재하지 않는 프로그램입니다.');
+    } else if (errorCode === 'COUPON_ISSUE_TARGET_INVALID') {
+      alert('쿠폰 대상 조건이 올바르지 않습니다.');
     }
   };
 
