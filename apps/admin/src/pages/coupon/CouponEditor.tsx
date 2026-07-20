@@ -66,6 +66,7 @@ const CouponEditor = ({ editorMode }: CouponEditorProps) => {
   });
   const [isAllDiscount, setIsAllDiscount] = useState(false);
   const [isUnlimited, setIsUnlimited] = useState(false);
+  const [isAllMembers, setIsAllMembers] = useState(false);
   const [targetConditionList, setTargetConditionList] = useState<
     TargetCondition[]
   >([]);
@@ -89,7 +90,9 @@ const CouponEditor = ({ editorMode }: CouponEditorProps) => {
         startDate: data.startDate,
         endDate: data.endDate,
       });
-      setTargetConditionList(data.targetConditionList ?? []);
+      const conditions = data.targetConditionList ?? [];
+      setIsAllMembers(conditions.length === 0);
+      setTargetConditionList(conditions);
       return res.data;
     },
     enabled: editorMode === 'edit',
@@ -152,7 +155,7 @@ const CouponEditor = ({ editorMode }: CouponEditorProps) => {
       programTypeList: value.programTypeList.map((type) => ({
         programType: type,
       })),
-      targetConditionList,
+      targetConditionList: isAllMembers ? [] : targetConditionList,
       name: value.name,
       code: value.code,
       discount: isAllDiscount ? -1 : Number(value.discount),
@@ -236,17 +239,33 @@ const CouponEditor = ({ editorMode }: CouponEditorProps) => {
             </div>
           </div>
           <div className="flex flex-col flex-wrap gap-3">
-            <label htmlFor="program" className="text-small20 font-medium">
-              발급 대상
-              <p className="text-xxsmall12 mt-1 font-normal text-gray-400">
-                쿠폰을 사용할 수 있는 대상을 <strong>결제·수강 이력</strong>{' '}
-                기준으로 설정합니다. (다중 선택 가능)
-              </p>
-            </label>
-            <CouponTargetSection
-              value={targetConditionList}
-              onChange={setTargetConditionList}
-            />
+            <div className="flex items-center justify-between">
+              <label className="text-small20 font-medium">
+                발급 대상
+                <p className="text-xxsmall12 mt-1 font-normal text-gray-400">
+                  쿠폰을 사용할 수 있는 대상을 <strong>결제·수강 이력</strong>{' '}
+                  기준으로 설정합니다. (다중 선택 가능)
+                </p>
+              </label>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={isAllMembers}
+                    onChange={() => setIsAllMembers((p) => !p)}
+                    size="small"
+                  />
+                }
+                label="회원 전체 발급"
+              />
+            </div>
+            <div
+              className={isAllMembers ? 'pointer-events-none opacity-45' : ''}
+            >
+              <CouponTargetSection
+                value={targetConditionList}
+                onChange={setTargetConditionList}
+              />
+            </div>
           </div>
           {/* <div className="ml-4 flex items-center">
             <label className="w-[8rem] font-medium">프로그램 분류</label>
