@@ -16,6 +16,7 @@ export interface TargetCondition {
 
 export interface ChallengeTypeOption {
   challengeType: string;
+  code: number;
   desc: string;
   challengeList: { id: number; title: string }[];
 }
@@ -29,6 +30,7 @@ export interface ChipItem {
 export const PLACEHOLDER_CHALLENGE_TYPES: ChallengeTypeOption[] = [
   {
     challengeType: 'EXPERIENCE',
+    code: 1,
     desc: '경험정리 챌린지',
     challengeList: [
       { id: 1, title: '경험정리 챌린지 13기' },
@@ -37,6 +39,7 @@ export const PLACEHOLDER_CHALLENGE_TYPES: ChallengeTypeOption[] = [
   },
   {
     challengeType: 'RESUME',
+    code: 2,
     desc: '이력서 챌린지',
     challengeList: [
       { id: 3, title: '이력서 챌린지 8기' },
@@ -45,6 +48,7 @@ export const PLACEHOLDER_CHALLENGE_TYPES: ChallengeTypeOption[] = [
   },
   {
     challengeType: 'INTRODUCTION',
+    code: 3,
     desc: '자기소개서 챌린지',
     challengeList: [
       { id: 5, title: '자기소개서 챌린지 10기' },
@@ -53,6 +57,7 @@ export const PLACEHOLDER_CHALLENGE_TYPES: ChallengeTypeOption[] = [
   },
   {
     challengeType: 'PORTFOLIO',
+    code: 4,
     desc: '포트폴리오 챌린지',
     challengeList: [
       { id: 7, title: '포트폴리오 챌린지 5기' },
@@ -61,6 +66,7 @@ export const PLACEHOLDER_CHALLENGE_TYPES: ChallengeTypeOption[] = [
   },
   {
     challengeType: 'INTERVIEW',
+    code: 5,
     desc: '면접 챌린지',
     challengeList: [
       { id: 9, title: '면접 챌린지 6기' },
@@ -69,21 +75,25 @@ export const PLACEHOLDER_CHALLENGE_TYPES: ChallengeTypeOption[] = [
   },
   {
     challengeType: 'LARGE_COMPANY',
+    code: 6,
     desc: '대기업 자기소개서 챌린지',
     challengeList: [{ id: 11, title: '대기업 자기소개서 챌린지 3기' }],
   },
   {
     challengeType: 'MARKETING',
+    code: 7,
     desc: '마케팅 챌린지',
     challengeList: [{ id: 12, title: '마케팅 챌린지 4기' }],
   },
   {
     challengeType: 'HR',
+    code: 8,
     desc: 'HR 챌린지',
     challengeList: [{ id: 13, title: 'HR 챌린지 2기' }],
   },
   {
     challengeType: 'PLAN',
+    code: 9,
     desc: '기획 챌린지',
     challengeList: [{ id: 14, title: '기획 챌린지 1기' }],
   },
