@@ -479,9 +479,9 @@ const MagnetApplyContent = ({
         </section>
       )}
 
-      {/* 출시 알림 프로그램 선택 — 전용 출시알림 신청 모드(variant='launch-alert')에서만 노출.
-          일반 자료집 신청(variant='apply')에서는 어드민 useLaunchAlert 토글과 무관하게 항상 비노출. */}
-      {variant === 'launch-alert' && useLaunchAlert && (
+      {/* 출시 알림 프로그램 선택 — 어드민이 useLaunchAlert 토글을 켠 마그넷이면
+          일반 자료집 신청(variant='apply')과 전용 출시알림 모드 모두에서 노출한다. */}
+      {useLaunchAlert && (
         <section>
           <LaunchAlertProgramSection
             selectedMagnetIds={selectedLaunchAlertIds}
