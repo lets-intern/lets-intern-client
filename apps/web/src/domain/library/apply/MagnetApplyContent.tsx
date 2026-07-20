@@ -202,8 +202,22 @@ const MagnetApplyContent = ({
       }
     }
 
+    // 출시 알림 프로그램을 선택했다면 수신 여부(받아볼래요/괜찮아요)도 반드시 선택해야 한다.
+    // (미선택 시 제출하면 wantNotification 이 null 이라 선택한 출시 알림 신청이 누락된다)
+    if (selectedLaunchAlertIds.length > 0 && wantNotification === null) {
+      return true;
+    }
+
     return false;
-  }, [value, selections, isMarketingAgreed, surveyAnswers, questions]);
+  }, [
+    value,
+    selections,
+    isMarketingAgreed,
+    surveyAnswers,
+    questions,
+    selectedLaunchAlertIds,
+    wantNotification,
+  ]);
 
   const isSubmitting = patchUserIsPending || postApplicationIsPending;
 
