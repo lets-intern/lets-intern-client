@@ -9,10 +9,13 @@ import {
 } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import Input from '@/common/input/v1/Input';
+import CouponTargetSection, {
+  TargetCondition,
+} from '@/domain/admin/coupon/section/CouponTargetSection';
 import axios from '@/utils/axios';
 import { couponTypeToText, newProgramTypeToText } from '@/utils/convert';
 import ActionButton from '../ui/button/ActionButton';
@@ -37,6 +40,7 @@ interface CouponRequestValue {
   programTypeList: {
     programType: string;
   }[];
+  targetConditionList: TargetCondition[];
   name: string;
   code: string;
   discount: number;
@@ -62,6 +66,9 @@ const CouponEditor = ({ editorMode }: CouponEditorProps) => {
   });
   const [isAllDiscount, setIsAllDiscount] = useState(false);
   const [isUnlimited, setIsUnlimited] = useState(false);
+  const [targetConditionList, setTargetConditionList] = useState<
+    TargetCondition[]
+  >([]);
 
   const couponId = Number(params.couponId);
 
@@ -82,6 +89,7 @@ const CouponEditor = ({ editorMode }: CouponEditorProps) => {
         startDate: data.startDate,
         endDate: data.endDate,
       });
+      setTargetConditionList(data.targetConditionList ?? []);
       return res.data;
     },
     enabled: editorMode === 'edit',
@@ -144,6 +152,7 @@ const CouponEditor = ({ editorMode }: CouponEditorProps) => {
       programTypeList: value.programTypeList.map((type) => ({
         programType: type,
       })),
+      targetConditionList,
       name: value.name,
       code: value.code,
       discount: isAllDiscount ? -1 : Number(value.discount),
@@ -177,13 +186,13 @@ const CouponEditor = ({ editorMode }: CouponEditorProps) => {
         </h1>
       </header>
       <form className="mt-4" onSubmit={handleSubmit}>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-6">
           <FormControl fullWidth>
-            <InputLabel id="couponType">구분</InputLabel>
+            <InputLabel id="couponType">쿠폰 타입</InputLabel>
             <Select
               labelId="couponType"
               id="couponType"
-              label="구분"
+              label="쿠폰 타입"
               name="couponType"
               value={value.couponType}
               onChange={handleChange}
@@ -195,34 +204,49 @@ const CouponEditor = ({ editorMode }: CouponEditorProps) => {
               ))}
             </Select>
           </FormControl>
-          <div className="ml-4 flex flex-wrap items-center gap-y-1">
-            <label htmlFor="program" className="w-[8rem] font-medium">
-              프로그램
+          <div className="flex flex-col flex-wrap gap-1">
+            <label htmlFor="program" className="text-small20 font-medium">
+              프로그램 타입
             </label>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={value.programTypeList.includes('ALL')}
-                  onChange={(e) => handleProgramTypeChange(e, 'ALL')}
-                />
-              }
-              label="전체"
-              slotProps={{ typography: { sx: { whiteSpace: 'nowrap' } } }}
-            />
-            {Object.keys(newProgramTypeToText).map((programType) => (
+            <div>
               <FormControlLabel
-                key={programType}
-                value={programType}
                 control={
                   <Checkbox
-                    checked={value.programTypeList.includes(programType)}
-                    onChange={(e) => handleProgramTypeChange(e, programType)}
+                    checked={value.programTypeList.includes('ALL')}
+                    onChange={(e) => handleProgramTypeChange(e, 'ALL')}
                   />
                 }
-                label={newProgramTypeToText[programType]}
+                label="전체"
                 slotProps={{ typography: { sx: { whiteSpace: 'nowrap' } } }}
               />
-            ))}
+              {Object.keys(newProgramTypeToText).map((programType) => (
+                <FormControlLabel
+                  key={programType}
+                  value={programType}
+                  control={
+                    <Checkbox
+                      checked={value.programTypeList.includes(programType)}
+                      onChange={(e) => handleProgramTypeChange(e, programType)}
+                    />
+                  }
+                  label={newProgramTypeToText[programType]}
+                  slotProps={{ typography: { sx: { whiteSpace: 'nowrap' } } }}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col flex-wrap gap-3">
+            <label htmlFor="program" className="text-small20 font-medium">
+              발급 대상
+              <p className="text-xxsmall12 mt-1 font-normal text-gray-400">
+                쿠폰을 사용할 수 있는 대상을 <strong>결제·수강 이력</strong>{' '}
+                기준으로 설정합니다. (다중 선택 가능)
+              </p>
+            </label>
+            <CouponTargetSection
+              value={targetConditionList}
+              onChange={setTargetConditionList}
+            />
           </div>
           {/* <div className="ml-4 flex items-center">
             <label className="w-[8rem] font-medium">프로그램 분류</label>
@@ -269,81 +293,86 @@ const CouponEditor = ({ editorMode }: CouponEditorProps) => {
               // onChange={handleChange}
             />
           </div> */}
-          <Input
-            label="쿠폰명"
-            name="name"
-            value={value.name}
-            onChange={handleChange}
-          />
-          <Input
-            label="쿠폰 코드"
-            name="code"
-            value={value.code}
-            onChange={handleChange}
-          />
-          <div className="flex items-center">
-            <FormControlLabel
-              control={<Checkbox />}
-              label="전액"
-              checked={isAllDiscount}
-              onChange={() => setIsAllDiscount(!isAllDiscount)}
-              className="h-[3.5rem] w-[8rem] pl-4"
-            />
-            {!isAllDiscount && (
-              <Input
-                type="number"
-                label="쿠폰 금액"
-                fullWidth={false}
-                className="flex-1"
-                name="discount"
-                value={value.discount === '-1' ? '' : value.discount}
-                onChange={handleChange}
-              />
-            )}
-          </div>
-          <div className="flex items-center">
-            <FormControlLabel
-              control={<Checkbox />}
-              label="무제한"
-              checked={isUnlimited}
-              onChange={() => setIsUnlimited(!isUnlimited)}
-              className="h-[3.5rem] w-[8rem] pl-4"
-            />
-            {!isUnlimited && (
-              <Input
-                type="number"
-                label="사용 가능 횟수"
-                fullWidth={false}
-                className="flex-1"
-                name="time"
-                value={value.time === '-1' ? '' : value.time}
-                onChange={handleChange}
-              />
-            )}
-          </div>
-          <div className="ml-4 flex items-center gap-4">
-            <label htmlFor="startDate" className="w-[8rem] font-medium">
-              시작 일자
+          <div className="flex flex-col flex-wrap gap-4">
+            <label htmlFor="program" className="text-small20 font-medium">
+              쿠폰 정보
             </label>
-            <input
-              id="startDate"
-              type="datetime-local"
-              name="startDate"
-              value={value.startDate}
+            <Input
+              label="쿠폰명"
+              name="name"
+              value={value.name}
               onChange={handleChange}
             />
-          </div>
-          <div className="ml-4 flex items-center gap-4">
-            <label htmlFor="endDate" className="w-[8rem] font-medium">
-              마감 일자
-            </label>
-            <input
-              id="endDate"
-              type="datetime-local"
-              name="endDate"
-              value={value.endDate}
+            <Input
+              label="쿠폰 코드"
+              name="code"
+              value={value.code}
               onChange={handleChange}
             />
+            <div className="flex items-center">
+              <FormControlLabel
+                control={<Checkbox />}
+                label="전액"
+                checked={isAllDiscount}
+                onChange={() => setIsAllDiscount(!isAllDiscount)}
+                className="h-[3.5rem] w-[8rem] pl-4"
+              />
+              {!isAllDiscount && (
+                <Input
+                  type="number"
+                  label="쿠폰 금액"
+                  fullWidth={false}
+                  className="flex-1"
+                  name="discount"
+                  value={value.discount === '-1' ? '' : value.discount}
+                  onChange={handleChange}
+                />
+              )}
+            </div>
+            <div className="flex items-center">
+              <FormControlLabel
+                control={<Checkbox />}
+                label="무제한"
+                checked={isUnlimited}
+                onChange={() => setIsUnlimited(!isUnlimited)}
+                className="h-[3.5rem] w-[8rem] pl-4"
+              />
+              {!isUnlimited && (
+                <Input
+                  type="number"
+                  label="사용 가능 횟수"
+                  fullWidth={false}
+                  className="flex-1"
+                  name="time"
+                  value={value.time === '-1' ? '' : value.time}
+                  onChange={handleChange}
+                />
+              )}
+            </div>
+            <div className="ml-4 flex items-center gap-4">
+              <label htmlFor="startDate" className="w-[8rem] font-medium">
+                시작 일자
+              </label>
+              <input
+                id="startDate"
+                type="datetime-local"
+                name="startDate"
+                value={value.startDate}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="ml-4 flex items-center gap-4">
+              <label htmlFor="endDate" className="w-[8rem] font-medium">
+                마감 일자
+              </label>
+              <input
+                id="endDate"
+                type="datetime-local"
+                name="endDate"
+                value={value.endDate}
+                onChange={handleChange}
+              />
+            </div>
           </div>
         </div>
         <div className="mt-8 flex justify-end gap-2">
