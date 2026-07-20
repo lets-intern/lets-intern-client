@@ -22,7 +22,7 @@ const PlusSection = () => {
             챌린지 수강생은
             <br />
             언제든지 볼 수 있는 <br className="md:hidden" />
-            <span className="bg-primary rounded-xs inline-block -rotate-2 px-2 py-1 text-neutral-100">
+            <span className="bg-primary inline-block -rotate-2 rounded-none px-2 py-1 text-neutral-100">
               무제한 다시보기
             </span>{' '}
             까지
