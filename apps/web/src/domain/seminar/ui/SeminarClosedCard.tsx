@@ -88,13 +88,14 @@ const SeminarClosedCard = ({
         </span>
       </div>
 
-      <div className="mt-auto flex items-center justify-between gap-2 pt-1">
+      {/* 모바일(좁은 2열): 뱃지 위·버튼 풀폭 세로 스택 → 글자 줄바꿈 깨짐 방지. md↑는 좌우 배치. */}
+      <div className="mt-auto flex flex-col items-start gap-2 pt-1 md:flex-row md:items-center md:justify-between">
         <ProgramStatusTag status={PROGRAM_BADGE_STATUS.POST} />
         <button
           type="button"
           onClick={handleEncore}
           aria-pressed={requested}
-          className={`text-xsmall14 rounded-xxs flex items-center gap-1 px-3.5 py-2 font-medium transition-colors ${requested ? 'bg-primary-80 text-neutral-85' : 'bg-primary-10 text-neutral-20'}`}
+          className={`text-xsmall14 rounded-xxs flex w-full items-center justify-center gap-1 whitespace-nowrap px-3.5 py-2 font-medium transition-colors md:w-auto md:justify-start ${requested ? 'bg-primary-80 text-neutral-85' : 'bg-primary-10 text-neutral-20'}`}
         >
           <MegaphoneIcon className="h-4 w-4" />
           {requested ? '앵콜 요청 완료' : '앵콜 요청하기'}
