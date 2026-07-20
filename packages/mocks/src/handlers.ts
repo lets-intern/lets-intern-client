@@ -546,7 +546,73 @@ const MOCK_USER = {
   sns: null,
 };
 
+/**
+ * (마이페이지 출시알림 QA) 사용자가 신청한 LAUNCH_ALERT 마그넷 시드 —
+ * BE mypageMagnetListItemSchema 형태와 일치.
+ *
+ * DELETE(신청취소)가 실제로 목록에서 항목을 제거하도록 mutable 배열로 둔다.
+ * 취소 후 재조회(invalidate)에서 해당 카드가 사라지는 흐름을 실 BE 없이 QA 한다.
+ */
+const LAUNCH_ALERT_MAGNET_SEED = [
+  {
+    magnetId: 90_001,
+    type: 'LAUNCH_ALERT' as const,
+    title: 'AI 취업 특강 출시알림',
+    description: '출시되면 가장 먼저 알려드릴게요.',
+    desktopThumbnail: '',
+    mobileThumbnail: '',
+    applicationCreateDate: deriveCreateDate(reservationStart, 5),
+  },
+  {
+    magnetId: 90_002,
+    type: 'LAUNCH_ALERT' as const,
+    title: '포트폴리오 완성 챌린지 출시알림',
+    description: '신규 기수 오픈 소식을 받아보실 수 있어요.',
+    desktopThumbnail: '',
+    mobileThumbnail: '',
+    applicationCreateDate: deriveCreateDate(reservationStart, 12),
+  },
+  {
+    magnetId: 90_003,
+    type: 'LAUNCH_ALERT' as const,
+    title: '현직자 커피챗 프로그램 출시알림',
+    description: '출시 일정이 확정되면 알림을 보내드려요.',
+    desktopThumbnail: '',
+    mobileThumbnail: '',
+    applicationCreateDate: deriveCreateDate(reservationStart, 20),
+  },
+];
+
+let launchAlertMagnetList = [...LAUNCH_ALERT_MAGNET_SEED];
+
 export const handlers = [
+  /**
+   * (마이페이지) GET /magnet/mypage — 사용자가 신청한 마그넷 신청현황.
+   * BE mypageMagnetListResponseSchema 일치. typeList 쿼리로 필터한다.
+   * 출시알림 탭(typeList=LAUNCH_ALERT)에서 mutable 시드를 반환한다.
+   */
+  http.get('*/magnet/mypage', ({ request }) => {
+    const typeList = new URL(request.url).searchParams.getAll('typeList');
+    const magnetList =
+      typeList.length === 0
+        ? launchAlertMagnetList
+        : launchAlertMagnetList.filter((m) => typeList.includes(m.type));
+    return HttpResponse.json({ status: 200, data: { magnetList } });
+  }),
+
+  /**
+   * (마이페이지) DELETE /magnet-application/:magnetId — 사용자 출시알림 신청취소.
+   * 신규 BE API(§4.3) 목업. 성공 시 mutable 시드에서 해당 항목을 제거해
+   * 이후 재조회에서 카드가 사라지도록 한다.
+   */
+  http.delete('*/magnet-application/:magnetId', ({ params }) => {
+    const magnetId = Number(params.magnetId);
+    launchAlertMagnetList = launchAlertMagnetList.filter(
+      (m) => m.magnetId !== magnetId,
+    );
+    return HttpResponse.json({ status: 200, data: null });
+  }),
+
   /**
    * (인증) POST /user/signin — 아무 이메일/비밀번호로 로그인 통과.
    * 실 BE 없이 단독 실행 가능하게 한다.
