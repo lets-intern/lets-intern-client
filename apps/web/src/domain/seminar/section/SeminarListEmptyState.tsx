@@ -27,9 +27,10 @@ const SeminarListEmptyState = ({ onGoClosed }: SeminarListEmptyStateProps) => {
         </p>
         <h3 className="text-small18 md:text-medium24 text-neutral-0 font-bold">
           곧{' '}
-          <span className="bg-primary rounded-xs px-2 py-1 text-neutral-100">
+          <span className="bg-primary rounded-xs inline-block -rotate-2 px-2 py-1 text-neutral-100">
             더 유익해진
           </span>{' '}
+          <br className="md:hidden" />
           무료 세미나로 찾아올게요
         </h3>
       </div>

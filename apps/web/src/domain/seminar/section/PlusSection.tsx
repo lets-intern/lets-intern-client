@@ -21,8 +21,8 @@ const PlusSection = () => {
           <h2 className="text-small20 md:text-xlarge30 text-neutral-0 break-keep font-bold">
             챌린지 수강생은
             <br />
-            언제든지 볼 수 있는{' '}
-            <span className="bg-primary rounded-xs px-2 py-1 text-neutral-100">
+            언제든지 볼 수 있는 <br className="md:hidden" />
+            <span className="bg-primary rounded-xs inline-block -rotate-2 px-2 py-1 text-neutral-100">
               무제한 다시보기
             </span>{' '}
             까지

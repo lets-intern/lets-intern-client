@@ -24,8 +24,8 @@ const ReviewSection = () => {
           <h2 className="text-small20 md:text-large26 text-neutral-0 font-bold">
             무료 세미나를 들은
             <br />
-            실제 수강생들의{' '}
-            <span className="bg-primary rounded-xs px-2 py-1 text-neutral-100">
+            실제 수강생들의 <br className="md:hidden" />
+            <span className="bg-primary rounded-xs inline-block -rotate-2 px-2 py-1 text-neutral-100">
               100% 솔직 후기
             </span>
             에요

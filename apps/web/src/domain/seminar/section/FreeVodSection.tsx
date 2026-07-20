@@ -8,7 +8,8 @@ const FreeVodSection = () => {
       <div className="mx-auto flex w-full max-w-[1120px] flex-col items-center gap-12">
         <div className="flex flex-col items-center gap-3 break-keep text-center">
           <p className="text-xsmall14 md:text-xsmall16 text-primary-light font-semibold">
-            취업 고민, 렛츠커리어 &amp; 현직자와 함께 해결해요!
+            취업 고민, <br className="md:hidden" />
+            렛츠커리어 &amp; 현직자와 함께 해결해요!
           </p>
           <h2 className="text-small20 md:text-xlarge30 font-bold text-neutral-100">
             누구나 무료로 참여 가능한
