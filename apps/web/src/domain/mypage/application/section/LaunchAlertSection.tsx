@@ -13,6 +13,9 @@ import { MypageApplicationCard } from '../../ui/card/NewApplicationCard';
 import { MypageApplicationCardConfig } from '../utils/applicationCardConfig';
 import EmptySection from './EmptySection';
 
+const LAUNCH_ALERT_DEFAULT_THUMBNAIL =
+  '/images/mypage/launch-alert-thumbnail.png';
+
 const toLaunchAlertCardConfig = (
   magnet: MypageMagnetListItem,
   onCancel: (magnetId: number) => void,
@@ -26,7 +29,7 @@ const toLaunchAlertCardConfig = (
     programId: magnet.magnetId,
     // getDetailHref 에 매칭 분기가 없는 값 → '#' 반환 → 카드 클릭 비활성화.
     programTypeKey: 'LAUNCH_ALERT',
-    thumbnail: magnet.desktopThumbnail ?? '',
+    thumbnail: magnet.desktopThumbnail || LAUNCH_ALERT_DEFAULT_THUMBNAIL,
     title: magnet.title,
     description: (() => {
       try {
@@ -61,8 +64,13 @@ const LaunchAlertSection = () => {
   const handleCancel = async (magnetId: number) => {
     const ok = await confirm({
       title: '출시알림을 취소하시겠습니까?',
-      description:
-        '취소하면 더 이상 출시 소식을 받아보실 수 없어요. 언제든 다시 신청할 수 있습니다.',
+      description: (
+        <>
+          취소하면 더 이상 출시 소식을 받아보실 수 없어요.
+          <br />
+          언제든 다시 신청할 수 있습니다.
+        </>
+      ),
       confirmLabel: '취소하기',
       cancelLabel: '닫기',
     });
