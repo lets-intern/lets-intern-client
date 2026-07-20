@@ -79,6 +79,7 @@ const SeminarClosedCard = ({
       <h3 className="text-xsmall14 md:text-xsmall16 line-clamp-2 font-semibold">
         {programInfo.title}
       </h3>
+      {/* 진행일자 */}
       <div className="flex items-center gap-1.5">
         <span className="text-xxsmall12 md:text-xsmall14 text-neutral-0">
           진행일자
@@ -88,14 +89,14 @@ const SeminarClosedCard = ({
         </span>
       </div>
 
-      {/* 모바일(좁은 2열): 뱃지 위·버튼 풀폭 세로 스택 → 글자 줄바꿈 깨짐 방지. md↑는 좌우 배치. */}
-      <div className="mt-auto flex flex-col items-start gap-2 pt-1 md:flex-row md:items-center md:justify-between">
+      {/* 모집완료 뱃지(자기 줄) → 앵콜 버튼(풀폭) 세로 스택 (figma 19) */}
+      <div className="flex flex-col items-start gap-2">
         <ProgramStatusTag status={PROGRAM_BADGE_STATUS.POST} />
         <button
           type="button"
           onClick={handleEncore}
           aria-pressed={requested}
-          className={`text-xsmall14 rounded-xxs flex w-full items-center justify-center gap-1 whitespace-nowrap px-3.5 py-2 font-medium transition-colors md:w-auto md:justify-start ${requested ? 'bg-primary-80 text-neutral-85' : 'bg-primary-10 text-neutral-20'}`}
+          className={`text-xsmall14 rounded-xxs flex w-full items-center justify-center gap-1 whitespace-nowrap px-3.5 py-2 font-medium transition-colors ${requested ? 'bg-primary-80 text-neutral-85' : 'bg-primary-10 text-neutral-20'}`}
         >
           <MegaphoneIcon className="h-4 w-4" />
           {requested ? '앵콜 요청 완료' : '앵콜 요청하기'}

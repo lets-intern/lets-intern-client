@@ -128,7 +128,9 @@ const SeminarListSection = () => {
   return (
     <section className="mx-auto flex w-full max-w-[1120px] flex-col gap-8 md:gap-11">
       <SeminarStatusTabs />
-      {status === 'recruiting' ? <RecruitingHeader /> : <ClosedHeader />}
+      {/* 헤더는 세미나가 있을 때만. 비었을 땐 빈 상태 메시지와 중복되지 않게 숨긴다. */}
+      {programs.length > 0 &&
+        (status === 'recruiting' ? <RecruitingHeader /> : <ClosedHeader />)}
       <SeminarListContent
         status={status}
         isLoading={isLoading || isFetching}
