@@ -187,7 +187,7 @@ const CouponTargetSection = ({ value, onChange }: Props) => {
         </div>
         {chips.length === 0 ? (
           <p className="text-xs text-gray-400">
-            미설정 시 등록형 쿠폰으로 저장됩니다.
+            미설정 시 회원 전체 발급(등록형 쿠폰)으로 저장됩니다.
           </p>
         ) : (
           <div className="flex flex-wrap gap-2">

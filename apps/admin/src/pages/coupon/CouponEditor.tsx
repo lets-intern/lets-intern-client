@@ -1,4 +1,5 @@
 import {
+  Button,
   Checkbox,
   FormControl,
   FormControlLabel,
@@ -18,7 +19,6 @@ import CouponTargetSection, {
 } from '@/domain/admin/coupon/section/CouponTargetSection';
 import axios from '@/utils/axios';
 import { couponTypeToText, newProgramTypeToText } from '@/utils/convert';
-import ActionButton from '../ui/button/ActionButton';
 
 interface CouponEditorProps {
   editorMode: 'create' | 'edit';
@@ -171,6 +171,15 @@ const CouponEditor = ({ editorMode }: CouponEditorProps) => {
     }
   };
 
+  const isSubmitDisabled =
+    !value.couponType ||
+    !value.name ||
+    !value.code ||
+    (!isAllDiscount && !value.discount) ||
+    (!isUnlimited && !value.time) ||
+    !value.startDate ||
+    !value.endDate;
+
   const handleSubmitError = (error: Error) => {
     const errorData = (error as AxiosError).response?.data;
     const errorCode = (errorData as { code: string }).code;
@@ -197,7 +206,9 @@ const CouponEditor = ({ editorMode }: CouponEditorProps) => {
       <form className="mt-6" onSubmit={handleSubmit}>
         <div className="flex flex-col gap-12">
           <div className="flex flex-col flex-wrap gap-3">
-            <label className="text-small20 font-semibold">쿠폰 타입</label>
+            <label className="text-small20 font-semibold">
+              쿠폰 타입 <span className="text-system-error">*</span>
+            </label>
             <FormControl fullWidth>
               <InputLabel id="couponType">쿠폰 타입</InputLabel>
               <Select
@@ -264,7 +275,7 @@ const CouponEditor = ({ editorMode }: CouponEditorProps) => {
                     size="small"
                   />
                 }
-                label="회원 전체 발급"
+                label="회원 전체 발급 (등록형 쿠폰)"
               />
             </div>
             <div
@@ -322,7 +333,9 @@ const CouponEditor = ({ editorMode }: CouponEditorProps) => {
             />
           </div> */}
           <div className="flex flex-col flex-wrap gap-4">
-            <label className="text-small20 font-bold">쿠폰 정보</label>
+            <label className="text-small20 font-bold">
+              쿠폰 정보 <span className="text-system-error">*</span>
+            </label>
             <div className="flex flex-col flex-wrap gap-3">
               <Input
                 label="쿠폰명"
@@ -418,16 +431,23 @@ const CouponEditor = ({ editorMode }: CouponEditorProps) => {
           </div>
         </div>
         <div className="mt-10 flex justify-end gap-2">
-          <ActionButton type="submit">
-            {editorMode === 'create' ? (
-              <>쿠폰 등록</>
-            ) : (
-              editorMode === 'edit' && <>확인</>
-            )}
-          </ActionButton>
-          <ActionButton to="-1" type="button" bgColor="gray">
+          <Button
+            type="submit"
+            size="large"
+            variant="contained"
+            color="primary"
+            disabled={isSubmitDisabled}
+          >
+            {editorMode === 'create' ? '쿠폰 등록' : '수정 완료'}
+          </Button>
+          <Button
+            type="button"
+            size="large"
+            variant="outlined"
+            onClick={() => navigate(-1)}
+          >
             취소
-          </ActionButton>
+          </Button>
         </div>
       </form>
     </main>
