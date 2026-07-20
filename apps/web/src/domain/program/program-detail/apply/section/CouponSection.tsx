@@ -1,7 +1,7 @@
 'use client';
 
 import CloseIcon from '@/assets/icons/close.svg?react';
-import { CouponItem, DUMMY_COUPONS } from '@/domain/mypage/coupon/constants';
+import { CouponItem } from '@/domain/mypage/coupon/constants';
 import { ICouponForm } from '@/types/interface';
 import { useState } from 'react';
 import CouponSelectModal from '../ui/CouponSelectModal';
@@ -10,18 +10,20 @@ export interface CouponSectionProps {
   setCoupon: (
     coupon: ((prevCoupon: ICouponForm) => ICouponForm) | ICouponForm,
   ) => void;
+  coupons?: CouponItem[];
   maxAmount?: number;
   programType: string;
 }
 
 const CouponSection = ({
   setCoupon,
+  coupons = [],
   maxAmount = Infinity,
 }: CouponSectionProps) => {
   const [selectedCoupon, setSelectedCoupon] = useState<CouponItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const availableCount = DUMMY_COUPONS.length;
+  const availableCount = coupons.length;
 
   const handleApply = (coupon: CouponItem | null) => {
     setSelectedCoupon(coupon);
@@ -35,7 +37,7 @@ const CouponSection = ({
           ? 0
           : maxAmount
         : Math.min(coupon.discount, maxAmount);
-    setCoupon({ id: coupon.id, price });
+    setCoupon({ id: coupon.couponId, price });
   };
 
   return (
@@ -77,7 +79,8 @@ const CouponSection = ({
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onApply={handleApply}
-        currentCouponId={selectedCoupon?.id ?? null}
+        currentCouponId={selectedCoupon?.couponId ?? null}
+        coupons={coupons}
         maxAmount={maxAmount}
       />
     </>

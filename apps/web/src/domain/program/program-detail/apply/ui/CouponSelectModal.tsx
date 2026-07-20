@@ -1,14 +1,13 @@
 'use client';
 
-import dayjs from '@/lib/dayjs';
 import OutlinedButton from '@/common/button/OutlinedButton';
 import SolidButton from '@/common/button/SolidButton';
 import BaseModal from '@/common/modal/BaseModal';
 import {
   COUPON_TYPE_LABEL,
   CouponItem,
-  DUMMY_COUPONS,
 } from '@/domain/mypage/coupon/constants';
+import dayjs from '@/lib/dayjs';
 import { useEffect, useState } from 'react';
 
 interface CouponSelectModalProps {
@@ -16,6 +15,7 @@ interface CouponSelectModalProps {
   onClose: () => void;
   onApply: (coupon: CouponItem | null) => void;
   currentCouponId: number | null;
+  coupons: CouponItem[];
   maxAmount?: number;
 }
 
@@ -25,27 +25,29 @@ const formatDate = (dateStr: string) =>
 const getDiscountValue = (discount: number) =>
   discount === -1 ? Infinity : discount;
 
-const sortedCoupons = [...DUMMY_COUPONS].sort((a, b) => {
-  const discountDiff =
-    getDiscountValue(b.discount) - getDiscountValue(a.discount);
-  if (discountDiff !== 0) return discountDiff;
-  return new Date(a.endDate).getTime() - new Date(b.endDate).getTime();
-});
-
 const CouponSelectModal = ({
   isOpen,
   onClose,
   onApply,
   currentCouponId,
+  coupons,
   maxAmount = Infinity,
 }: CouponSelectModalProps) => {
   const [selectedId, setSelectedId] = useState<number | null>(currentCouponId);
+
+  const sortedCoupons = [...coupons].sort((a, b) => {
+    const discountDiff =
+      getDiscountValue(b.discount) - getDiscountValue(a.discount);
+    if (discountDiff !== 0) return discountDiff;
+    return new Date(a.endDate).getTime() - new Date(b.endDate).getTime();
+  });
 
   useEffect(() => {
     if (isOpen) setSelectedId(currentCouponId);
   }, [isOpen, currentCouponId]);
 
-  const selectedCoupon = sortedCoupons.find((c) => c.id === selectedId) ?? null;
+  const selectedCoupon =
+    sortedCoupons.find((c) => c.couponId === selectedId) ?? null;
 
   const discountAmount = selectedCoupon
     ? selectedCoupon.discount === -1
@@ -91,16 +93,18 @@ const CouponSelectModal = ({
         {/* 쿠폰 목록 */}
         <div className="flex max-h-[250px] flex-col gap-3 overflow-y-auto px-5 pb-4 md:max-h-[360px]">
           {sortedCoupons.map((coupon, index) => {
-            const isSelected = selectedId === coupon.id;
+            const isSelected = selectedId === coupon.couponId;
             const isBest = index === 0;
 
             return (
               <button
-                key={coupon.id}
+                key={coupon.couponId}
                 className={`rounded-xs flex w-full items-start gap-3 border p-4 text-left transition-colors ${
                   isSelected ? 'border-primary' : 'border-neutral-85'
                 }`}
-                onClick={() => setSelectedId(isSelected ? null : coupon.id)}
+                onClick={() =>
+                  setSelectedId(isSelected ? null : coupon.couponId)
+                }
               >
                 <div
                   className={`mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
