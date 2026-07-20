@@ -16,8 +16,18 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// 아래 스토리들은 모두 render에서 자체 open 상태를 관리하며 args를 쓰지 않는다.
+// open/onOpenChange/title/onConfirm이 필수 prop이라 타입 요구사항 충족용 더미값.
+const DUMMY_ARGS = {
+  open: false,
+  onOpenChange: () => {},
+  title: '',
+  onConfirm: () => {},
+};
+
 // Layer 1 — generic ConfirmDialog (default variant)
 export const Default: Story = {
+  args: DUMMY_ARGS,
   render: () => {
     const [open, setOpen] = useState(false);
     return (
@@ -39,6 +49,7 @@ export const Default: Story = {
 
 // Layer 1 — destructive variant (빨간 톤 액션 버튼)
 export const Destructive: Story = {
+  args: DUMMY_ARGS,
   render: () => {
     const [open, setOpen] = useState(false);
     return (
@@ -62,6 +73,7 @@ export const Destructive: Story = {
 
 // onConfirm이 Promise를 반환하면 pending 동안 버튼이 비활성화되고 await 후 닫힘
 export const AsyncConfirm: Story = {
+  args: DUMMY_ARGS,
   render: () => {
     const [open, setOpen] = useState(false);
     const handleConfirm = () =>
@@ -85,6 +97,7 @@ export const AsyncConfirm: Story = {
 
 // Layer 2a — 수정/편집 preset (variant='default' 고정, confirmLabel 기본 '수정')
 export const Edit: Story = {
+  args: DUMMY_ARGS,
   render: () => {
     const [open, setOpen] = useState(false);
     return (
@@ -106,6 +119,7 @@ export const Edit: Story = {
 
 // Layer 2b — 위험 작업 preset (variant='destructive' 고정)
 export const Danger: Story = {
+  args: DUMMY_ARGS,
   render: () => {
     const [open, setOpen] = useState(false);
     return (
@@ -127,6 +141,7 @@ export const Danger: Story = {
 
 // Layer 2b — type-to-confirm (지정 문구를 정확히 입력해야 확인 버튼 활성화)
 export const DangerTypeToConfirm: Story = {
+  args: DUMMY_ARGS,
   render: () => {
     const [open, setOpen] = useState(false);
     return (

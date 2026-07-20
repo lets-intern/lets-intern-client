@@ -20,7 +20,13 @@ const OPTIONS = [
 
 // CategoryTabs는 제어 컴포넌트라 render에서 상태를 소유해 상호작용을 보여준다.
 export const Default: Story = {
-  args: { options: OPTIONS, selected: 'all', size: 'small' },
+  // onChange는 render가 자체 상태로 재정의하므로 더미값(타입 요구사항 충족용)
+  args: {
+    options: OPTIONS,
+    selected: 'all',
+    size: 'small',
+    onChange: () => {},
+  },
   render: (args) => {
     const [selected, setSelected] = useState(args.selected);
     return (
@@ -30,7 +36,12 @@ export const Default: Story = {
 };
 
 export const Large: Story = {
-  args: { options: OPTIONS, selected: 'all', size: 'large' },
+  args: {
+    options: OPTIONS,
+    selected: 'all',
+    size: 'large',
+    onChange: () => {},
+  },
   render: (args) => {
     const [selected, setSelected] = useState(args.selected);
     return (
