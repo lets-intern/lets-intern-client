@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { ImExit } from 'react-icons/im';
 import { IoIosArrowDown } from 'react-icons/io';
 import { Link } from 'react-router-dom';
@@ -165,50 +166,53 @@ export const AdminSidebar = () => {
     <aside>
       <nav className="sticky left-0 top-0 z-50 flex h-screen w-48 flex-col gap-4 overflow-y-auto bg-[#353535] py-20 pt-4 text-white shadow-xl">
         {navData.map((navSection, index) => (
-          <div key={index}>
-            <div className="flex items-center justify-between border-b border-b-neutral-600 pb-3 pl-4 pr-8">
-              <h3 className="text-xsmall16 font-medium">{navSection.title}</h3>
-              <i className="text-xl text-neutral-600">
-                <IoIosArrowDown />
-              </i>
+          <Fragment key={index}>
+            {/* 통계(PostHog 임베드) 드롭다운은 나가기 바로 위에 둔다. */}
+            {navSection.title === '나가기' && <StatsEmbedSection />}
+            <div>
+              <div className="flex items-center justify-between border-b border-b-neutral-600 pb-3 pl-4 pr-8">
+                <h3 className="text-xsmall16 font-medium">
+                  {navSection.title}
+                </h3>
+                <i className="text-xl text-neutral-600">
+                  <IoIosArrowDown />
+                </i>
+              </div>
+              <ul>
+                {navSection.itemList.map((navItem, index) => {
+                  const isExternal =
+                    'external' in navItem && navItem.external === true;
+                  const className =
+                    'flex items-center gap-1 py-2 pl-6 text-xsmall14 hover:bg-[#2A2A2A]';
+                  const content = (
+                    <>
+                      {navItem.name}
+                      {'isExit' in navItem && (
+                        <i>
+                          <ImExit className="translate-y-[1px]" />
+                        </i>
+                      )}
+                    </>
+                  );
+
+                  return (
+                    <li key={index}>
+                      {isExternal ? (
+                        <a href={navItem.url} className={className}>
+                          {content}
+                        </a>
+                      ) : (
+                        <Link to={navItem.url} className={className}>
+                          {content}
+                        </Link>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
-            <ul>
-              {navSection.itemList.map((navItem, index) => {
-                const isExternal =
-                  'external' in navItem && navItem.external === true;
-                const className =
-                  'flex items-center gap-1 py-2 pl-6 text-xsmall14 hover:bg-[#2A2A2A]';
-                const content = (
-                  <>
-                    {navItem.name}
-                    {'isExit' in navItem && (
-                      <i>
-                        <ImExit className="translate-y-[1px]" />
-                      </i>
-                    )}
-                  </>
-                );
-
-                return (
-                  <li key={index}>
-                    {isExternal ? (
-                      <a href={navItem.url} className={className}>
-                        {content}
-                      </a>
-                    ) : (
-                      <Link to={navItem.url} className={className}>
-                        {content}
-                      </Link>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+          </Fragment>
         ))}
-
-        {/* 팀 내부용 통계(PostHog 임베드) — 기본 닫힘 */}
-        <StatsEmbedSection />
       </nav>
     </aside>
   );
