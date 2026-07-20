@@ -1,6 +1,7 @@
 'use client';
 
 import CloseIcon from '@/assets/icons/close.svg?react';
+import { useMyCoupons } from '@/domain/mypage/coupon/hooks/useMyCoupons';
 import { CouponItem } from '@/domain/mypage/coupon/constants';
 import { ICouponForm } from '@/types/interface';
 import { useState } from 'react';
@@ -10,16 +11,16 @@ export interface CouponSectionProps {
   setCoupon: (
     coupon: ((prevCoupon: ICouponForm) => ICouponForm) | ICouponForm,
   ) => void;
-  coupons?: CouponItem[];
   maxAmount?: number;
   programType: string;
 }
 
 const CouponSection = ({
   setCoupon,
-  coupons = [],
+  programType,
   maxAmount = Infinity,
 }: CouponSectionProps) => {
+  const { data: coupons = [] } = useMyCoupons(programType);
   const [selectedCoupon, setSelectedCoupon] = useState<CouponItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
