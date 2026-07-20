@@ -54,6 +54,9 @@ const SeminarListContent = ({
   return (
     <div className="flex flex-col gap-11 md:gap-14">
       <SeminarProgramPager
+        // 탭(모집중/종료) 전환 시 리마운트해 페이지·캐러셀 스크롤 상태를 리셋한다
+        // (컴포넌트 재사용 시 이전 탭의 page/scroll 이 남아 빈 화면이 노출됨).
+        key={status}
         programs={programs}
         // 모집 종료는 앵콜 요청 카드(figma 14), 모집 중은 기존 프로그램 카드.
         renderCard={

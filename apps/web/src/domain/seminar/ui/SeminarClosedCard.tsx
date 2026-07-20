@@ -9,9 +9,9 @@ import { useEffect, useState } from 'react';
 import { captureSeminarCardClick, captureSeminarEncore } from '../analytics';
 import MegaphoneIcon from './MegaphoneIcon';
 
-// 완료 표시는 localStorage로 지속. 로그인 유저는 userId로, 비로그인은 기기 단위(anon) 키.
-const encoreStorageKey = (programId: number, userId?: number) =>
-  `seminar_encore:${userId ?? 'anon'}:${programId}`;
+// 완료 표시는 localStorage로 지속. localStorage는 기기 단위라 userId로 키를 나누지 않는다
+// (나누면 useUserQuery 로딩 중 anon 키로 저장됐다가 userId 확정 시 상태가 풀리는 레이스 발생).
+const encoreStorageKey = (programId: number) => `seminar_encore:${programId}`;
 
 /**
  * 모집 종료 세미나 카드(figma 14). 썸네일·제목·진행일자 + 하단 "모집 완료" 뱃지와
@@ -31,9 +31,9 @@ const SeminarClosedCard = ({
 
   useEffect(() => {
     setRequested(
-      localStorage.getItem(encoreStorageKey(programInfo.id, userId)) === '1',
+      localStorage.getItem(encoreStorageKey(programInfo.id)) === '1',
     );
-  }, [programInfo.id, userId]);
+  }, [programInfo.id]);
 
   const link = `/program/${programInfo.programType.toLowerCase()}/${programInfo.id}`;
 
@@ -41,7 +41,7 @@ const SeminarClosedCard = ({
     e.stopPropagation(); // 카드 클릭(상세 이동)과 분리
     // 토글: 요청 ↔ 취소. PostHog 캡처는 요청 시에만(취소는 UI/캐시만).
     const next = !requested;
-    const key = encoreStorageKey(programInfo.id, userId);
+    const key = encoreStorageKey(programInfo.id);
     if (next) {
       localStorage.setItem(key, '1');
       captureSeminarEncore({
