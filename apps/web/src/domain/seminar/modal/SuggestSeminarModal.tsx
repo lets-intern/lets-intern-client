@@ -161,7 +161,7 @@ const SuggestSeminarModal = ({
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="듣고 싶은 챌린지 제안하기"
+          aria-label="듣고 싶은 세미나 제안하기"
           className="relative z-10 max-h-[85vh] w-full max-w-[480px] overflow-y-auto rounded-lg bg-white p-6 md:p-8"
         >
           <button

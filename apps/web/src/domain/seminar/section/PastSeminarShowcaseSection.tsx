@@ -1,4 +1,5 @@
 import { PAST_SEMINAR_MENTORS } from '../data/pastSeminars';
+import PastSeminarCard from '../ui/PastSeminarCard';
 
 /**
  * S8 지난 세미나 멘토 하이라이트 — 멘토 4인 큐레이션(멘토별 통이미지).
@@ -19,28 +20,7 @@ const PastSeminarShowcaseSection = () => {
 
         <div className="flex flex-col gap-6 md:gap-10">
           {PAST_SEMINAR_MENTORS.map((mentor) => (
-            <a
-              key={mentor.id}
-              href={mentor.videoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block transition-opacity hover:opacity-95"
-            >
-              {/* 모바일: 세로형 카드 이미지 */}
-              <img
-                src={mentor.mobileImage}
-                alt={mentor.alt}
-                loading="lazy"
-                className="w-full rounded-xl md:hidden"
-              />
-              {/* 데스크톱: 가로형 카드 이미지 */}
-              <img
-                src={mentor.image}
-                alt={mentor.alt}
-                loading="lazy"
-                className="hidden w-full rounded-xl md:block"
-              />
-            </a>
+            <PastSeminarCard key={mentor.id} mentor={mentor} />
           ))}
         </div>
       </div>
