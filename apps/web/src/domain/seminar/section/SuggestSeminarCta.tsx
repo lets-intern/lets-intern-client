@@ -57,7 +57,7 @@ const SuggestSeminarCta = ({ variant = 'card' }: SuggestSeminarCtaProps) => {
       className={`flex flex-col gap-1 ${variant === 'banner' ? 'text-center md:text-left' : 'items-center text-center'}`}
     >
       <p className="text-xsmall16 md:text-small18 text-primary font-bold">
-        듣고 싶은 챌린지 주제가 있으신가요?
+        듣고 싶은 세미나 주제가 있나요?
       </p>
       <p className="text-xxsmall12 md:text-xsmall14 text-neutral-45">
         보고 싶은 기업·직무 현직자와 세미나 주제를 알려주세요!
@@ -71,7 +71,7 @@ const SuggestSeminarCta = ({ variant = 'card' }: SuggestSeminarCtaProps) => {
       onClick={handleClick}
       className="bg-primary text-xsmall14 md:text-xsmall16 rounded-xs min-h-[44px] shrink-0 px-5 py-3 font-semibold text-neutral-100"
     >
-      듣고 싶은 챌린지 제안하기
+      듣고 싶은 세미나 제안하기
     </button>
   );
 

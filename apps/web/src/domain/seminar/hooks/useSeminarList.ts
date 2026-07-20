@@ -5,8 +5,12 @@ import {
   seminarStatusToProgramStatus,
 } from '../utils/seminarStatus';
 
-/** figma 2행 그리드 기준 초기 로드 개수 */
-const SEMINAR_LIST_SIZE = 8;
+/**
+ * 클라이언트 페이징(데스크톱 8/모바일 4)을 위해 한 번에 넉넉히 받는다.
+ * 세미나는 랜딩 노출용이라 실무상 이 상한을 넘지 않는다. 상한 초과 시에는
+ * 서버 페이지네이션 전환이 필요하다(현재는 최근 100개만 페이징).
+ */
+const SEMINAR_LIST_SIZE = 100;
 
 /**
  * 무료 세미나(LIVE 프로그램) 목록 조회 훅.
