@@ -140,4 +140,5 @@ const SeminarListSection = () => {
   );
 };
 
+// (재배포 트리거: 병합 커밋 diff=0으로 Vercel skip-build에 걸린 배포를 다시 태우기 위한 no-op 변경)
 export default SeminarListSection;
