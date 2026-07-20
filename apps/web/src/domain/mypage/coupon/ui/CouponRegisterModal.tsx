@@ -1,8 +1,8 @@
 'use client';
 
 import BaseModal from '@/common/modal/BaseModal';
-import { useToast } from '@letscareer/ui';
 import { useState } from 'react';
+import { useRegisterCoupon } from '../hooks/useRegisterCoupon';
 
 interface CouponRegisterModalProps {
   isOpen: boolean;
@@ -10,21 +10,16 @@ interface CouponRegisterModalProps {
 }
 
 const CouponRegisterModal = ({ isOpen, onClose }: CouponRegisterModalProps) => {
-  const toast = useToast();
   const [code, setCode] = useState('');
-  const [isError, setIsError] = useState(false);
 
   const handleClose = () => {
     setCode('');
-    setIsError(false);
+    clearError();
     onClose();
   };
 
-  const handleRegister = () => {
-    // API 연동 후 서버 응답 기반 분기처리 교체 필요
-    toast.success('쿠폰이 등록되었습니다');
-    handleClose();
-  };
+  const { register, isPending, errorMessage, clearError } =
+    useRegisterCoupon(handleClose);
 
   return (
     <BaseModal
@@ -53,14 +48,14 @@ const CouponRegisterModal = ({ isOpen, onClose }: CouponRegisterModalProps) => {
                 value={code}
                 onChange={(e) => {
                   setCode(e.target.value);
-                  setIsError(false);
+                  clearError();
                 }}
                 placeholder="쿠폰 코드를 입력해주세요."
                 className="bg-neutral-95 text-xsmall16 placeholder:text-neutral-45 rounded-md p-3 outline-none"
               />
-              {isError && (
+              {errorMessage && (
                 <span className="text-xxsmall12 mt-1 text-red-500">
-                  유효하지 않은 쿠폰 번호입니다.
+                  {errorMessage}
                 </span>
               )}
             </div>
@@ -88,8 +83,8 @@ const CouponRegisterModal = ({ isOpen, onClose }: CouponRegisterModalProps) => {
           </button>
           <button
             className="rounded-xs bg-primary disabled:bg-neutral-85 flex-1 py-3 font-medium text-white disabled:cursor-not-allowed disabled:text-neutral-50"
-            disabled={!code.trim()}
-            onClick={handleRegister}
+            disabled={!code.trim() || isPending}
+            onClick={() => register(code)}
           >
             등록하기
           </button>
