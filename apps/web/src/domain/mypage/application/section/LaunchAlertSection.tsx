@@ -1,8 +1,12 @@
 'use client';
 
-import { useGetMypageMagnetListQuery } from '@/api/magnet/magnet';
+import {
+  useDeleteMagnetApplicationMutation,
+  useGetMypageMagnetListQuery,
+} from '@/api/magnet/magnet';
 import { MypageMagnetListItem } from '@/api/magnet/magnetSchema';
 import dayjs from '@/lib/dayjs';
+import { useConfirm } from '@letscareer/ui';
 import { useState } from 'react';
 import MoreButton from '../../ui/button/MoreButton';
 import { MypageApplicationCard } from '../../ui/card/NewApplicationCard';
@@ -11,6 +15,7 @@ import EmptySection from './EmptySection';
 
 const toLaunchAlertCardConfig = (
   magnet: MypageMagnetListItem,
+  onCancel: (magnetId: number) => void,
 ): MypageApplicationCardConfig => {
   const dateText = magnet.applicationCreateDate
     ? dayjs(magnet.applicationCreateDate).format('YY.MM.DD')
@@ -36,6 +41,10 @@ const toLaunchAlertCardConfig = (
     categoryLabel: '출시알림',
     dateLabel: '신청일자',
     dateText,
+    actionButton: {
+      label: '신청취소',
+      onClick: () => onCancel(magnet.magnetId),
+    },
     isCompleted: false,
   };
 };
@@ -44,7 +53,22 @@ const LaunchAlertSection = () => {
   const { data, isLoading } = useGetMypageMagnetListQuery({
     typeList: ['LAUNCH_ALERT'],
   });
+  const confirm = useConfirm();
+  const { mutateAsync: cancelApplication } =
+    useDeleteMagnetApplicationMutation();
   const [showMore, setShowMore] = useState(false);
+
+  const handleCancel = async (magnetId: number) => {
+    const ok = await confirm({
+      title: '출시알림을 취소하시겠습니까?',
+      description:
+        '취소하면 더 이상 출시 소식을 받아보실 수 없어요. 언제든 다시 신청할 수 있습니다.',
+      confirmLabel: '취소하기',
+      cancelLabel: '닫기',
+    });
+    if (!ok) return;
+    await cancelApplication(magnetId);
+  };
 
   if (isLoading) return <></>;
 
@@ -60,7 +84,7 @@ const LaunchAlertSection = () => {
             {list.map((magnet) => (
               <MypageApplicationCard
                 key={magnet.magnetId}
-                config={toLaunchAlertCardConfig(magnet)}
+                config={toLaunchAlertCardConfig(magnet, handleCancel)}
               />
             ))}
           </div>

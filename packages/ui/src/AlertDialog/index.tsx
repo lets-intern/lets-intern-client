@@ -52,6 +52,10 @@
  *  ConfirmProvider
  *   • apps/web/src/context/Providers.tsx (앱 루트 마운트, useConfirm 백킹용)
  *
+ *  useConfirm (imperative)
+ *   • apps/web/src/domain/mypage/application/section/LaunchAlertSection.tsx
+ *     → "출시알림을 취소하시겠습니까?" — 신청현황 출시알림 탭 카드 신청취소
+ *
  * 새로 추가하는 호출처는 위 매핑에 반영해주세요 (검색·감사 편의).
  */
 
