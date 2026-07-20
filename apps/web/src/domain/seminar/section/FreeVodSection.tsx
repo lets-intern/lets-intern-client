@@ -14,10 +14,13 @@ const FreeVodSection = () => {
           <h2 className="text-small20 md:text-xlarge30 font-bold text-neutral-100">
             누구나 무료로 참여 가능한
             <br />
+            {/* 두 문구 각각 좌→우 그라데이션(따로) */}
             <span className="bg-gradient-to-r from-[#7FDDFF] to-[#7395FF] bg-clip-text text-transparent">
-              라이브 세미나에서{' '}
-              {/* 모바일에서 '끝!'이 홀로 떨어지지 않도록 어절 단위로 줄바꿈 */}
-              <br className="md:hidden" />
+              라이브 세미나에서
+            </span>{' '}
+            {/* 모바일에서 '끝!'이 홀로 떨어지지 않도록 어절 단위로 줄바꿈 */}
+            <br className="md:hidden" />
+            <span className="bg-gradient-to-r from-[#7FDDFF] to-[#7395FF] bg-clip-text text-transparent">
               직무 현직자와 취업 고민 끝!
             </span>
           </h2>
