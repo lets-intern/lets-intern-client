@@ -3,6 +3,7 @@ import { IoIosArrowDown } from 'react-icons/io';
 import { Link } from 'react-router-dom';
 
 import { useIsAdminQuery } from '@/api/user/user';
+import StatsEmbedSection from './StatsEmbedSection';
 
 // 메인 web 으로 이동하는 외부 링크의 호스트.
 // VITE_WEB_URL 미설정 시 admin 자기 자신의 root 로 fallback (안전장치).
@@ -205,6 +206,9 @@ export const AdminSidebar = () => {
             </ul>
           </div>
         ))}
+
+        {/* 팀 내부용 통계(PostHog 임베드) — 기본 닫힘 */}
+        <StatsEmbedSection />
       </nav>
     </aside>
   );
