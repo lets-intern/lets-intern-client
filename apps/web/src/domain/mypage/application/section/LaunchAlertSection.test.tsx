@@ -19,7 +19,11 @@ jest.mock('@letscareer/ui', () => ({
 
 // 실제 카드 대신 config를 노출하는 stub — 매핑/액션만 검증한다.
 jest.mock('../../ui/card/NewApplicationCard', () => ({
-  MypageApplicationCard: ({ config }: { config: MypageApplicationCardConfig }) => (
+  MypageApplicationCard: ({
+    config,
+  }: {
+    config: MypageApplicationCardConfig;
+  }) => (
     <button
       data-testid="card"
       data-type-key={config.programTypeKey}
@@ -35,7 +39,13 @@ jest.mock('../../ui/card/NewApplicationCard', () => ({
 }));
 jest.mock('../../ui/button/MoreButton', () => ({
   __esModule: true,
-  default: ({ children, onClick }: { children: React.ReactNode; onClick: () => void }) => (
+  default: ({
+    children,
+    onClick,
+  }: {
+    children: React.ReactNode;
+    onClick: () => void;
+  }) => (
     <button data-testid="more" onClick={onClick}>
       {children}
     </button>
@@ -43,7 +53,9 @@ jest.mock('../../ui/button/MoreButton', () => ({
 }));
 jest.mock('./EmptySection', () => ({
   __esModule: true,
-  default: ({ text }: { text: string }) => <div data-testid="empty">{text}</div>,
+  default: ({ text }: { text: string }) => (
+    <div data-testid="empty">{text}</div>
+  ),
 }));
 
 // LaunchAlertSection 은 위 mock 이후 import 해야 한다.
