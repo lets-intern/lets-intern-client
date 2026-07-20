@@ -34,7 +34,10 @@ const ReviewSection = () => {
 
         <div
           ref={trackRef}
-          className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2"
+          // overflow-x-auto만 두면 overflow-y가 auto로 계산돼 세로 스크롤 컨테이너가
+          // 되고, 모바일에서 세로 터치를 가로채 페이지 스크롤이 잠긴다.
+          // overflow-y-hidden + touch-pan-x로 가로 전용 스크롤임을 명시한다.
+          className="flex touch-pan-x snap-x snap-mandatory gap-5 overflow-x-auto overflow-y-hidden pb-2"
         >
           {SEMINAR_REVIEWS.map((review) => (
             <div key={review.id} className="w-4/5 shrink-0 sm:w-1/2 lg:w-1/3">
