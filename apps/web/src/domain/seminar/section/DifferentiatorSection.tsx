@@ -1,10 +1,11 @@
+import type { ReactNode } from 'react';
 import { DIFFERENTIATOR_MENTORS } from '../data/mentors';
 import MentorProfileCard from '../ui/MentorProfileCard';
 
 interface DifferentiatorHeadProps {
   badge: string;
-  title: string;
-  desc: string;
+  title: ReactNode;
+  desc: ReactNode;
 }
 
 /** 차별점 블록 공통 헤더 — 배지 + 제목 + 설명. */
@@ -13,7 +14,7 @@ const DifferentiatorHead = ({
   title,
   desc,
 }: DifferentiatorHeadProps) => (
-  <div className="flex flex-col items-center gap-3 text-center">
+  <div className="flex flex-col items-center gap-3 break-keep text-center">
     <span className="text-xxsmall12 md:text-xsmall14 text-primary-light border-primary-light/40 rounded-full border px-4 py-1.5 font-semibold">
       {badge}
     </span>
@@ -36,8 +37,18 @@ const DifferentiatorSection = () => {
         <div className="flex flex-col items-center gap-8">
           <DifferentiatorHead
             badge="차별점 1"
-            title="오직 라이브에서만 제공하는 히든 쿠폰"
-            desc="세미나 참여자 한정 히든 쿠폰과 취업에 도움되는 자료를 받아보세요."
+            title={
+              <>
+                오직 라이브에서만 제공하는 <br className="md:hidden" />
+                히든 쿠폰
+              </>
+            }
+            desc={
+              <>
+                세미나 참여자 한정 히든 쿠폰과 <br className="md:hidden" />
+                취업에 도움되는 자료를 받아보세요.
+              </>
+            }
           />
           {/* 모바일 세로형 / 데스크톱(md↑) 가로형 쿠폰 안내 전환 */}
           <picture className="block w-full max-w-[900px]">
@@ -58,8 +69,18 @@ const DifferentiatorSection = () => {
         <div className="flex flex-col items-center gap-10">
           <DifferentiatorHead
             badge="차별점 2"
-            title="내가 원하는 직무 현직자의 합격 전략"
-            desc="서류부터 면접까지, 실제 합격에 도움이 되는 노하우를 직접 들어보세요."
+            title={
+              <>
+                내가 원하는 직무 현직자의 <br className="md:hidden" />
+                합격 전략
+              </>
+            }
+            desc={
+              <>
+                서류부터 면접까지, <br className="md:hidden" />
+                실제 합격에 도움이 되는 노하우를 직접 들어보세요.
+              </>
+            }
           />
           <div className="grid w-full grid-cols-2 gap-3 md:gap-5 lg:grid-cols-3">
             {DIFFERENTIATOR_MENTORS.map((mentor) => (
@@ -73,7 +94,12 @@ const DifferentiatorSection = () => {
           <DifferentiatorHead
             badge="차별점 3"
             title="실시간으로 질의응답까지"
-            desc="라이브 세미나 중 궁금한 점을 바로 질문하고 답변을 받아보세요."
+            desc={
+              <>
+                라이브 세미나 중 궁금한 점을 <br className="md:hidden" />
+                바로 질문하고 답변을 받아보세요.
+              </>
+            }
           />
           <img
             src="/images/seminar/differentiator/live-qna.png"

@@ -6,7 +6,7 @@ import type { SeminarReview } from '../data/reviews';
  */
 const ReviewCard = ({ review }: { review: SeminarReview }) => (
   <article className="shadow-02 flex h-full snap-center flex-col justify-center rounded-xl bg-white p-7 md:p-8">
-    <p className="text-xsmall14 md:text-xsmall16 text-neutral-30 whitespace-pre-line leading-relaxed">
+    <p className="text-xsmall14 md:text-xsmall16 text-neutral-30 whitespace-pre-line break-keep leading-relaxed">
       {review.content}
     </p>
   </article>
