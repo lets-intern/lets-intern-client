@@ -26,85 +26,10 @@ export interface ChipItem {
   condition: TargetCondition;
 }
 
-// TODO: GET /coupon/admin/issue-target-options 연동 후 교체
-export const PLACEHOLDER_CHALLENGE_TYPES: ChallengeTypeOption[] = [
-  {
-    challengeType: 'EXPERIENCE',
-    code: 1,
-    desc: '경험정리 챌린지',
-    challengeList: [
-      { id: 1, title: '경험정리 챌린지 13기' },
-      { id: 2, title: '경험정리 챌린지 12기' },
-    ],
-  },
-  {
-    challengeType: 'RESUME',
-    code: 2,
-    desc: '이력서 챌린지',
-    challengeList: [
-      { id: 3, title: '이력서 챌린지 8기' },
-      { id: 4, title: '이력서 챌린지 7기' },
-    ],
-  },
-  {
-    challengeType: 'INTRODUCTION',
-    code: 3,
-    desc: '자기소개서 챌린지',
-    challengeList: [
-      { id: 5, title: '자기소개서 챌린지 10기' },
-      { id: 6, title: '자기소개서 챌린지 9기' },
-    ],
-  },
-  {
-    challengeType: 'PORTFOLIO',
-    code: 4,
-    desc: '포트폴리오 챌린지',
-    challengeList: [
-      { id: 7, title: '포트폴리오 챌린지 5기' },
-      { id: 8, title: '포트폴리오 챌린지 4기' },
-    ],
-  },
-  {
-    challengeType: 'INTERVIEW',
-    code: 5,
-    desc: '면접 챌린지',
-    challengeList: [
-      { id: 9, title: '면접 챌린지 6기' },
-      { id: 10, title: '면접 챌린지 5기' },
-    ],
-  },
-  {
-    challengeType: 'LARGE_COMPANY',
-    code: 6,
-    desc: '대기업 자기소개서 챌린지',
-    challengeList: [{ id: 11, title: '대기업 자기소개서 챌린지 3기' }],
-  },
-  {
-    challengeType: 'MARKETING',
-    code: 7,
-    desc: '마케팅 챌린지',
-    challengeList: [{ id: 12, title: '마케팅 챌린지 4기' }],
-  },
-  {
-    challengeType: 'HR',
-    code: 8,
-    desc: 'HR 챌린지',
-    challengeList: [{ id: 13, title: 'HR 챌린지 2기' }],
-  },
-  {
-    challengeType: 'PLAN',
-    code: 9,
-    desc: '기획 챌린지',
-    challengeList: [{ id: 14, title: '기획 챌린지 1기' }],
-  },
-];
-
-export const PLACEHOLDER_LIVE_PROGRAMS = [
-  { id: 55, title: '대기업 공채준비는 지금부터' },
-  { id: 56, title: '직무분석 완벽정복 LIVE' },
-  { id: 57, title: '자소서 실전 첨삭 LIVE' },
-  { id: 58, title: '면접 시뮬레이션 LIVE' },
-];
+export interface TargetOptions {
+  challengeTypeList: ChallengeTypeOption[];
+  liveList: { id: number; title: string }[];
+}
 
 // ── pure helpers (모듈 수준 — 렌더마다 재생성 없음) ──────────────────────────
 
@@ -134,28 +59,11 @@ const has = (
 const except = (list: TargetCondition[], ...types: ConditionType[]) =>
   list.filter((c) => !types.includes(c.conditionType));
 
-function chipLabel(c: TargetCondition): string {
-  if (c.conditionType === 'APPLICATION_ALL') return '전체 결제자';
-  if (c.conditionType === 'CHALLENGE_ALL') return '챌린지 전체';
-  if (c.conditionType === 'LIVE_ALL') return 'LIVE 클래스 전체';
-  if (c.conditionType === 'CHALLENGE_TYPE')
-    return `${PLACEHOLDER_CHALLENGE_TYPES.find((t) => t.challengeType === c.challengeType)?.desc} 전체`;
-  if (c.conditionType === 'CHALLENGE_PROGRAM')
-    return (
-      PLACEHOLDER_CHALLENGE_TYPES.flatMap((t) => t.challengeList).find(
-        (p) => p.id === c.targetProgramId,
-      )?.title ?? ''
-    );
-  return (
-    PLACEHOLDER_LIVE_PROGRAMS.find((p) => p.id === c.targetProgramId)?.title ??
-    ''
-  );
-}
-
 // 훅
 export function useCouponTargetState(
   value: TargetCondition[],
   onChange: (conditions: TargetCondition[]) => void,
+  options: TargetOptions,
 ) {
   const [conds, setConds] = useState(value);
   const onChangeRef = useRef(onChange);
@@ -178,6 +86,23 @@ export function useCouponTargetState(
       onChangeRef.current(conds);
     }
   }, [conds]);
+
+  const { challengeTypeList, liveList } = options;
+
+  function chipLabel(c: TargetCondition): string {
+    if (c.conditionType === 'APPLICATION_ALL') return '전체 결제자';
+    if (c.conditionType === 'CHALLENGE_ALL') return '챌린지 전체';
+    if (c.conditionType === 'LIVE_ALL') return 'LIVE 클래스 전체';
+    if (c.conditionType === 'CHALLENGE_TYPE')
+      return `${challengeTypeList.find((t) => t.challengeType === c.challengeType)?.desc} 전체`;
+    if (c.conditionType === 'CHALLENGE_PROGRAM')
+      return (
+        challengeTypeList
+          .flatMap((t) => t.challengeList)
+          .find((p) => p.id === c.targetProgramId)?.title ?? ''
+      );
+    return liveList.find((p) => p.id === c.targetProgramId)?.title ?? '';
+  }
 
   const $ = (type: ConditionType, key?: string, pid?: number) =>
     has(conds, type, key, pid);
@@ -202,7 +127,7 @@ export function useCouponTargetState(
       count: conds.filter((c) => c.conditionType.startsWith('CHALLENGE'))
         .length,
       typeMode: Object.fromEntries(
-        PLACEHOLDER_CHALLENGE_TYPES.map((t) => [
+        challengeTypeList.map((t) => [
           t.challengeType,
           challengeAll || $('CHALLENGE_TYPE', t.challengeType)
             ? 'all'
@@ -214,7 +139,7 @@ export function useCouponTargetState(
         ]),
       ) as Record<string, 'all' | 'partial' | 'none'>,
       checkedPrograms: new Set(
-        PLACEHOLDER_CHALLENGE_TYPES.flatMap((t) =>
+        challengeTypeList.flatMap((t) =>
           t.challengeList
             .filter(
               (p) =>
@@ -252,9 +177,9 @@ export function useCouponTargetState(
           );
         } else {
           const pids =
-            PLACEHOLDER_CHALLENGE_TYPES.find(
-              (t) => t.challengeType === type,
-            )?.challengeList.map((p) => p.id) ?? [];
+            challengeTypeList
+              .find((t) => t.challengeType === type)
+              ?.challengeList.map((p) => p.id) ?? [];
           setConds([
             ...conds.filter(
               (c) =>
@@ -291,9 +216,9 @@ export function useCouponTargetState(
           : 'none') as 'all' | 'partial' | 'none',
       count: conds.filter((c) => c.conditionType.startsWith('LIVE')).length,
       checkedPrograms: new Set(
-        PLACEHOLDER_LIVE_PROGRAMS.filter(
-          (p) => liveAll || $('LIVE_PROGRAM', undefined, p.id),
-        ).map((p) => p.id),
+        liveList
+          .filter((p) => liveAll || $('LIVE_PROGRAM', undefined, p.id))
+          .map((p) => p.id),
       ),
       toggleAll: () =>
         setConds(

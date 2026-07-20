@@ -1,10 +1,7 @@
 import { Checkbox, Chip, FormControlLabel, Typography } from '@mui/material';
 
-import {
-  PLACEHOLDER_CHALLENGE_TYPES,
-  PLACEHOLDER_LIVE_PROGRAMS,
-  useCouponTargetState,
-} from '../hooks/useCouponTargetState';
+import { useCouponTargetOptions } from '../hooks/useCouponTargetOptions';
+import { useCouponTargetState } from '../hooks/useCouponTargetState';
 import ExpandableRow from '../ui/ExpandableRow';
 
 export type {
@@ -51,6 +48,8 @@ interface Props {
 }
 
 const CouponTargetSection = ({ value, onChange }: Props) => {
+  const { data: options } = useCouponTargetOptions();
+
   const {
     allPayers,
     toggleAllPayers,
@@ -59,7 +58,10 @@ const CouponTargetSection = ({ value, onChange }: Props) => {
     chips,
     removeChip,
     resetAll,
-  } = useCouponTargetState(value, onChange);
+  } = useCouponTargetState(value, onChange, {
+    challengeTypeList: options?.challengeTypeList ?? [],
+    liveList: options?.liveList ?? [],
+  });
 
   return (
     <div>
@@ -104,7 +106,7 @@ const CouponTargetSection = ({ value, onChange }: Props) => {
           >
             <div className="border-t border-gray-100 bg-white">
               <div className="space-y-2 p-3">
-                {PLACEHOLDER_CHALLENGE_TYPES.map((t) => {
+                {(options?.challengeTypeList ?? []).map((t) => {
                   const typeMode = challenge.typeMode[t.challengeType];
 
                   return (
@@ -157,7 +159,7 @@ const CouponTargetSection = ({ value, onChange }: Props) => {
           >
             <div className="border-t border-gray-100 bg-white px-4 py-3">
               <ProgramCheckboxList
-                items={PLACEHOLDER_LIVE_PROGRAMS}
+                items={options?.liveList ?? []}
                 checkedIds={live.checkedPrograms}
                 disabled={live.mode === 'all'}
                 onToggle={live.toggleProgram}
