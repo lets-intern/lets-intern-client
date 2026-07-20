@@ -2,6 +2,10 @@
  * S5 무료 참여 안내 섹션 — "누구나 무료로 참여 가능한 라이브 세미나".
  * 검정 배경(바로 아래 S6 차별점 그라데이션 최상단과 이어짐) 위 카피 + 라이브 세미나 슬라이드 예시. 정적 RSC.
  */
+// 좌→우 그라데이션 텍스트 (bg-clip-text). 데스크톱 한 줄 / 모바일 두 줄에서 재사용.
+const GRADIENT_TEXT =
+  'bg-gradient-to-r from-[#7FDDFF] to-[#7395FF] bg-clip-text text-transparent';
+
 const FreeVodSection = () => {
   return (
     <section className="w-full bg-black px-5 py-16 md:py-24">
@@ -14,13 +18,16 @@ const FreeVodSection = () => {
           <h2 className="text-small20 md:text-xlarge30 font-bold text-neutral-100">
             누구나 무료로 참여 가능한
             <br />
-            {/* 두 문구 각각 좌→우 그라데이션(따로) */}
-            <span className="bg-gradient-to-r from-[#7FDDFF] to-[#7395FF] bg-clip-text text-transparent">
+            {/* 데스크톱(한 줄): 전체를 감싼 하나의 연속 그라데이션 */}
+            <span className={`${GRADIENT_TEXT} hidden md:inline`}>
+              라이브 세미나에서 직무 현직자와 취업 고민 끝!
+            </span>
+            {/* 모바일(두 줄): 두 문구 각각 독립 그라데이션 ('끝!' 고아 방지 줄바꿈) */}
+            <span className={`${GRADIENT_TEXT} md:hidden`}>
               라이브 세미나에서
-            </span>{' '}
-            {/* 모바일에서 '끝!'이 홀로 떨어지지 않도록 어절 단위로 줄바꿈 */}
+            </span>
             <br className="md:hidden" />
-            <span className="bg-gradient-to-r from-[#7FDDFF] to-[#7395FF] bg-clip-text text-transparent">
+            <span className={`${GRADIENT_TEXT} md:hidden`}>
               직무 현직자와 취업 고민 끝!
             </span>
           </h2>
