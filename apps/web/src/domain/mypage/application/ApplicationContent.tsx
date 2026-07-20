@@ -10,6 +10,7 @@ import ApplySection from '@/domain/mypage/application/section/ApplySection';
 import CompleteSection from '@/domain/mypage/application/section/CompleteSection';
 import EmptySection from '@/domain/mypage/application/section/EmptySection';
 import GuidebookSection from '@/domain/mypage/application/section/GuidebookSection';
+import LaunchAlertSection from '@/domain/mypage/application/section/LaunchAlertSection';
 import LibrarySection from '@/domain/mypage/application/section/LibrarySection';
 import ParticipateSection from '@/domain/mypage/application/section/ParticipateSection';
 import VodClassSection from '@/domain/mypage/application/section/VodClassSection';
@@ -92,6 +93,7 @@ const ApplicationContent = () => {
         {category === 'VOD' && (
           <VodClassSection applicationList={vodClassApplicationList} />
         )}
+        {category === 'LAUNCH_ALERT' && <LaunchAlertSection />}
       </div>
     </main>
   );
