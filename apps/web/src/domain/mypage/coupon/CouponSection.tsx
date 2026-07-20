@@ -4,7 +4,7 @@ import PlusIcon from '@/assets/icons/plus.svg?react';
 import { CategoryTabs } from '@letscareer/ui';
 import { useState } from 'react';
 import MoreButton from '../ui/button/MoreButton';
-import { DUMMY_COUPONS } from './constants';
+import { useMyCoupons } from './hooks/useMyCoupons';
 import CouponCard from './ui/CouponCard';
 import CouponRegisterModal from './ui/CouponRegisterModal';
 
@@ -21,9 +21,9 @@ const CouponSection = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showMore, setShowMore] = useState(false);
 
-  const viewList = showMore
-    ? DUMMY_COUPONS
-    : DUMMY_COUPONS.slice(0, INITIAL_VISIBLE_COUNT);
+  const { data: coupons = [] } = useMyCoupons();
+
+  const viewList = showMore ? coupons : coupons.slice(0, INITIAL_VISIBLE_COUNT);
 
   return (
     <main className="flex w-full flex-col gap-6">
@@ -45,7 +45,7 @@ const CouponSection = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
-      {DUMMY_COUPONS.length === 0 ? (
+      {coupons.length === 0 ? (
         <div className="flex min-h-[60vh] w-full flex-col items-center justify-center md:min-h-[50vh]">
           <p className="text-xsmall14 text-neutral-40 font-normal">
             보유하신 쿠폰이 없습니다
@@ -55,10 +55,10 @@ const CouponSection = () => {
         <>
           <div className="flex flex-col gap-3 md:gap-5">
             {viewList.map((coupon) => (
-              <CouponCard key={coupon.id} coupon={coupon} />
+              <CouponCard key={coupon.couponId} coupon={coupon} />
             ))}
           </div>
-          {DUMMY_COUPONS.length > INITIAL_VISIBLE_COUNT && !showMore && (
+          {coupons.length > INITIAL_VISIBLE_COUNT && !showMore && (
             <MoreButton onClick={() => setShowMore(true)}>더보기</MoreButton>
           )}
         </>
