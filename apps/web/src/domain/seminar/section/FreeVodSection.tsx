@@ -34,8 +34,8 @@ const FreeVodSection = () => {
         </div>
 
         <img
-          src="/images/seminar/free-live/slides.png"
-          alt="라이브 세미나 강의 슬라이드 예시"
+          src="/images/seminar/free-live/seminar-preview.webp"
+          alt="라이브 세미나 미리보기"
           loading="lazy"
           className="w-full max-w-[820px] rounded-lg"
         />
