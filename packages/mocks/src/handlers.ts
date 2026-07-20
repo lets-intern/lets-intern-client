@@ -587,6 +587,15 @@ let launchAlertMagnetList = [...LAUNCH_ALERT_MAGNET_SEED];
 
 export const handlers = [
   /**
+   * (마이페이지) GET /user/applications — 신청현황 탭의 프로그램 신청목록.
+   * 출시알림 탭 QA에서 페이지(ApplicationContent)가 백엔드 없이 렌더되도록
+   * 빈 목록을 반환한다. 프로그램/가이드북/VOD 탭은 빈 상태로 보인다.
+   */
+  http.get('*/user/applications', () => {
+    return HttpResponse.json({ status: 200, data: { applicationList: [] } });
+  }),
+
+  /**
    * (마이페이지) GET /magnet/mypage — 사용자가 신청한 마그넷 신청현황.
    * BE mypageMagnetListResponseSchema 일치. typeList 쿼리로 필터한다.
    * 출시알림 탭(typeList=LAUNCH_ALERT)에서 mutable 시드를 반환한다.
