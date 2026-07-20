@@ -6,7 +6,7 @@ import {
 } from '@/api/magnet/magnet';
 import { MypageMagnetListItem } from '@/api/magnet/magnetSchema';
 import dayjs from '@/lib/dayjs';
-import { useConfirm } from '@letscareer/ui';
+import { useConfirm, useToast } from '@letscareer/ui';
 import { useState } from 'react';
 import MoreButton from '../../ui/button/MoreButton';
 import { MypageApplicationCard } from '../../ui/card/NewApplicationCard';
@@ -32,11 +32,12 @@ const toLaunchAlertCardConfig = (
     thumbnail: magnet.desktopThumbnail || LAUNCH_ALERT_DEFAULT_THUMBNAIL,
     title: magnet.title,
     description: (() => {
+      if (!magnet.description) return '';
       try {
-        const parsed = JSON.parse(magnet.description ?? '');
+        const parsed = JSON.parse(magnet.description);
         return parsed.metaDescription ?? '';
       } catch {
-        return magnet.description ?? '';
+        return magnet.description;
       }
     })(),
     isHtmlDescription: true,
@@ -57,6 +58,7 @@ const LaunchAlertSection = () => {
     typeList: ['LAUNCH_ALERT'],
   });
   const confirm = useConfirm();
+  const toast = useToast();
   const { mutateAsync: cancelApplication } =
     useDeleteMagnetApplicationMutation();
   const [showMore, setShowMore] = useState(false);
@@ -75,7 +77,13 @@ const LaunchAlertSection = () => {
       cancelLabel: '닫기',
     });
     if (!ok) return;
-    await cancelApplication(magnetId);
+    try {
+      await cancelApplication(magnetId);
+    } catch {
+      toast.error('출시알림 취소에 실패했어요', {
+        description: '네트워크 상태를 확인하고 다시 시도해주세요.',
+      });
+    }
   };
 
   if (isLoading) return <></>;

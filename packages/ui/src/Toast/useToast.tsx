@@ -21,6 +21,8 @@
  *     비밀번호 변경 성공/실패/검증 에러 알림 (success 1 + error 4)
  *   • apps/web/src/domain/mypage/privacy/section/BasicInfo.tsx
  *     기본 정보 수정 성공/실패 알림 (success 1 + error 1)
+ *   • apps/web/src/domain/mypage/application/section/LaunchAlertSection.tsx
+ *     출시알림 신청취소 실패 알림 (error 1)
  *
  *   새 호출처 추가 시 위 목록과 packages/ui/src/Toast/index.tsx 상단 매핑에 같이
  *   갱신해주세요.

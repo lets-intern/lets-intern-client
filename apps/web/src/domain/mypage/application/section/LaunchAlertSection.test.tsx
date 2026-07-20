@@ -4,6 +4,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 const useGetMypageMagnetListQueryMock = jest.fn();
 const deleteMutateAsyncMock = jest.fn();
 const confirmMock = jest.fn();
+const toastErrorMock = jest.fn();
 
 jest.mock('@/api/magnet/magnet', () => ({
   useGetMypageMagnetListQuery: (...args: unknown[]) =>
@@ -15,6 +16,7 @@ jest.mock('@/api/magnet/magnet', () => ({
 
 jest.mock('@letscareer/ui', () => ({
   useConfirm: () => confirmMock,
+  useToast: () => ({ error: toastErrorMock, success: jest.fn() }),
 }));
 
 // 실제 카드 대신 config를 노출하는 stub — 매핑/액션만 검증한다.
@@ -76,6 +78,7 @@ describe('LaunchAlertSection', () => {
     useGetMypageMagnetListQueryMock.mockReset();
     deleteMutateAsyncMock.mockReset();
     confirmMock.mockReset();
+    toastErrorMock.mockReset();
     deleteMutateAsyncMock.mockResolvedValue({});
   });
 
@@ -157,6 +160,27 @@ describe('LaunchAlertSection', () => {
     });
     await waitFor(() => {
       expect(deleteMutateAsyncMock).toHaveBeenCalledWith(42);
+    });
+  });
+
+  it('취소 mutation 이 실패하면 에러 토스트를 띄운다', async () => {
+    confirmMock.mockResolvedValue(true);
+    deleteMutateAsyncMock.mockRejectedValue(new Error('network error'));
+    useGetMypageMagnetListQueryMock.mockReturnValue({
+      data: { magnetList: [makeMagnet(42, 'AI 특강')] },
+      isLoading: false,
+    });
+
+    render(<LaunchAlertSection />);
+    fireEvent.click(screen.getByTestId('card'));
+
+    await waitFor(() => {
+      expect(toastErrorMock).toHaveBeenCalledWith(
+        '출시알림 취소에 실패했어요',
+        expect.objectContaining({
+          description: '네트워크 상태를 확인하고 다시 시도해주세요.',
+        }),
+      );
     });
   });
 
