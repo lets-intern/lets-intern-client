@@ -79,6 +79,9 @@ const LaunchAlertSection = () => {
     if (!ok) return;
     try {
       await cancelApplication(magnetId);
+      toast.success('출시알림이 취소되었어요', {
+        description: '언제든 다시 신청하실 수 있어요.',
+      });
     } catch {
       toast.error('출시알림 취소에 실패했어요', {
         description: '네트워크 상태를 확인하고 다시 시도해주세요.',

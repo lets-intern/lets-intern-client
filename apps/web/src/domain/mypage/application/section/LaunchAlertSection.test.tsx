@@ -5,6 +5,7 @@ const useGetMypageMagnetListQueryMock = jest.fn();
 const deleteMutateAsyncMock = jest.fn();
 const confirmMock = jest.fn();
 const toastErrorMock = jest.fn();
+const toastSuccessMock = jest.fn();
 
 jest.mock('@/api/magnet/magnet', () => ({
   useGetMypageMagnetListQuery: (...args: unknown[]) =>
@@ -16,7 +17,7 @@ jest.mock('@/api/magnet/magnet', () => ({
 
 jest.mock('@letscareer/ui', () => ({
   useConfirm: () => confirmMock,
-  useToast: () => ({ error: toastErrorMock, success: jest.fn() }),
+  useToast: () => ({ error: toastErrorMock, success: toastSuccessMock }),
 }));
 
 // 실제 카드 대신 config를 노출하는 stub — 매핑/액션만 검증한다.
@@ -79,6 +80,7 @@ describe('LaunchAlertSection', () => {
     deleteMutateAsyncMock.mockReset();
     confirmMock.mockReset();
     toastErrorMock.mockReset();
+    toastSuccessMock.mockReset();
     deleteMutateAsyncMock.mockResolvedValue({});
   });
 
@@ -160,6 +162,14 @@ describe('LaunchAlertSection', () => {
     });
     await waitFor(() => {
       expect(deleteMutateAsyncMock).toHaveBeenCalledWith(42);
+    });
+    await waitFor(() => {
+      expect(toastSuccessMock).toHaveBeenCalledWith(
+        '출시알림이 취소되었어요',
+        expect.objectContaining({
+          description: '언제든 다시 신청하실 수 있어요.',
+        }),
+      );
     });
   });
 
