@@ -6,7 +6,7 @@ const FreeVodSection = () => {
   return (
     <section className="w-full bg-black px-5 py-16 md:py-24">
       <div className="mx-auto flex w-full max-w-[1120px] flex-col items-center gap-12">
-        <div className="flex flex-col items-center gap-3 text-center">
+        <div className="flex flex-col items-center gap-3 break-keep text-center">
           <p className="text-xsmall14 md:text-xsmall16 text-primary-light font-semibold">
             취업 고민, 렛츠커리어 &amp; 현직자와 함께 해결해요!
           </p>
@@ -14,7 +14,10 @@ const FreeVodSection = () => {
             누구나 무료로 참여 가능한
             <br />
             <span className="text-primary-light">
-              라이브 세미나에서 직무 현직자와 취업 고민 끝!
+              라이브 세미나에서{' '}
+              {/* 모바일에서 '끝!'이 홀로 떨어지지 않도록 어절 단위로 줄바꿈 */}
+              <br className="md:hidden" />
+              직무 현직자와 취업 고민 끝!
             </span>
           </h2>
         </div>

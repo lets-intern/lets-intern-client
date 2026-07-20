@@ -15,7 +15,7 @@ const FaqItem = ({ faq }: { faq: SeminarFaq }) => (
     className="border-neutral-85 overflow-hidden rounded-md border"
   >
     <AccordionTrigger className="bg-neutral-95 text-xsmall16 md:text-small18 text-neutral-0 group flex w-full items-center justify-between gap-4 px-5 py-4 text-left font-bold data-[state=open]:bg-neutral-100">
-      <span>{faq.question}</span>
+      <span className="break-keep">{faq.question}</span>
       <svg
         className="text-neutral-40 shrink-0 transition-transform group-data-[state=open]:rotate-180"
         width="20"

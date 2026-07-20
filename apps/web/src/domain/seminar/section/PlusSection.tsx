@@ -18,7 +18,7 @@ const PlusSection = () => {
               여기에 더해서!
             </p>
           </div>
-          <h2 className="text-small20 md:text-xlarge30 text-neutral-0 font-bold">
+          <h2 className="text-small20 md:text-xlarge30 text-neutral-0 break-keep font-bold">
             챌린지 수강생은
             <br />
             언제든지 볼 수 있는{' '}
@@ -40,7 +40,7 @@ const PlusSection = () => {
             <span className="text-xxsmall12 md:text-xsmall14 bg-neutral-0 rounded-xs w-fit px-3 py-1.5 font-semibold text-neutral-100">
               챌린지 참여자 전용 VOD 아카이브
             </span>
-            <p className="text-xsmall16 md:text-small20 text-neutral-0 font-bold">
+            <p className="text-xsmall16 md:text-small20 text-neutral-0 break-keep font-bold">
               챌린지 1개 이상 참여 시
               <br />
               지난 세미나를 무료로 시청할 수 있어요

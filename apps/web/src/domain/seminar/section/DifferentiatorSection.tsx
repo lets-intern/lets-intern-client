@@ -13,7 +13,7 @@ const DifferentiatorHead = ({
   title,
   desc,
 }: DifferentiatorHeadProps) => (
-  <div className="flex flex-col items-center gap-3 text-center">
+  <div className="flex flex-col items-center gap-3 break-keep text-center">
     <span className="text-xxsmall12 md:text-xsmall14 text-primary-light border-primary-light/40 rounded-full border px-4 py-1.5 font-semibold">
       {badge}
     </span>
