@@ -15,10 +15,10 @@ const SubBannerSection = () => {
       <picture className="block w-full">
         <source
           media="(min-width: 768px)"
-          srcSet="/images/seminar/sub-banner.png"
+          srcSet="/images/seminar/sub-banner.webp"
         />
         <img
-          src="/images/seminar/sub-banner-mobile.png"
+          src="/images/seminar/sub-banner-mobile.webp"
           alt="챌린지 수강생만 볼 수 있는 무료 세미나 아카이브. 챌린지 1개만 구매해도 매월 2회 진행되는 무료 세미나 무제한 다시보기 가능! 챌린지 보러가기"
           className="w-full"
         />

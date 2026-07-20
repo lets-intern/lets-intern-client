@@ -54,10 +54,10 @@ const DifferentiatorSection = () => {
           <picture className="block w-full max-w-[900px]">
             <source
               media="(min-width: 768px)"
-              srcSet="/images/seminar/differentiator/hidden-coupon.png"
+              srcSet="/images/seminar/differentiator/hidden-coupon.webp"
             />
             <img
-              src="/images/seminar/differentiator/hidden-coupon-mobile.png"
+              src="/images/seminar/differentiator/hidden-coupon-mobile.webp"
               alt="세미나 참여자 한정 히든 할인 쿠폰 안내"
               loading="lazy"
               className="w-full"
@@ -102,7 +102,7 @@ const DifferentiatorSection = () => {
             }
           />
           <img
-            src="/images/seminar/differentiator/live-qna.png"
+            src="/images/seminar/differentiator/live-qna.webp"
             alt="라이브 세미나 실시간 질의응답 예시"
             loading="lazy"
             className="w-full max-w-[900px]"

@@ -36,7 +36,7 @@ const HeroSection = () => {
 
         {/* 모바일: 카피 아래 세미나 카드 스트립 (lg↑는 우측 플로팅으로 대체) */}
         <img
-          src="/images/seminar/hero-cards-mobile.png"
+          src="/images/seminar/hero-cards-mobile.webp"
           alt=""
           aria-hidden
           className="mt-2 w-full lg:hidden"
@@ -44,7 +44,7 @@ const HeroSection = () => {
 
         {/* 데스크톱: 우측 플로팅 세미나 카드 (lg↑) */}
         <img
-          src="/images/seminar/hero-cards.png"
+          src="/images/seminar/hero-cards.webp"
           alt=""
           aria-hidden
           className="pointer-events-none absolute left-[48%] top-1/2 hidden h-auto w-[760px] max-w-none -translate-y-1/2 lg:block xl:w-[860px]"
