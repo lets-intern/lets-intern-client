@@ -30,18 +30,21 @@ const PaymentTermsAgreement = ({
         className="text-xsmall14 md:text-xsmall16 text-neutral-0 cursor-pointer select-none break-keep"
         onClick={onToggle}
       >
-        [필수] {/* 모바일은 [필수] 뒤에서 줄바꿈(2줄), 데스크톱은 한 줄. */}
-        <br className="md:hidden" />
-        <a
-          href={TERMS_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-primary underline underline-offset-2"
-          onClick={(e) => e.stopPropagation()}
-        >
-          서비스 이용약관
-        </a>{' '}
-        및 취소·환불 정책에 동의합니다.
+        [필수]{' '}
+        {/* 나머지를 nowrap 한 덩어리로 묶어, 한 줄에 안 들어갈 때만 [필수]와 나머지
+            사이에서 줄바꿈된다(들어가면 한 줄, 넘치면 [필수] / 나머지). */}
+        <span className="whitespace-nowrap">
+          <a
+            href={TERMS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline underline-offset-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            서비스 이용약관
+          </a>{' '}
+          및 취소·환불 정책에 동의합니다.
+        </span>
       </span>
       <button
         type="button"
