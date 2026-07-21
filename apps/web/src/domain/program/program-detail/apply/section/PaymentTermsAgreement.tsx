@@ -24,15 +24,20 @@ const PaymentTermsAgreement = ({
   showWarning,
 }: PaymentTermsAgreementProps) => (
   <div className="flex flex-col gap-1">
-    {/* 토글 버튼(체크박스)과 약관 링크는 형제로 둔다(button 중첩 불가). */}
+    {/* 토글 버튼(체크박스)과 약관 링크는 형제로 둔다(button 중첩 불가).
+        텍스트 영역도 클릭하면 토글되도록 하고, 링크 클릭은 전파를 막아 약관만 연다. */}
     <div className="flex items-center gap-2">
-      <span className="text-xsmall14 text-neutral-0">
+      <span
+        className="text-xsmall14 text-neutral-0 cursor-pointer select-none"
+        onClick={onToggle}
+      >
         [필수]{' '}
         <a
           href={TERMS_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary underline underline-offset-2"
+          onClick={(e) => e.stopPropagation()}
         >
           서비스 이용약관
         </a>{' '}

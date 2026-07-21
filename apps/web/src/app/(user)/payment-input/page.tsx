@@ -12,7 +12,7 @@ import CouponSection, {
   CouponSectionProps,
 } from '@/domain/program/program-detail/apply/section/CouponSection';
 import MotiveAnswerSection from '@/domain/program/program-detail/apply/section/MotiveAnswerSection';
-import PaymentTermsAgreement from '@/domain/program/program-detail/apply/section/PaymentTermsAgreement';
+import PaymentSubmitSection from '@/domain/program/program-detail/apply/section/PaymentSubmitSection';
 import PriceSection from '@/domain/program/program-detail/apply/section/PriceSection';
 import UserInputSection from '@/domain/program/program-detail/apply/section/UserInputSection';
 import { useInstallmentPayment } from '@/hooks/useInstallmentPayment';
@@ -52,16 +52,11 @@ const PaymentInputContent = () => {
   const [allowNavigation, setAllowNavigation] = useState(false);
   const [nextPath, setNextPath] = useState('');
 
-  // 서비스 이용약관 동의 상태 + 미동의 결제 시도(안내 노출용) 플래그
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [attemptedPay, setAttemptedPay] = useState(false);
-  // 미동의 클릭 시 버튼 흔들림 애니메이션 트리거(애니메이션 종료 시 해제).
-  const [isShaking, setIsShaking] = useState(false);
   // 잘못된 접근(새로고침 등) 안내 다이얼로그 노출 여부. window.alert 대체.
   const [invalidAccess, setInvalidAccess] = useState(false);
 
   const { data: programApplicationData } = useProgramStore();
-  const { isLoggedIn } = useAuthStore();
+  const { isLoggedIn, isInitialized } = useAuthStore();
   const { isLoading, months, banks } = useInstallmentPayment();
   const patchUserMutation = usePatchUser();
 
@@ -190,15 +185,8 @@ const PaymentInputContent = () => {
     setAllowNavigation(true);
   }, []);
 
+  // 약관 동의 가드·흔들림은 PaymentSubmitSection이 담당한다(동의 시에만 호출됨).
   const onPaymentClick = useCallback(async () => {
-    // 약관 미동의면 결제를 막고 버튼 위 안내를 노출한다(버튼은 disabled가 아니라
-    // 클릭은 받되 여기서 가드 — disabled 버튼은 클릭 이벤트가 발생하지 않기 때문).
-    if (!agreedToTerms) {
-      setAttemptedPay(true);
-      setIsShaking(true); // 흔들림 트리거(onAnimationEnd에서 해제)
-      return;
-    }
-
     try {
       await patchUserMutation.mutateAsync({
         contactEmail: programApplicationData.contactEmail,
@@ -217,7 +205,6 @@ const PaymentInputContent = () => {
       }
     }
   }, [
-    agreedToTerms,
     handleSafeNavigation,
     patchUserMutation,
     programApplicationData.contactEmail,
@@ -225,17 +212,9 @@ const PaymentInputContent = () => {
     totalPrice,
   ]);
 
-  const handleToggleTerms = useCallback(() => {
-    const nextAgreed = !agreedToTerms;
-    setAgreedToTerms(nextAgreed);
-    // 동의로 바뀌면 경고를 즉시 감춘다.
-    if (nextAgreed) setAttemptedPay(false);
-  }, [agreedToTerms]);
-
-  // 폼 자체 유효성(기존) + 약관 동의까지 충족해야 결제 가능.
+  // 폼 자체 유효성(이메일 등). 약관 동의는 PaymentSubmitSection 내부에서 가드한다.
   const isFormValid =
     userInfo.initialized && isValidEmail(userInfo.contactEmail);
-  const canPay = isFormValid && agreedToTerms;
 
   useEffect(() => {
     // 페이지 이탈 시 실행될 함수
@@ -269,12 +248,15 @@ const PaymentInputContent = () => {
   }, [allowNavigation, nextPath, router]);
 
   useEffect(() => {
+    // 인증 스토어 하이드레이션 완료(isInitialized) 전에는 isLoggedIn이 일시적으로
+    // false일 수 있어 정상 사용자에게 오탐이 난다. 초기화 완료 후에만 검증한다.
+    if (!isInitialized) return;
     if (checkInvalidate() || !isLoggedIn) {
       // 기존 window.alert('잘못된 접근입니다.') 를 헤드리스 NoticeDialog(@letscareer/ui)로
       // 대체. 실제 이동/폼 초기화는 다이얼로그 확인(goHome) 시점으로 미룬다.
       setInvalidAccess(true);
     }
-  }, [isLoggedIn]);
+  }, [isInitialized, isLoggedIn]);
 
   const goHome = useCallback(() => {
     initProgramApplicationForm();
@@ -282,13 +264,13 @@ const PaymentInputContent = () => {
   }, [router]);
 
   // 잘못된 접근이면 폼 대신 안내 다이얼로그만 렌더(program 로딩 여부와 무관하게 노출).
+  // 단일 확인 버튼이므로 onConfirm에서만 이동하고, onOpenChange는 상태 동기화만 한다
+  // (양쪽에서 goHome을 부르면 중복 실행됨).
   if (invalidAccess) {
     return (
       <NoticeDialog
-        open
-        onOpenChange={(next) => {
-          if (!next) goHome();
-        }}
+        open={invalidAccess}
+        onOpenChange={setInvalidAccess}
         title="잘못된 접근입니다."
         description="정상적인 경로로 다시 접근해 주세요."
         onConfirm={goHome}
@@ -434,47 +416,11 @@ const PaymentInputContent = () => {
         </div>
       )}
 
-      <div className="shadow-05 fixed bottom-0 left-0 right-0 block rounded-t-lg bg-white px-5 pb-[calc(env(safe-area-inset-bottom)+10px);] pt-3 md:hidden">
-        <div className="mb-3">
-          <PaymentTermsAgreement
-            agreed={agreedToTerms}
-            onToggle={handleToggleTerms}
-            showWarning={attemptedPay}
-          />
-        </div>
-        <button
-          // 약관 미동의 시 클릭은 받되(안내 노출) 시각적으로만 비활성 처리한다.
-          // 폼 자체가 무효면 기존대로 disabled.
-          // 흔들림은 리마운트(key) 대신 isShaking 클래스 + onAnimationEnd로 처리해
-          // 포커스 유실을 막는다.
-          className={`next_button border-primary bg-primary flex w-full items-center justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'hover:opacity-90' : 'opacity-40'} ${isShaking ? 'animate-shake motion-reduce:animate-none' : ''}`}
-          onClick={onPaymentClick}
-          onAnimationEnd={() => setIsShaking(false)}
-          disabled={!isFormValid}
-        >
-          {buttonText}
-        </button>
-      </div>
-
-      <div className="mx-5 hidden md:block">
-        <div className="mb-3">
-          <PaymentTermsAgreement
-            agreed={agreedToTerms}
-            onToggle={handleToggleTerms}
-            showWarning={attemptedPay}
-          />
-        </div>
-        <button
-          // 흔들림은 리마운트(key) 대신 isShaking 클래스 + onAnimationEnd로 처리해
-          // 포커스 유실을 막는다.
-          className={`next_button border-primary bg-primary flex w-full items-center justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'hover:opacity-90' : 'opacity-40'} ${isShaking ? 'animate-shake motion-reduce:animate-none' : ''}`}
-          onClick={onPaymentClick}
-          onAnimationEnd={() => setIsShaking(false)}
-          disabled={!isFormValid}
-        >
-          {buttonText}
-        </button>
-      </div>
+      <PaymentSubmitSection
+        onSubmit={onPaymentClick}
+        buttonText={buttonText}
+        disabled={!isFormValid}
+      />
     </div>
   );
 };
