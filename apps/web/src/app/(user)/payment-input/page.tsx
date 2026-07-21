@@ -448,7 +448,7 @@ const PaymentInputContent = () => {
           // 폼 자체가 무효면 기존대로 disabled.
           // key 변경 시 리마운트되어 shake 애니메이션이 클릭마다 다시 재생된다.
           key={shakeKey}
-          className={`next_button border-primary bg-primary block w-full justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'hover:opacity-90' : 'opacity-40'} ${!canPay && shakeKey ? 'animate-shake motion-reduce:animate-none' : ''}`}
+          className={`next_button border-primary bg-primary flex w-full items-center justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'hover:opacity-90' : 'opacity-40'} ${!canPay && shakeKey ? 'animate-shake motion-reduce:animate-none' : ''}`}
           onClick={onPaymentClick}
           disabled={!isFormValid}
         >
@@ -467,7 +467,7 @@ const PaymentInputContent = () => {
         <button
           // key 변경 시 리마운트되어 shake 애니메이션이 클릭마다 다시 재생된다.
           key={shakeKey}
-          className={`next_button border-primary bg-primary block w-full justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'hover:opacity-90' : 'opacity-40'} ${!canPay && shakeKey ? 'animate-shake motion-reduce:animate-none' : ''}`}
+          className={`next_button border-primary bg-primary flex w-full items-center justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'hover:opacity-90' : 'opacity-40'} ${!canPay && shakeKey ? 'animate-shake motion-reduce:animate-none' : ''}`}
           onClick={onPaymentClick}
           disabled={!isFormValid}
         >
