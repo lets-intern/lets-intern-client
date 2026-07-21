@@ -45,8 +45,6 @@ const PaymentSubmitSection = ({
     onSubmit();
   }, [agreedToTerms, onSubmit]);
 
-  const canPay = agreedToTerms && !disabled;
-
   // 약관 동의 UI + 결제 버튼 (모바일/데스크톱 공통 렌더).
   const content = (
     <>
@@ -58,9 +56,11 @@ const PaymentSubmitSection = ({
         />
       </div>
       <button
-        // 흔들림은 리마운트(key) 대신 isShaking 클래스 + onAnimationEnd로 처리해
-        // 포커스 유실을 막는다.
-        className={`next_button border-primary bg-primary flex w-full items-center justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'hover:opacity-90' : 'opacity-40'} ${isShaking ? 'animate-shake motion-reduce:animate-none' : ''}`}
+        // 비활성 표현을 상태별로 구분한다:
+        // - disabled(폼 무효·미준비): 회색(disabled:*)으로 완전 비활성.
+        // - 약관 미동의(클릭 가능): 브랜드색 + opacity-40으로 뿌옇게(클릭 시 안내).
+        // 흔들림은 리마운트(key) 대신 isShaking 클래스 + onAnimationEnd로 처리해 포커스 유실을 막는다.
+        className={`next_button border-primary bg-primary disabled:border-neutral-70 disabled:bg-neutral-70 flex w-full items-center justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${disabled ? '' : agreedToTerms ? 'hover:opacity-90' : 'opacity-40'} ${isShaking ? 'animate-shake motion-reduce:animate-none' : ''}`}
         onClick={handleClick}
         onAnimationEnd={() => setIsShaking(false)}
         disabled={disabled}
@@ -70,15 +70,12 @@ const PaymentSubmitSection = ({
     </>
   );
 
+  // 단일 DOM 노드에 반응형 클래스로 모바일(하단 고정)·데스크톱(인라인)을 전환한다
+  // (content를 두 번 렌더하면 대화형 요소가 DOM에 중복돼 a11y·크기 문제가 생김).
   return (
-    <>
-      {/* 모바일: 하단 고정 바 */}
-      <div className="shadow-05 fixed bottom-0 left-0 right-0 block rounded-t-lg bg-white px-5 pb-[calc(env(safe-area-inset-bottom)+10px);] pt-3 md:hidden">
-        {content}
-      </div>
-      {/* 데스크톱: 인라인 */}
-      <div className="mx-5 hidden md:block">{content}</div>
-    </>
+    <div className="shadow-05 fixed bottom-0 left-0 right-0 rounded-t-lg bg-white px-5 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-3 md:static md:mx-5 md:rounded-none md:bg-transparent md:px-0 md:pb-0 md:pt-0 md:shadow-none">
+      {content}
+    </div>
   );
 };
 
