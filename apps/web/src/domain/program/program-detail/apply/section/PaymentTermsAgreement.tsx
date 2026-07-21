@@ -24,33 +24,31 @@ const PaymentTermsAgreement = ({
   showWarning,
 }: PaymentTermsAgreementProps) => (
   <div className="flex flex-col gap-1">
-    <div className="flex items-center gap-2">
-      <button
-        type="button"
-        className="flex items-center gap-2"
-        onClick={onToggle}
-        aria-checked={agreed}
-        role="checkbox"
-      >
-        <CheckBox checked={agreed} width="w-6" showCheckIcon />
-        <span className="text-xsmall14 text-neutral-0">
-          [필수]{' '}
-          <button
-            type="button"
-            className="text-primary underline underline-offset-2"
-            onClick={(e) => {
-              e.stopPropagation();
-              window.open(TERMS_URL, '_blank', 'noopener,noreferrer');
-            }}
-          >
-            서비스 이용약관
-          </button>{' '}
-          동의
-        </span>
-      </button>
-    </div>
+    <button
+      type="button"
+      className="flex items-center gap-2"
+      onClick={onToggle}
+      aria-checked={agreed}
+      role="checkbox"
+    >
+      <span className="text-xsmall14 text-neutral-0">
+        [필수]{' '}
+        <button
+          type="button"
+          className="text-primary underline underline-offset-2"
+          onClick={(e) => {
+            e.stopPropagation();
+            window.open(TERMS_URL, '_blank', 'noopener,noreferrer');
+          }}
+        >
+          서비스 이용약관
+        </button>{' '}
+        동의
+      </span>
+      <CheckBox checked={agreed} width="w-6" showCheckIcon />
+    </button>
     {showWarning && !agreed && (
-      <p className="text-requirement text-xxsmall12 pl-8">
+      <p className="text-requirement text-xxsmall12">
         서비스 이용약관에 동의해 주세요.
       </p>
     )}
