@@ -28,15 +28,14 @@ const PaymentTermsAgreement = ({
     <div className="flex items-center gap-2">
       <span className="text-xsmall14 text-neutral-0">
         [필수]{' '}
-        <button
-          type="button"
+        <a
+          href={TERMS_URL}
+          target="_blank"
+          rel="noopener noreferrer"
           className="text-primary underline underline-offset-2"
-          onClick={() =>
-            window.open(TERMS_URL, '_blank', 'noopener,noreferrer')
-          }
         >
           서비스 이용약관
-        </button>{' '}
+        </a>{' '}
         동의
       </span>
       <button

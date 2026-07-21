@@ -55,8 +55,8 @@ const PaymentInputContent = () => {
   // 서비스 이용약관 동의 상태 + 미동의 결제 시도(안내 노출용) 플래그
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [attemptedPay, setAttemptedPay] = useState(false);
-  // 미동의 클릭마다 버튼을 다시 흔들기 위한 키(값이 바뀌면 애니메이션 재시작).
-  const [shakeKey, setShakeKey] = useState(0);
+  // 미동의 클릭 시 버튼 흔들림 애니메이션 트리거(애니메이션 종료 시 해제).
+  const [isShaking, setIsShaking] = useState(false);
   // 잘못된 접근(새로고침 등) 안내 다이얼로그 노출 여부. window.alert 대체.
   const [invalidAccess, setInvalidAccess] = useState(false);
 
@@ -195,7 +195,7 @@ const PaymentInputContent = () => {
     // 클릭은 받되 여기서 가드 — disabled 버튼은 클릭 이벤트가 발생하지 않기 때문).
     if (!agreedToTerms) {
       setAttemptedPay(true);
-      setShakeKey((k) => k + 1); // 누를 때마다 버튼 흔들림 재트리거
+      setIsShaking(true); // 흔들림 트리거(onAnimationEnd에서 해제)
       return;
     }
 
@@ -226,12 +226,11 @@ const PaymentInputContent = () => {
   ]);
 
   const handleToggleTerms = useCallback(() => {
-    setAgreedToTerms((prev) => {
-      // 동의로 바뀌면 경고를 즉시 감춘다.
-      if (!prev) setAttemptedPay(false);
-      return !prev;
-    });
-  }, []);
+    const nextAgreed = !agreedToTerms;
+    setAgreedToTerms(nextAgreed);
+    // 동의로 바뀌면 경고를 즉시 감춘다.
+    if (nextAgreed) setAttemptedPay(false);
+  }, [agreedToTerms]);
 
   // 폼 자체 유효성(기존) + 약관 동의까지 충족해야 결제 가능.
   const isFormValid =
@@ -446,10 +445,11 @@ const PaymentInputContent = () => {
         <button
           // 약관 미동의 시 클릭은 받되(안내 노출) 시각적으로만 비활성 처리한다.
           // 폼 자체가 무효면 기존대로 disabled.
-          // key 변경 시 리마운트되어 shake 애니메이션이 클릭마다 다시 재생된다.
-          key={shakeKey}
-          className={`next_button border-primary bg-primary flex w-full items-center justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'hover:opacity-90' : 'opacity-40'} ${!canPay && shakeKey ? 'animate-shake motion-reduce:animate-none' : ''}`}
+          // 흔들림은 리마운트(key) 대신 isShaking 클래스 + onAnimationEnd로 처리해
+          // 포커스 유실을 막는다.
+          className={`next_button border-primary bg-primary flex w-full items-center justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'hover:opacity-90' : 'opacity-40'} ${isShaking ? 'animate-shake motion-reduce:animate-none' : ''}`}
           onClick={onPaymentClick}
+          onAnimationEnd={() => setIsShaking(false)}
           disabled={!isFormValid}
         >
           {buttonText}
@@ -465,10 +465,11 @@ const PaymentInputContent = () => {
           />
         </div>
         <button
-          // key 변경 시 리마운트되어 shake 애니메이션이 클릭마다 다시 재생된다.
-          key={shakeKey}
-          className={`next_button border-primary bg-primary flex w-full items-center justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'hover:opacity-90' : 'opacity-40'} ${!canPay && shakeKey ? 'animate-shake motion-reduce:animate-none' : ''}`}
+          // 흔들림은 리마운트(key) 대신 isShaking 클래스 + onAnimationEnd로 처리해
+          // 포커스 유실을 막는다.
+          className={`next_button border-primary bg-primary flex w-full items-center justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'hover:opacity-90' : 'opacity-40'} ${isShaking ? 'animate-shake motion-reduce:animate-none' : ''}`}
           onClick={onPaymentClick}
+          onAnimationEnd={() => setIsShaking(false)}
           disabled={!isFormValid}
         >
           {buttonText}
