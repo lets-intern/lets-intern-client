@@ -70,15 +70,12 @@ const PaymentSubmitSection = ({
     </>
   );
 
+  // 단일 DOM 노드에 반응형 클래스로 모바일(하단 고정)·데스크톱(인라인)을 전환한다
+  // (content를 두 번 렌더하면 대화형 요소가 DOM에 중복돼 a11y·크기 문제가 생김).
   return (
-    <>
-      {/* 모바일: 하단 고정 바 */}
-      <div className="shadow-05 fixed bottom-0 left-0 right-0 block rounded-t-lg bg-white px-5 pb-[calc(env(safe-area-inset-bottom)+10px);] pt-3 md:hidden">
-        {content}
-      </div>
-      {/* 데스크톱: 인라인 */}
-      <div className="mx-5 hidden md:block">{content}</div>
-    </>
+    <div className="shadow-05 fixed bottom-0 left-0 right-0 rounded-t-lg bg-white px-5 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-3 md:static md:mx-5 md:rounded-none md:bg-transparent md:px-0 md:pb-0 md:pt-0 md:shadow-none">
+      {content}
+    </div>
   );
 };
 
