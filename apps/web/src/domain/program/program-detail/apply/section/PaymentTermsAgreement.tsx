@@ -1,7 +1,5 @@
 'use client';
 
-import CheckBox from '@/common/box/CheckBox';
-
 // 회원가입 동의(AgreementSection)·footer와 동일한 서비스 이용약관 노션 URL.
 const TERMS_URL =
   'https://letsintern.notion.site/251208-2c35e77cbee1800bb2b5cfbd4c2f1525?pvs=21';
@@ -51,7 +49,17 @@ const PaymentTermsAgreement = ({
         role="checkbox"
         aria-label="서비스 이용약관 및 취소·환불 정책 동의"
       >
-        <CheckBox checked={agreed} width="w-7" showCheckIcon />
+        {/* 선명하게 보이도록 primary 톤 아이콘 사용(미체크=primary 테두리 박스). */}
+        <img
+          src={
+            agreed
+              ? '/icons/checkbox-fill.svg'
+              : '/icons/checkbox-unchecked-box3.svg'
+          }
+          alt=""
+          aria-hidden
+          className="h-7 w-7 flex-shrink-0"
+        />
       </button>
     </div>
     {showWarning && !agreed && (
