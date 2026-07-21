@@ -54,6 +54,8 @@ const PaymentInputContent = () => {
   // 서비스 이용약관 동의 상태 + 미동의 결제 시도(안내 노출용) 플래그
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [attemptedPay, setAttemptedPay] = useState(false);
+  // 미동의 클릭마다 버튼을 다시 흔들기 위한 키(값이 바뀌면 애니메이션 재시작).
+  const [shakeKey, setShakeKey] = useState(0);
 
   const { data: programApplicationData } = useProgramStore();
   const { isLoggedIn } = useAuthStore();
@@ -190,6 +192,7 @@ const PaymentInputContent = () => {
     // 클릭은 받되 여기서 가드 — disabled 버튼은 클릭 이벤트가 발생하지 않기 때문).
     if (!agreedToTerms) {
       setAttemptedPay(true);
+      setShakeKey((k) => k + 1); // 누를 때마다 버튼 흔들림 재트리거
       return;
     }
 
@@ -427,7 +430,9 @@ const PaymentInputContent = () => {
         <button
           // 약관 미동의 시 클릭은 받되(안내 노출) 시각적으로만 비활성 처리한다.
           // 폼 자체가 무효면 기존대로 disabled.
-          className={`next_button border-primary bg-primary block w-full justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'hover:opacity-90' : 'opacity-40'}`}
+          // key 변경 시 리마운트되어 shake 애니메이션이 클릭마다 다시 재생된다.
+          key={shakeKey}
+          className={`next_button border-primary bg-primary block w-full justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'hover:opacity-90' : 'opacity-40'} ${!canPay && shakeKey ? 'animate-shake motion-reduce:animate-none' : ''}`}
           onClick={onPaymentClick}
           disabled={!isFormValid}
         >
@@ -444,7 +449,9 @@ const PaymentInputContent = () => {
           />
         </div>
         <button
-          className={`next_button border-primary bg-primary block w-full justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'hover:opacity-90' : 'opacity-40'}`}
+          // key 변경 시 리마운트되어 shake 애니메이션이 클릭마다 다시 재생된다.
+          key={shakeKey}
+          className={`next_button border-primary bg-primary block w-full justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'hover:opacity-90' : 'opacity-40'} ${!canPay && shakeKey ? 'animate-shake motion-reduce:animate-none' : ''}`}
           onClick={onPaymentClick}
           disabled={!isFormValid}
         >
