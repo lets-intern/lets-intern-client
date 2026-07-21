@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ConfirmDialog } from './ConfirmDialog';
 import { EditConfirmDialog } from './EditConfirmDialog';
 import { DangerConfirmDialog } from './DangerConfirmDialog';
+import { NoticeDialog } from './NoticeDialog';
 
 const TRIGGER_CLASSES =
   'inline-flex h-10 items-center justify-center rounded-sm bg-primary px-4 text-xsmall14 font-medium text-white transition-colors hover:bg-primary-hover';
@@ -40,6 +41,28 @@ export const Default: Story = {
           onOpenChange={setOpen}
           title="변경 사항을 저장할까요?"
           description="지금까지 입력한 내용이 저장됩니다."
+          onConfirm={() => setOpen(false)}
+        />
+      </>
+    );
+  },
+};
+
+// Layer 1 — NoticeDialog (단일 확인 버튼, window.alert 대체)
+export const Notice: Story = {
+  args: DUMMY_ARGS,
+  render: () => {
+    const [open, setOpen] = useState(false);
+    return (
+      <>
+        <button className={TRIGGER_CLASSES} onClick={() => setOpen(true)}>
+          안내 열기
+        </button>
+        <NoticeDialog
+          open={open}
+          onOpenChange={setOpen}
+          title="잘못된 접근입니다."
+          description="정상적인 경로로 다시 접근해 주세요."
           onConfirm={() => setOpen(false)}
         />
       </>
