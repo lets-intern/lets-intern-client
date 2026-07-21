@@ -26,7 +26,7 @@ const PaymentTermsAgreement = ({
         체크박스는 우측 하단 정렬(items-end + justify-between).
         텍스트 영역도 클릭하면 토글되도록 하고, 링크 클릭은 전파를 막아 약관만 연다. */}
     <div className="flex items-end justify-between gap-2">
-      <span
+      <label
         className="text-xsmall14 md:text-xsmall16 text-neutral-0 cursor-pointer select-none break-keep"
         onClick={onToggle}
       >
@@ -45,7 +45,7 @@ const PaymentTermsAgreement = ({
           </a>{' '}
           및 취소·환불 정책에 동의합니다.
         </span>
-      </span>
+      </label>
       <button
         type="button"
         onClick={onToggle}

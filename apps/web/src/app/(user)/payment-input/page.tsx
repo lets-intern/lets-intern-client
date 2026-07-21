@@ -264,16 +264,17 @@ const PaymentInputContent = () => {
   }, [router]);
 
   // 잘못된 접근이면 폼 대신 안내 다이얼로그만 렌더(program 로딩 여부와 무관하게 노출).
-  // 단일 확인 버튼이므로 onConfirm에서만 이동하고, onOpenChange는 상태 동기화만 한다
-  // (양쪽에서 goHome을 부르면 중복 실행됨).
+  // 확인 버튼·Escape 등 어떤 방식으로 닫혀도 잘못된 접근이므로 항상 홈으로 이동한다
+  // (onOpenChange에서만 goHome을 호출해 우회 방지 + 중복 호출 방지).
   if (invalidAccess) {
     return (
       <NoticeDialog
         open={invalidAccess}
-        onOpenChange={setInvalidAccess}
+        onOpenChange={(open) => {
+          if (!open) goHome();
+        }}
         title="잘못된 접근입니다."
         description="정상적인 경로로 다시 접근해 주세요."
-        onConfirm={goHome}
       />
     );
   }
