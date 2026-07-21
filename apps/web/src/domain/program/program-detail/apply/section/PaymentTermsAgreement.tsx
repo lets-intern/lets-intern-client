@@ -30,7 +30,8 @@ const PaymentTermsAgreement = ({
         className="text-xsmall14 md:text-xsmall16 text-neutral-0 cursor-pointer select-none break-keep"
         onClick={onToggle}
       >
-        [필수]{' '}
+        [필수] {/* 모바일은 [필수] 뒤에서 줄바꿈(2줄), 데스크톱은 한 줄. */}
+        <br className="md:hidden" />
         <a
           href={TERMS_URL}
           target="_blank"
