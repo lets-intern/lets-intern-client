@@ -25,8 +25,9 @@ const PaymentTermsAgreement = ({
 }: PaymentTermsAgreementProps) => (
   <div className="flex flex-col gap-1">
     {/* 토글 버튼(체크박스)과 약관 링크는 형제로 둔다(button 중첩 불가).
+        체크박스는 우측 하단 정렬(items-end + justify-between).
         텍스트 영역도 클릭하면 토글되도록 하고, 링크 클릭은 전파를 막아 약관만 연다. */}
-    <div className="flex items-center gap-2">
+    <div className="flex items-end justify-between gap-2">
       <span
         className="text-xsmall14 text-neutral-0 cursor-pointer select-none"
         onClick={onToggle}
@@ -41,14 +42,14 @@ const PaymentTermsAgreement = ({
         >
           서비스 이용약관
         </a>{' '}
-        동의
+        및 취소·환불 정책에 동의합니다.
       </span>
       <button
         type="button"
         onClick={onToggle}
         aria-checked={agreed}
         role="checkbox"
-        aria-label="서비스 이용약관 동의"
+        aria-label="서비스 이용약관 및 취소·환불 정책 동의"
       >
         <CheckBox checked={agreed} width="w-6" showCheckIcon />
       </button>
