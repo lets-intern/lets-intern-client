@@ -27,7 +27,7 @@ const PaymentTermsAgreement = ({
         텍스트 영역도 클릭하면 토글되도록 하고, 링크 클릭은 전파를 막아 약관만 연다. */}
     <div className="flex items-end justify-between gap-2">
       <span
-        className="text-xsmall16 text-neutral-0 cursor-pointer select-none"
+        className="text-xsmall14 md:text-xsmall16 text-neutral-0 cursor-pointer select-none break-keep"
         onClick={onToggle}
       >
         [필수]{' '}
