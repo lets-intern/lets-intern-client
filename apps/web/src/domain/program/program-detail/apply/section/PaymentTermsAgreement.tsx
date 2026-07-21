@@ -58,7 +58,7 @@ const PaymentTermsAgreement = ({
           }
           alt=""
           aria-hidden
-          className="h-7 w-7 flex-shrink-0"
+          className="h-6 w-6 flex-shrink-0"
         />
       </button>
     </div>
