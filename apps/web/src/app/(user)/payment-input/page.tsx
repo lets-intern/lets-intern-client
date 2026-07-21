@@ -26,6 +26,7 @@ import useProgramStore, {
 } from '@/store/useProgramStore';
 import { isValidEmail } from '@/utils/valid';
 import { AsyncBoundary } from '@/common/boundary/AsyncBoundary';
+import { NoticeDialog } from '@letscareer/ui';
 import { AxiosError } from 'axios';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -56,6 +57,8 @@ const PaymentInputContent = () => {
   const [attemptedPay, setAttemptedPay] = useState(false);
   // 미동의 클릭마다 버튼을 다시 흔들기 위한 키(값이 바뀌면 애니메이션 재시작).
   const [shakeKey, setShakeKey] = useState(0);
+  // 잘못된 접근(새로고침 등) 안내 다이얼로그 노출 여부. window.alert 대체.
+  const [invalidAccess, setInvalidAccess] = useState(false);
 
   const { data: programApplicationData } = useProgramStore();
   const { isLoggedIn } = useAuthStore();
@@ -268,18 +271,31 @@ const PaymentInputContent = () => {
 
   useEffect(() => {
     if (checkInvalidate() || !isLoggedIn) {
-      // eslint-disable-next-line no-console
-      console.log(
-        'checkInvalidate()',
-        checkInvalidate(),
-        'isLoggedIn',
-        isLoggedIn,
-      );
-      alert('잘못된 접근입니다.');
-      router.push('/');
-      initProgramApplicationForm();
+      // 기존 window.alert('잘못된 접근입니다.') 를 헤드리스 NoticeDialog(@letscareer/ui)로
+      // 대체. 실제 이동/폼 초기화는 다이얼로그 확인(goHome) 시점으로 미룬다.
+      setInvalidAccess(true);
     }
-  }, [isLoggedIn, router]);
+  }, [isLoggedIn]);
+
+  const goHome = useCallback(() => {
+    initProgramApplicationForm();
+    router.push('/');
+  }, [router]);
+
+  // 잘못된 접근이면 폼 대신 안내 다이얼로그만 렌더(program 로딩 여부와 무관하게 노출).
+  if (invalidAccess) {
+    return (
+      <NoticeDialog
+        open
+        onOpenChange={(next) => {
+          if (!next) goHome();
+        }}
+        title="잘못된 접근입니다."
+        description="정상적인 경로로 다시 접근해 주세요."
+        onConfirm={goHome}
+      />
+    );
+  }
 
   if (programLoading || !program) {
     return <LoadingContainer />;

@@ -76,6 +76,10 @@ export {
 export { ConfirmDialog } from './ConfirmDialog';
 export type { ConfirmDialogProps, ConfirmVariant } from './ConfirmDialog';
 
+// Layer 1 — NoticeDialog (단일 확인 버튼, window.alert 대체)
+export { NoticeDialog } from './NoticeDialog';
+export type { NoticeDialogProps } from './NoticeDialog';
+
 // Layer 2 — preset 컴포넌트
 export { EditConfirmDialog } from './EditConfirmDialog';
 export type { EditConfirmDialogProps } from './EditConfirmDialog';
