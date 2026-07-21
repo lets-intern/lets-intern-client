@@ -427,7 +427,7 @@ const PaymentInputContent = () => {
         <button
           // 약관 미동의 시 클릭은 받되(안내 노출) 시각적으로만 비활성 처리한다.
           // 폼 자체가 무효면 기존대로 disabled.
-          className={`next_button border-primary disabled:border-neutral-70 disabled:bg-neutral-70 block w-full justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'bg-primary hover:opacity-90' : 'border-neutral-70 bg-neutral-70'}`}
+          className={`next_button border-primary bg-primary block w-full justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'hover:opacity-90' : 'opacity-40'}`}
           onClick={onPaymentClick}
           disabled={!isFormValid}
         >
@@ -444,7 +444,7 @@ const PaymentInputContent = () => {
           />
         </div>
         <button
-          className={`next_button border-primary disabled:border-neutral-70 disabled:bg-neutral-70 block w-full justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'bg-primary hover:opacity-90' : 'border-neutral-70 bg-neutral-70'}`}
+          className={`next_button border-primary bg-primary block w-full justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'hover:opacity-90' : 'opacity-40'}`}
           onClick={onPaymentClick}
           disabled={!isFormValid}
         >
