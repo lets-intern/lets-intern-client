@@ -12,6 +12,7 @@ import CouponSection, {
   CouponSectionProps,
 } from '@/domain/program/program-detail/apply/section/CouponSection';
 import MotiveAnswerSection from '@/domain/program/program-detail/apply/section/MotiveAnswerSection';
+import PaymentTermsAgreement from '@/domain/program/program-detail/apply/section/PaymentTermsAgreement';
 import PriceSection from '@/domain/program/program-detail/apply/section/PriceSection';
 import UserInputSection from '@/domain/program/program-detail/apply/section/UserInputSection';
 import { useInstallmentPayment } from '@/hooks/useInstallmentPayment';
@@ -49,6 +50,10 @@ const PaymentInputContent = () => {
 
   const [allowNavigation, setAllowNavigation] = useState(false);
   const [nextPath, setNextPath] = useState('');
+
+  // 서비스 이용약관 동의 상태 + 미동의 결제 시도(안내 노출용) 플래그
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [attemptedPay, setAttemptedPay] = useState(false);
 
   const { data: programApplicationData } = useProgramStore();
   const { isLoggedIn } = useAuthStore();
@@ -181,6 +186,13 @@ const PaymentInputContent = () => {
   }, []);
 
   const onPaymentClick = useCallback(async () => {
+    // 약관 미동의면 결제를 막고 버튼 위 안내를 노출한다(버튼은 disabled가 아니라
+    // 클릭은 받되 여기서 가드 — disabled 버튼은 클릭 이벤트가 발생하지 않기 때문).
+    if (!agreedToTerms) {
+      setAttemptedPay(true);
+      return;
+    }
+
     try {
       await patchUserMutation.mutateAsync({
         contactEmail: programApplicationData.contactEmail,
@@ -199,12 +211,26 @@ const PaymentInputContent = () => {
       }
     }
   }, [
+    agreedToTerms,
     handleSafeNavigation,
     patchUserMutation,
     programApplicationData.contactEmail,
     programApplicationData.programOrderId,
     totalPrice,
   ]);
+
+  const handleToggleTerms = useCallback(() => {
+    setAgreedToTerms((prev) => {
+      // 동의로 바뀌면 경고를 즉시 감춘다.
+      if (!prev) setAttemptedPay(false);
+      return !prev;
+    });
+  }, []);
+
+  // 폼 자체 유효성(기존) + 약관 동의까지 충족해야 결제 가능.
+  const isFormValid =
+    userInfo.initialized && isValidEmail(userInfo.contactEmail);
+  const canPay = isFormValid && agreedToTerms;
 
   useEffect(() => {
     // 페이지 이탈 시 실행될 함수
@@ -391,24 +417,36 @@ const PaymentInputContent = () => {
       )}
 
       <div className="shadow-05 fixed bottom-0 left-0 right-0 block rounded-t-lg bg-white px-5 pb-[calc(env(safe-area-inset-bottom)+10px);] pt-3 md:hidden">
+        <div className="mb-3">
+          <PaymentTermsAgreement
+            agreed={agreedToTerms}
+            onToggle={handleToggleTerms}
+            showWarning={attemptedPay}
+          />
+        </div>
         <button
-          className="next_button border-primary bg-primary disabled:border-neutral-70 disabled:bg-neutral-70 flex w-full flex-1 justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition hover:opacity-90 hover:disabled:opacity-100"
+          // 약관 미동의 시 클릭은 받되(안내 노출) 시각적으로만 비활성 처리한다.
+          // 폼 자체가 무효면 기존대로 disabled.
+          className={`next_button border-primary disabled:border-neutral-70 disabled:bg-neutral-70 block w-full justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'bg-primary hover:opacity-90' : 'border-neutral-70 bg-neutral-70'}`}
           onClick={onPaymentClick}
-          disabled={
-            !userInfo.initialized || !isValidEmail(userInfo.contactEmail)
-          }
+          disabled={!isFormValid}
         >
           {buttonText}
         </button>
       </div>
 
       <div className="mx-5 hidden md:block">
+        <div className="mb-3">
+          <PaymentTermsAgreement
+            agreed={agreedToTerms}
+            onToggle={handleToggleTerms}
+            showWarning={attemptedPay}
+          />
+        </div>
         <button
-          className="next_button border-primary bg-primary disabled:border-neutral-70 disabled:bg-neutral-70 block w-full justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition hover:opacity-90 hover:disabled:opacity-100"
+          className={`next_button border-primary disabled:border-neutral-70 disabled:bg-neutral-70 block w-full justify-center rounded-md border-2 px-6 py-3 text-lg font-medium text-neutral-100 transition ${canPay ? 'bg-primary hover:opacity-90' : 'border-neutral-70 bg-neutral-70'}`}
           onClick={onPaymentClick}
-          disabled={
-            !userInfo.initialized || !isValidEmail(userInfo.contactEmail)
-          }
+          disabled={!isFormValid}
         >
           {buttonText}
         </button>
