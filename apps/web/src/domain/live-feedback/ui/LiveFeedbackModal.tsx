@@ -179,11 +179,13 @@ const LiveFeedbackModal = ({
       isOpen={isOpen}
       onClose={handleClose}
       closeOnOverlayClick={false}
+      // 뒷배경 딤 + 블러(frosted). 이 모달에만 적용(opt-in prop).
+      overlayClassName="bg-black/50 backdrop-blur-sm"
       // z-10: 모달 콘텐츠(Jitsi iframe)를 오버레이 위로 명시 합성 — 모바일(iOS)에서
       // fixed 오버레이가 iframe 위를 덮어 터치가 막히던 문제 방지.
       // 모바일: 자료 FAB를 숨기므로 모달이 화면 대부분을 차지(96dvh×98vw, 종횡비 미고정 → 화상은
-      // 내부에서 레터박스). 데스크탑(md+)은 기존 4:3·높이주도(94vh) 유지.
-      className="rounded-xxl relative z-10 h-[96dvh] max-h-[96dvh] w-[98vw] overflow-hidden bg-black md:mt-6 md:aspect-[4/3] md:h-[96vh] md:max-h-[1080px] md:w-auto md:max-w-[96vw] md:self-start"
+      // 내부에서 레터박스). 데스크탑(md+)은 4:3·높이주도(96vh)·위쪽 정렬(mt-3).
+      className="rounded-xxl relative z-10 h-[96dvh] max-h-[96dvh] w-[98vw] overflow-hidden bg-black md:mt-3 md:aspect-[4/3] md:h-[96vh] md:max-h-[1080px] md:w-auto md:max-w-[96vw] md:self-start"
     >
       <div className="relative h-full w-full">
         <div className="absolute inset-0">
