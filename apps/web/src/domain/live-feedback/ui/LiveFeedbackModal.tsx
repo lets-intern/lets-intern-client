@@ -49,16 +49,17 @@ const MenteeAttendanceBar = ({
   selected: AttendanceStatus | null;
   onSelect: (status: AttendanceStatus | null) => void;
 }) => {
+  // 모바일에서 좁은 폭에 눌려도 칩 글자가 세로로 쪼개지지 않게 shrink-0·nowrap 고정.
   const baseChip =
-    'rounded-lg px-4 py-1.5 text-sm font-semibold transition disabled:opacity-50';
+    'shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-semibold transition disabled:opacity-50 md:px-4';
   const toggle = (status: AttendanceStatus) =>
     onSelect(selected === status ? null : status);
   return (
-    <div className="flex items-center gap-2 rounded-full bg-black/45 py-1.5 pl-4 pr-1.5 text-white shadow-lg backdrop-blur-md">
-      <span className="text-xs font-medium text-white/80">
+    <div className="flex max-w-[calc(100vw-1rem)] items-center gap-1.5 rounded-full bg-black/45 py-1.5 pl-3 pr-1.5 text-white shadow-lg backdrop-blur-md md:gap-2 md:pl-4">
+      <span className="shrink-0 whitespace-nowrap text-xs font-medium text-white/80">
         {menteeName} 님 출석
       </span>
-      <span className="h-4 w-px bg-white/20" />
+      <span className="h-4 w-px shrink-0 bg-white/20" />
       <button
         type="button"
         onClick={() => toggle('PRESENT')}
@@ -184,7 +185,8 @@ const LiveFeedbackModal = ({
         {isMentor && (
           <div
             className={twMerge(
-              'absolute bottom-20 left-1/2 z-10 -translate-x-1/2 transition-opacity duration-300',
+              // 모바일은 Jitsi 하단 툴바(마이크·카메라·설정·통화)를 피해 더 위로 올린다.
+              'absolute bottom-28 left-1/2 z-10 -translate-x-1/2 transition-opacity duration-300 md:bottom-20',
               pendingAttendance && 'opacity-50 hover:opacity-100',
             )}
           >
