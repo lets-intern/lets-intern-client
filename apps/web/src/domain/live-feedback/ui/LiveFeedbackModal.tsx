@@ -49,40 +49,65 @@ const MenteeAttendanceBar = ({
   selected: AttendanceStatus | null;
   onSelect: (status: AttendanceStatus | null) => void;
 }) => {
-  // 모바일에서 좁은 폭에 눌려도 칩 글자가 세로로 쪼개지지 않게 shrink-0·nowrap 고정.
+  // 이름 라벨과 출석/결석 칩의 글자 크기를 통일(text-xs). 데스크탑은 닫기 버튼과 높이(py-1.5)
+  // 맞춰 디자인 통일, 모바일은 콤팩트(py-1).
   const baseChip =
-    'shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-semibold transition disabled:opacity-50 md:px-4';
+    'shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-xs font-semibold transition disabled:opacity-50 md:py-1.5';
   const toggle = (status: AttendanceStatus) =>
     onSelect(selected === status ? null : status);
   return (
-    <div className="flex max-w-[calc(100vw-1rem)] items-center gap-1.5 rounded-full bg-black/45 py-1.5 pl-3 pr-1.5 text-white shadow-lg backdrop-blur-md md:gap-2 md:pl-4">
-      <span className="shrink-0 whitespace-nowrap text-xs font-medium text-white/80">
-        {menteeName} 님 출석
+    <div
+      className={twMerge(
+        // 체크 전: 흰 아크릴(반투명·잘 보임). 체크 후: 배경 거의 투명(화면 덜 가림).
+        'flex max-w-[calc(100vw-1rem)] items-center gap-1.5 rounded-full py-1 pl-3 pr-1 shadow-lg backdrop-blur-md transition-colors',
+        selected
+          ? 'border border-transparent bg-white/10 text-white'
+          : 'border border-white/40 bg-white/70 text-neutral-800',
+      )}
+    >
+      <span
+        className={twMerge(
+          'shrink-0 whitespace-nowrap text-xs font-semibold',
+          selected ? 'text-white/80' : 'text-neutral-900',
+        )}
+      >
+        {menteeName}님의 출석여부를 체크해 주세요
       </span>
-      <span className="h-4 w-px shrink-0 bg-white/20" />
+      <span
+        className={twMerge(
+          'h-4 w-px shrink-0',
+          selected ? 'bg-white/25' : 'bg-neutral-400',
+        )}
+      />
       <button
         type="button"
         onClick={() => toggle('PRESENT')}
         className={twMerge(
           baseChip,
+          // 체크 후엔 선택 칩도 반투명(bg .../70)으로 빠져 전체가 균일하게 은은해진다.
           selected === 'PRESENT'
-            ? 'bg-[#4d55f5] text-white'
-            : 'text-white/80 hover:bg-white/10',
+            ? 'bg-[#4d55f5]/70 text-white'
+            : selected // 다른 항목 선택됨 → 투명 배경 위라 밝은 글자
+              ? 'text-white/70 hover:bg-white/10'
+              : 'bg-black/5 text-neutral-800 hover:bg-black/10', // 클릭 전 — 또렷하게
         )}
       >
-        참석
+        출석
       </button>
       <button
         type="button"
         onClick={() => toggle('ABSENT')}
         className={twMerge(
           baseChip,
+          // 체크 후엔 선택 칩도 반투명(bg .../70)으로 빠져 전체가 균일하게 은은해진다.
           selected === 'ABSENT'
-            ? 'bg-[#fc5555] text-white'
-            : 'text-white/80 hover:bg-white/10',
+            ? 'bg-[#fc5555]/70 text-white'
+            : selected // 다른 항목 선택됨 → 투명 배경 위라 밝은 글자
+              ? 'text-white/70 hover:bg-white/10'
+              : 'bg-black/5 text-neutral-800 hover:bg-black/10', // 클릭 전 — 또렷하게
         )}
       >
-        불참
+        결석
       </button>
     </div>
   );
@@ -154,9 +179,13 @@ const LiveFeedbackModal = ({
       isOpen={isOpen}
       onClose={handleClose}
       closeOnOverlayClick={false}
+      // 뒷배경 딤 + 블러(frosted). 이 모달에만 적용(opt-in prop).
+      overlayClassName="bg-black/50 backdrop-blur-sm"
       // z-10: 모달 콘텐츠(Jitsi iframe)를 오버레이 위로 명시 합성 — 모바일(iOS)에서
       // fixed 오버레이가 iframe 위를 덮어 터치가 막히던 문제 방지.
-      className="rounded-xxl relative z-10 aspect-[4/3] h-[94vh] max-h-[980px] w-auto max-w-[96vw] overflow-hidden bg-neutral-900"
+      // 모바일: 자료 FAB를 숨기므로 모달이 화면 대부분을 차지(96dvh×98vw, 종횡비 미고정 → 화상은
+      // 내부에서 레터박스). 데스크탑(md+)은 4:3·높이주도(96vh)·위쪽 정렬(mt-3).
+      className="rounded-xxl relative z-10 h-[96dvh] max-h-[96dvh] w-[98vw] overflow-hidden bg-black md:mt-3 md:aspect-[4/3] md:h-[96vh] md:max-h-[1080px] md:w-auto md:max-w-[96vw] md:self-start"
     >
       <div className="relative h-full w-full">
         <div className="absolute inset-0">
@@ -183,15 +212,14 @@ const LiveFeedbackModal = ({
           )}
         </div>
 
-        {/* 중앙 하단 — (멘토) 멘티 출석 체크 */}
+        {/* (멘토) 멘티 출석 체크 */}
         {isMentor && (
           <div
             data-testid="mentor-attendance-anchor"
             className={twMerge(
-              // 모바일은 좌상단 타이머 패널 바로 아래에 배치하고,
-              // 데스크톱은 기존처럼 하단 중앙에 둔다.
-              'absolute left-3 top-[98px] z-10 transition-opacity duration-300 md:bottom-20 md:left-1/2 md:top-auto md:-translate-x-1/2',
-              pendingAttendance && 'opacity-50 hover:opacity-100',
+              // 모바일: 좌상단 타이머 패널 바로 아래. 데스크톱: 모달 하단 중앙.
+              // 체크 후 흐림은 래퍼 opacity가 아니라 바 배경 투명화로 처리(MenteeAttendanceBar).
+              'absolute left-3 top-[98px] z-10 md:bottom-20 md:left-1/2 md:top-auto md:-translate-x-1/2',
             )}
           >
             <MenteeAttendanceBar

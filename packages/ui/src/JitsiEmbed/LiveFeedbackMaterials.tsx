@@ -248,7 +248,7 @@ export function LiveFeedbackMaterials({
   if (!hasPreQuestion && !hasSubmission) return null;
 
   return (
-    <div className="fixed bottom-6 left-6 z-[60] flex flex-col items-start gap-3">
+    <div className="fixed bottom-6 left-6 z-[60] hidden flex-col items-start gap-3 md:flex">
       {openPanel === 'qna' && hasPreQuestion && (
         <FloatingPanel
           title={qnaTitle}

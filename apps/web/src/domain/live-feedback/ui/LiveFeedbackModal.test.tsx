@@ -37,6 +37,7 @@ describe('LiveFeedbackModal', () => {
     );
 
     const anchor = screen.getByTestId('mentor-attendance-anchor');
+    // 모바일: 좌상단 타이머 아래(top). 데스크톱: 하단 중앙.
     expect(anchor).toHaveClass('top-[98px]');
     expect(anchor).toHaveClass('left-3');
     expect(anchor).toHaveClass('md:bottom-20');
