@@ -1,7 +1,10 @@
 import { server } from '@letscareer/mocks/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
-import { mentorFeedbackManagementSchema } from '../challengeSchema';
+import {
+  mentorFeedbackManagementSchema,
+  mentorMenteeAttendanceListSchema,
+} from '../challengeSchema';
 
 /**
  * 공유 MSW 핸들러(@letscareer/mocks)가 멘토 서면 피드백 현황 엔드포인트에 대해
@@ -122,5 +125,46 @@ describe('경험정리 EXPERIENCE_1/EXPERIENCE_2 페어 목업 시나리오', ()
     expect(
       pairs.some((p) => p.exp1.submittedCount > 0 && p.exp2.submittedCount > 0),
     ).toBe(true);
+  });
+
+  /**
+   * 위 3개 테스트는 feedback-management 요약(submittedCount)만 본다 — 실제 화면은
+   * `.../attendances/mentee`(멘티별 출석)로 행을 그리므로, 그 응답이 미션마다
+   * 실제로 달라야 그룹핑 필터(useMergedFeedbackRows)가 화면에서도 검증된다.
+   * (요약만 다르고 출석 응답이 미션 무관하게 동일했던 버그의 회귀 방지)
+   */
+  async function fetchMenteeAttendance(missionId: number) {
+    const res = await fetch(
+      `${BASE}/challenge/9902/mission/${missionId}/feedback/attendances/mentee`,
+    );
+    const body = await res.json();
+    return mentorMenteeAttendanceListSchema.parse(body.data).attendanceList;
+  }
+
+  it('케이스 A(4회차): 3401(EXP1) 출석과 3402(EXP2) 출석이 서로 다르다', async () => {
+    const [exp1, exp2] = await Promise.all([
+      fetchMenteeAttendance(3401),
+      fetchMenteeAttendance(3402),
+    ]);
+    expect(exp1.find((m) => m.name === '강경험')?.status).toBe('PRESENT');
+    expect(exp2.find((m) => m.name === '강경험')?.status).toBe('ABSENT');
+  });
+
+  it('케이스 B(5회차): 3501(EXP1) 출석과 3502(EXP2) 출석이 서로 다르다', async () => {
+    const [exp1, exp2] = await Promise.all([
+      fetchMenteeAttendance(3501),
+      fetchMenteeAttendance(3502),
+    ]);
+    expect(exp1.find((m) => m.name === '노선택')?.status).toBe('ABSENT');
+    expect(exp2.find((m) => m.name === '노선택')?.status).toBe('PRESENT');
+  });
+
+  it('케이스 C(6회차): 3601(EXP1)/3602(EXP2) 둘 다 제출 상태다', async () => {
+    const [exp1, exp2] = await Promise.all([
+      fetchMenteeAttendance(3601),
+      fetchMenteeAttendance(3602),
+    ]);
+    expect(exp1.find((m) => m.name === '두번제출')?.status).toBe('PRESENT');
+    expect(exp2.find((m) => m.name === '두번제출')?.status).toBe('PRESENT');
   });
 });
