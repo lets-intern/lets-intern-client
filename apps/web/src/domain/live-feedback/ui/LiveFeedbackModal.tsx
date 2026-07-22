@@ -56,11 +56,11 @@ const MenteeAttendanceBar = ({
   const toggle = (status: AttendanceStatus) =>
     onSelect(selected === status ? null : status);
   return (
-    <div className="flex max-w-[calc(100vw-1rem)] items-center gap-1.5 rounded-full bg-black/70 py-1 pl-3 pr-1 text-white shadow-lg backdrop-blur-md md:bg-black/60">
-      <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-white/80">
+    <div className="flex max-w-[calc(100vw-1rem)] items-center gap-1.5 rounded-full border border-white/40 bg-white/70 py-1 pl-3 pr-1 text-neutral-800 shadow-lg backdrop-blur-md">
+      <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-neutral-700">
         {menteeName}님의 출석여부를 체크해 주세요
       </span>
-      <span className="h-4 w-px shrink-0 bg-white/20" />
+      <span className="h-4 w-px shrink-0 bg-neutral-300" />
       <button
         type="button"
         onClick={() => toggle('PRESENT')}
@@ -68,7 +68,7 @@ const MenteeAttendanceBar = ({
           baseChip,
           selected === 'PRESENT'
             ? 'bg-[#4d55f5] text-white'
-            : 'text-white/80 hover:bg-white/10',
+            : 'text-neutral-600 hover:bg-black/5',
         )}
       >
         출석
@@ -80,7 +80,7 @@ const MenteeAttendanceBar = ({
           baseChip,
           selected === 'ABSENT'
             ? 'bg-[#fc5555] text-white'
-            : 'text-white/80 hover:bg-white/10',
+            : 'text-neutral-600 hover:bg-black/5',
         )}
       >
         결석
