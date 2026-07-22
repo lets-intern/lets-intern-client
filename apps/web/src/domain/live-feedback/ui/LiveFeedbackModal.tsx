@@ -84,8 +84,9 @@ const MenteeAttendanceBar = ({
         onClick={() => toggle('PRESENT')}
         className={twMerge(
           baseChip,
+          // 체크 후엔 선택 칩도 반투명(bg .../70)으로 빠져 전체가 균일하게 은은해진다.
           selected === 'PRESENT'
-            ? 'bg-[#4d55f5] text-white'
+            ? 'bg-[#4d55f5]/70 text-white'
             : selected // 다른 항목 선택됨 → 투명 배경 위라 밝은 글자
               ? 'text-white/70 hover:bg-white/10'
               : 'text-neutral-600 hover:bg-black/5',
@@ -98,8 +99,9 @@ const MenteeAttendanceBar = ({
         onClick={() => toggle('ABSENT')}
         className={twMerge(
           baseChip,
+          // 체크 후엔 선택 칩도 반투명(bg .../70)으로 빠져 전체가 균일하게 은은해진다.
           selected === 'ABSENT'
-            ? 'bg-[#fc5555] text-white'
+            ? 'bg-[#fc5555]/70 text-white'
             : selected // 다른 항목 선택됨 → 투명 배경 위라 밝은 글자
               ? 'text-white/70 hover:bg-white/10'
               : 'text-neutral-600 hover:bg-black/5',
