@@ -10,6 +10,8 @@ jest.mock('@letscareer/ui/JitsiEmbed', () => ({
   JitsiEmbed: ({ roomUrl }: { roomUrl: string }) => (
     <div data-testid="jitsi-embed" data-room-url={roomUrl} />
   ),
+  LiveSessionTimer: () => <div data-testid="live-session-timer" />,
+  LiveFeedbackMaterials: () => <div data-testid="live-feedback-materials" />,
 }));
 
 const TEST_URL = 'https://meet.jit.si/letscareer-x7k2p9';

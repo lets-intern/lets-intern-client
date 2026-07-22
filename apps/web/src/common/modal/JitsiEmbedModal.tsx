@@ -1,6 +1,10 @@
 'use client';
 
-import { JitsiEmbed, LiveSessionTimer } from '@letscareer/ui/JitsiEmbed';
+import {
+  JitsiEmbed,
+  LiveSessionTimer,
+  LiveFeedbackMaterials,
+} from '@letscareer/ui/JitsiEmbed';
 
 import BaseModal from '@/common/modal/BaseModal';
 
@@ -24,6 +28,10 @@ interface JitsiEmbedModalProps {
   startDate?: string;
   /** 세션 종료 ISO — 남은 시간 계산용(선택). */
   endDate?: string;
+  /** 멘티 본인 사전 질문 — 좌하단 "나의 사전 QA" 패널(선택). */
+  preQuestion?: string;
+  /** 멘티 본인 제출물 URL — 좌하단 "나의 제출물" 패널(선택). */
+  submissionUrl?: string;
   /** 우선순위 순 jitsi base 후보 — 현재 서버 실패 시 다음 후보로 failover. */
   baseCandidates?: ReadonlyArray<string | undefined>;
   /** 다음 base 를 BE 에 재등록하는 콜백 (`PATCH /feedback/{id}/meeting-url`). */
@@ -39,6 +47,8 @@ const JitsiEmbedModal = ({
   spaceName,
   startDate,
   endDate,
+  preQuestion,
+  submissionUrl,
   baseCandidates,
   registerBaseUrl,
   onExhausted,
@@ -76,6 +86,13 @@ const JitsiEmbedModal = ({
           )}
         </div>
       </div>
+
+      {/* 멘티 본인 사전질문/제출물 — 좌하단 자료 패널(뷰포트 고정). */}
+      <LiveFeedbackMaterials
+        viewer="MENTEE"
+        preQuestion={preQuestion}
+        submissionUrl={submissionUrl}
+      />
     </BaseModal>
   );
 };
