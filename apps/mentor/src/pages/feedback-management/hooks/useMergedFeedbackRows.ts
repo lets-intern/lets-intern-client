@@ -330,6 +330,8 @@ export function useMergedFeedbackRows(
               missionId: mission.missionId,
               missionTh: mission.th,
               challengeTitle: challenge.title ?? '챌린지',
+              // 클릭한 멘티 본인 상세로 진입하기 위한 출석 id (index 0 폴백 방지).
+              attendanceId: mentee.id,
             },
           });
         });
