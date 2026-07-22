@@ -42,7 +42,9 @@ describe('mentorFeedbackMissionSummarySchema — missionType', () => {
   });
 
   it('missionType가 없으면(undefined) undefined로 파싱된다', () => {
-    const parsed = mentorFeedbackManagementSchema.parse(wrap({ ...baseMission }));
+    const parsed = mentorFeedbackManagementSchema.parse(
+      wrap({ ...baseMission }),
+    );
     expect(
       parsed.challengeList[0].feedbackMissions[0].missionType,
     ).toBeUndefined();

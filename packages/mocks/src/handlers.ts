@@ -745,7 +745,9 @@ export const handlers = [
                 missionType: 'EXPERIENCE_1',
                 submittedCount: 6,
                 notSubmittedCount: 0,
-                feedbackStatusCounts: [{ feedbackStatus: 'COMPLETED', count: 6 }],
+                feedbackStatusCounts: [
+                  { feedbackStatus: 'COMPLETED', count: 6 },
+                ],
               },
               {
                 missionId: 3402,
@@ -785,7 +787,9 @@ export const handlers = [
                 missionType: 'EXPERIENCE_1',
                 submittedCount: 3,
                 notSubmittedCount: 1,
-                feedbackStatusCounts: [{ feedbackStatus: 'COMPLETED', count: 3 }],
+                feedbackStatusCounts: [
+                  { feedbackStatus: 'COMPLETED', count: 3 },
+                ],
               },
               {
                 missionId: 3602,

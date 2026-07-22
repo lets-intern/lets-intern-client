@@ -59,7 +59,10 @@ export function findExperienceMissionPairs(
 
   const pairs = new Map<ExperiencePairKey, ExperiencePair>();
   for (const [key, entry] of byKey) {
-    if (entry.exp1MissionId !== undefined && entry.exp2MissionId !== undefined) {
+    if (
+      entry.exp1MissionId !== undefined &&
+      entry.exp2MissionId !== undefined
+    ) {
       pairs.set(key, {
         exp1MissionId: entry.exp1MissionId,
         exp2MissionId: entry.exp2MissionId,

@@ -71,7 +71,10 @@ describe('경험정리 EXPERIENCE_1/EXPERIENCE_2 페어 목업 시나리오', ()
         { exp1?: { submittedCount: number }; exp2?: { submittedCount: number } }
       >();
       for (const mission of challenge.feedbackMissions) {
-        if (mission.missionType !== 'EXPERIENCE_1' && mission.missionType !== 'EXPERIENCE_2')
+        if (
+          mission.missionType !== 'EXPERIENCE_1' &&
+          mission.missionType !== 'EXPERIENCE_2'
+        )
           continue;
         const entry = byTh.get(mission.th) ?? {};
         if (mission.missionType === 'EXPERIENCE_1') entry.exp1 = mission;
