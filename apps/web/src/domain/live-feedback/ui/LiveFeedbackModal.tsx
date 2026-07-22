@@ -55,8 +55,8 @@ const MenteeAttendanceBar = ({
   const toggle = (status: AttendanceStatus) =>
     onSelect(selected === status ? null : status);
   return (
-    <div className="flex max-w-[calc(100vw-1rem)] items-center gap-1.5 rounded-full bg-black/45 py-1.5 pl-3 pr-1.5 text-white shadow-lg backdrop-blur-md md:gap-2 md:pl-4">
-      <span className="shrink-0 whitespace-nowrap text-xs font-medium text-white/80">
+    <div className="flex w-full items-center gap-1.5 rounded-full bg-black/45 py-1.5 pl-3 pr-1.5 text-white shadow-lg backdrop-blur-md md:w-auto md:gap-2 md:pl-4">
+      <span className="flex-1 whitespace-nowrap text-xs font-medium text-white/80 md:flex-none">
         {menteeName} 님 출석
       </span>
       <span className="h-4 w-px shrink-0 bg-white/20" />
@@ -156,9 +156,9 @@ const LiveFeedbackModal = ({
       closeOnOverlayClick={false}
       // z-10: 모달 콘텐츠(Jitsi iframe)를 오버레이 위로 명시 합성 — 모바일(iOS)에서
       // fixed 오버레이가 iframe 위를 덮어 터치가 막히던 문제 방지.
-      // 모바일: 모달 높이 70vh + 상단정렬(self-start) → 아래 남는 여백에 좌하단 자료 FAB가
+      // 모바일: 모달 높이 76vh + 상단정렬(self-start) → 아래 여백에 출석바 + 가로 자료 FAB가
       // 놓여 Jitsi 툴바와 안 겹친다. 데스크탑(md+)은 기존 높이 주도(94vh)·세로중앙 유지.
-      className="rounded-xxl relative z-10 mt-4 aspect-[4/3] h-[70vh] max-h-[70vh] w-auto max-w-[92vw] self-start overflow-hidden bg-neutral-900 md:mt-0 md:h-[94vh] md:max-h-[980px] md:max-w-[96vw] md:self-center"
+      className="rounded-xxl relative z-10 mt-4 aspect-[4/3] h-[76vh] max-h-[76vh] w-auto max-w-[92vw] self-start overflow-hidden bg-black md:mt-0 md:h-[94vh] md:max-h-[980px] md:max-w-[96vw] md:self-center"
     >
       <div className="relative h-full w-full">
         <div className="absolute inset-0">
@@ -190,9 +190,9 @@ const LiveFeedbackModal = ({
           <div
             data-testid="mentor-attendance-anchor"
             className={twMerge(
-              // 모바일: 좌하단 자료 FAB(사전 QA·제출물) 스택 바로 위에 고정 배치.
-              // 데스크톱: 기존처럼 모달 하단 중앙.
-              'fixed bottom-32 left-6 z-[60] transition-opacity duration-300 md:absolute md:bottom-20 md:left-1/2 md:z-10 md:-translate-x-1/2',
+              // 모바일: 좌하단 자료 FAB(가로 배치) 바로 위에 전체폭으로 고정.
+              // 데스크톱: 기존처럼 모달 하단 중앙(콤팩트).
+              'fixed inset-x-4 bottom-[76px] z-[60] transition-opacity duration-300 md:absolute md:inset-x-auto md:bottom-20 md:left-1/2 md:z-10 md:-translate-x-1/2',
               pendingAttendance && 'opacity-50 hover:opacity-100',
             )}
           >

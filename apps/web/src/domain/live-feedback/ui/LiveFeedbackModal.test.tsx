@@ -37,10 +37,10 @@ describe('LiveFeedbackModal', () => {
     );
 
     const anchor = screen.getByTestId('mentor-attendance-anchor');
-    // 모바일: 좌하단 자료 FAB 스택 바로 위 고정. 데스크톱: 하단 중앙.
+    // 모바일: 좌하단 가로 자료 FAB 바로 위 전체폭 고정. 데스크톱: 하단 중앙.
     expect(anchor).toHaveClass('fixed');
-    expect(anchor).toHaveClass('bottom-32');
-    expect(anchor).toHaveClass('left-6');
+    expect(anchor).toHaveClass('inset-x-4');
+    expect(anchor).toHaveClass('bottom-[76px]');
     expect(anchor).toHaveClass('md:bottom-20');
   });
 

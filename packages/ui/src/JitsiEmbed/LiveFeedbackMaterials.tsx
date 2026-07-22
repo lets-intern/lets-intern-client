@@ -248,7 +248,7 @@ export function LiveFeedbackMaterials({
   if (!hasPreQuestion && !hasSubmission) return null;
 
   return (
-    <div className="fixed bottom-6 left-6 z-[60] flex flex-col items-start gap-3">
+    <div className="fixed inset-x-4 bottom-6 z-[60] flex flex-col items-stretch gap-3 md:inset-x-auto md:left-6 md:items-start">
       {openPanel === 'qna' && hasPreQuestion && (
         <FloatingPanel
           title={qnaTitle}
@@ -287,7 +287,8 @@ export function LiveFeedbackMaterials({
         </FloatingPanel>
       )}
 
-      <div className="flex flex-col gap-2.5">
+      {/* 모바일: 가로 좌우 배치(각 버튼 flex-1, 폭 대부분 차지). 데스크탑: 세로 스택. */}
+      <div className="flex gap-2.5 md:flex-col [&>button]:flex-1 [&>button]:justify-center md:[&>button]:flex-none md:[&>button]:justify-start">
         {hasPreQuestion && (
           <SemiFab
             label={qnaLabel}
