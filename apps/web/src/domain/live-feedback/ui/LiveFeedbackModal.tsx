@@ -56,11 +56,29 @@ const MenteeAttendanceBar = ({
   const toggle = (status: AttendanceStatus) =>
     onSelect(selected === status ? null : status);
   return (
-    <div className="flex max-w-[calc(100vw-1rem)] items-center gap-1.5 rounded-full border border-white/40 bg-white/70 py-1 pl-3 pr-1 text-neutral-800 shadow-lg backdrop-blur-md">
-      <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-neutral-700">
+    <div
+      className={twMerge(
+        // 체크 전: 흰 아크릴(반투명·잘 보임). 체크 후: 배경 거의 투명(화면 덜 가림).
+        'flex max-w-[calc(100vw-1rem)] items-center gap-1.5 rounded-full py-1 pl-3 pr-1 shadow-lg backdrop-blur-md transition-colors',
+        selected
+          ? 'border border-transparent bg-white/10 text-white'
+          : 'border border-white/40 bg-white/70 text-neutral-800',
+      )}
+    >
+      <span
+        className={twMerge(
+          'shrink-0 whitespace-nowrap text-xs font-semibold',
+          selected ? 'text-white/80' : 'text-neutral-700',
+        )}
+      >
         {menteeName}님의 출석여부를 체크해 주세요
       </span>
-      <span className="h-4 w-px shrink-0 bg-neutral-300" />
+      <span
+        className={twMerge(
+          'h-4 w-px shrink-0',
+          selected ? 'bg-white/25' : 'bg-neutral-300',
+        )}
+      />
       <button
         type="button"
         onClick={() => toggle('PRESENT')}
@@ -68,7 +86,9 @@ const MenteeAttendanceBar = ({
           baseChip,
           selected === 'PRESENT'
             ? 'bg-[#4d55f5] text-white'
-            : 'text-neutral-600 hover:bg-black/5',
+            : selected // 다른 항목 선택됨 → 투명 배경 위라 밝은 글자
+              ? 'text-white/70 hover:bg-white/10'
+              : 'text-neutral-600 hover:bg-black/5',
         )}
       >
         출석
@@ -80,7 +100,9 @@ const MenteeAttendanceBar = ({
           baseChip,
           selected === 'ABSENT'
             ? 'bg-[#fc5555] text-white'
-            : 'text-neutral-600 hover:bg-black/5',
+            : selected // 다른 항목 선택됨 → 투명 배경 위라 밝은 글자
+              ? 'text-white/70 hover:bg-white/10'
+              : 'text-neutral-600 hover:bg-black/5',
         )}
       >
         결석
@@ -192,8 +214,8 @@ const LiveFeedbackModal = ({
             data-testid="mentor-attendance-anchor"
             className={twMerge(
               // 모바일: 좌상단 타이머 패널 바로 아래. 데스크톱: 모달 하단 중앙.
-              'absolute left-3 top-[98px] z-10 transition-opacity duration-300 md:bottom-20 md:left-1/2 md:top-auto md:-translate-x-1/2',
-              pendingAttendance && 'opacity-50 hover:opacity-100',
+              // 체크 후 흐림은 래퍼 opacity가 아니라 바 배경 투명화로 처리(MenteeAttendanceBar).
+              'absolute left-3 top-[98px] z-10 md:bottom-20 md:left-1/2 md:top-auto md:-translate-x-1/2',
             )}
           >
             <MenteeAttendanceBar
