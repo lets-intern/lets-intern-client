@@ -156,9 +156,9 @@ const LiveFeedbackModal = ({
       closeOnOverlayClick={false}
       // z-10: 모달 콘텐츠(Jitsi iframe)를 오버레이 위로 명시 합성 — 모바일(iOS)에서
       // fixed 오버레이가 iframe 위를 덮어 터치가 막히던 문제 방지.
-      // 모바일: 데스크탑처럼 4:3 비율 고정 + 세로 중앙(너비 주도) → 위·아래 여백이 생겨
-      // 좌하단 자료 FAB(사전 QA·제출물)·Jitsi 툴바와 안 겹친다.
-      className="rounded-xxl relative z-10 aspect-[4/3] max-h-[90vh] w-[92vw] overflow-hidden bg-neutral-900 md:h-[94vh] md:max-h-[980px] md:w-auto md:max-w-[96vw]"
+      // 모바일: 모달 높이 70vh(세로 중앙) → 아래 남는 여백에 좌하단 자료 FAB가 놓여
+      // Jitsi 툴바와 안 겹친다. 데스크탑(md+)은 기존 높이 주도(94vh) 유지.
+      className="rounded-xxl relative z-10 aspect-[4/3] h-[70vh] max-h-[70vh] w-auto max-w-[92vw] overflow-hidden bg-neutral-900 md:h-[94vh] md:max-h-[980px] md:max-w-[96vw]"
     >
       <div className="relative h-full w-full">
         <div className="absolute inset-0">

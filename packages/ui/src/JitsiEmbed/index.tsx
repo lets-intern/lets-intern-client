@@ -66,6 +66,9 @@ const CONFIG_OVERWRITE = {
   disableSimulcast: true,
   desktopSharingFrameRate: { min: 5, max: 15 },
   prejoinPageEnabled: false,
+  // 모바일 웹에서 "이 회의에 어떻게 참여하시겠습니까?"(앱으로 열기/브라우저 참여) 딥링킹
+  // 인터스티셜을 건너뛰고 바로 브라우저 회의로 입장. (HIDE_DEEP_LINKING_LOGO는 로고만 숨김)
+  disableDeepLinking: true,
   // 신버전 워터마크 로고 제거(클라이언트 측). 빈 문자열이면 로고를 그리지 않는다.
   defaultLogoUrl: '',
   // 좌상단 비디오 화질 라벨(예: 480p/HD) 숨김.
