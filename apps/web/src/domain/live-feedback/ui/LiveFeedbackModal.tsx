@@ -190,9 +190,9 @@ const LiveFeedbackModal = ({
           <div
             data-testid="mentor-attendance-anchor"
             className={twMerge(
-              // 모바일은 좌상단 타이머 패널 바로 아래에 배치하고,
-              // 데스크톱은 기존처럼 하단 중앙에 둔다.
-              'absolute left-3 top-[98px] z-10 transition-opacity duration-300 md:bottom-20 md:left-1/2 md:top-auto md:-translate-x-1/2',
+              // 모바일: 좌하단 자료 FAB(사전 QA·제출물) 스택 바로 위에 고정 배치.
+              // 데스크톱: 기존처럼 모달 하단 중앙.
+              'fixed bottom-32 left-6 z-[60] transition-opacity duration-300 md:absolute md:bottom-20 md:left-1/2 md:z-10 md:-translate-x-1/2',
               pendingAttendance && 'opacity-50 hover:opacity-100',
             )}
           >
