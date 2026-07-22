@@ -2,14 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { JitsiEmbed } from '@letscareer/ui/JitsiEmbed';
+import { JitsiEmbed, LiveSessionTimer } from '@letscareer/ui/JitsiEmbed';
 
 import BaseModal from '@/common/modal/BaseModal';
 import { isAllowedNotionUrl } from '@/common/lexical/utils/notion';
 import { twMerge } from '@/lib/twMerge';
 
 import type { LiveRole } from '../hooks/liveRole';
-import LiveSessionTimer from './LiveSessionTimer';
 import NotionSubmissionPanel from './NotionSubmissionPanel';
 
 /** 멘티 라이브 출석 상태 */
