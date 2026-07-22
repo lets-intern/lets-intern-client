@@ -1,6 +1,10 @@
 'use client';
 
-import { JitsiEmbed, LiveSessionTimer } from '@letscareer/ui/JitsiEmbed';
+import {
+  JitsiEmbed,
+  LiveFeedbackMaterials,
+  LiveSessionTimer,
+} from '@letscareer/ui/JitsiEmbed';
 
 import BaseModal from '@/common/modal/BaseModal';
 
@@ -24,6 +28,10 @@ interface JitsiEmbedModalProps {
   startDate?: string;
   /** 세션 종료 ISO — 남은 시간 계산용(선택). */
   endDate?: string;
+  /** 멘티 본인 사전 질문 — 좌하단 "나의 사전 QA" 패널(선택). */
+  preQuestion?: string;
+  /** 멘티 본인 제출물 URL — 좌하단 "나의 제출물" 패널(선택). */
+  submissionUrl?: string;
   /** 우선순위 순 jitsi base 후보 — 현재 서버 실패 시 다음 후보로 failover. */
   baseCandidates?: ReadonlyArray<string | undefined>;
   /** 다음 base 를 BE 에 재등록하는 콜백 (`PATCH /feedback/{id}/meeting-url`). */
@@ -39,6 +47,8 @@ const JitsiEmbedModal = ({
   spaceName,
   startDate,
   endDate,
+  preQuestion,
+  submissionUrl,
   baseCandidates,
   registerBaseUrl,
   onExhausted,
@@ -47,7 +57,10 @@ const JitsiEmbedModal = ({
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      className="rounded-xxl aspect-[4/3] h-[94vh] max-h-[980px] w-auto max-w-[96vw] overflow-hidden bg-neutral-900"
+      closeOnOverlayClick={false}
+      // z-10: 모달 콘텐츠(Jitsi iframe)를 오버레이 위로 명시 합성 — 모바일(iOS)에서
+      // fixed 오버레이가 iframe 위를 덮어 터치가 막히던 문제 방지.
+      className="rounded-xxl relative z-10 aspect-[4/3] h-[94vh] max-h-[980px] w-auto max-w-[96vw] overflow-hidden bg-neutral-900"
     >
       <div className="relative h-full w-full">
         {/* 모달 자체가 4:3(웹캠 480p 기본 비율) → 화상이 박스를 꽉 채워 확대/크롭 없이 보인다.
@@ -76,6 +89,13 @@ const JitsiEmbedModal = ({
           )}
         </div>
       </div>
+
+      {/* 멘티 본인 사전질문/제출물 — 좌하단 자료 패널(뷰포트 고정). */}
+      <LiveFeedbackMaterials
+        viewer="MENTEE"
+        preQuestion={preQuestion}
+        submissionUrl={submissionUrl}
+      />
     </BaseModal>
   );
 };

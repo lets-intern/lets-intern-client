@@ -2,14 +2,16 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { JitsiEmbed, LiveSessionTimer } from '@letscareer/ui/JitsiEmbed';
+import {
+  JitsiEmbed,
+  LiveFeedbackMaterials,
+  LiveSessionTimer,
+} from '@letscareer/ui/JitsiEmbed';
 
 import BaseModal from '@/common/modal/BaseModal';
-import { isAllowedNotionUrl } from '@/common/lexical/utils/notion';
 import { twMerge } from '@/lib/twMerge';
 
 import type { LiveRole } from '../hooks/liveRole';
-import NotionSubmissionPanel from './NotionSubmissionPanel';
 
 /** 멘티 라이브 출석 상태 */
 type AttendanceStatus = 'PENDING' | 'PRESENT' | 'ABSENT';
@@ -37,8 +39,6 @@ interface LiveFeedbackModalProps {
   onExhausted?: () => void;
 }
 
-type MaterialPanel = 'qna' | 'submission';
-
 /** 출석 체크 바 — 참석/불참 토글. 한번 더 누르면 해제(저장은 지연). */
 const MenteeAttendanceBar = ({
   menteeName,
@@ -49,16 +49,17 @@ const MenteeAttendanceBar = ({
   selected: AttendanceStatus | null;
   onSelect: (status: AttendanceStatus | null) => void;
 }) => {
+  // 모바일에서 좁은 폭에 눌려도 칩 글자가 세로로 쪼개지지 않게 shrink-0·nowrap 고정.
   const baseChip =
-    'rounded-lg px-4 py-1.5 text-sm font-semibold transition disabled:opacity-50';
+    'shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-semibold transition disabled:opacity-50 md:px-4';
   const toggle = (status: AttendanceStatus) =>
     onSelect(selected === status ? null : status);
   return (
-    <div className="flex items-center gap-2 rounded-full bg-black/45 py-1.5 pl-4 pr-1.5 text-white shadow-lg backdrop-blur-md">
-      <span className="text-xs font-medium text-white/80">
+    <div className="flex max-w-[calc(100vw-1rem)] items-center gap-1.5 rounded-full bg-black/45 py-1.5 pl-3 pr-1.5 text-white shadow-lg backdrop-blur-md md:gap-2 md:pl-4">
+      <span className="shrink-0 whitespace-nowrap text-xs font-medium text-white/80">
         {menteeName} 님 출석
       </span>
-      <span className="h-4 w-px bg-white/20" />
+      <span className="h-4 w-px shrink-0 bg-white/20" />
       <button
         type="button"
         onClick={() => toggle('PRESENT')}
@@ -87,118 +88,11 @@ const MenteeAttendanceBar = ({
   );
 };
 
-/** 반투명 플로팅 버튼(아이콘 + 글자) — 자료 토글용. */
-const SemiFab = ({
-  label,
-  active,
-  onClick,
-  children,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    aria-pressed={active}
-    className={twMerge(
-      'flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold text-white shadow-lg backdrop-blur-md transition',
-      active ? 'bg-[#4d55f5]/90' : 'bg-black/55 hover:bg-black/70',
-    )}
-  >
-    {children}
-    <span>{label}</span>
-  </button>
-);
-
-/** 화상 위에 뜨는 자료 패널. */
-const FloatingPanel = ({
-  title,
-  onClose,
-  className,
-  children,
-}: {
-  title: string;
-  onClose: () => void;
-  className?: string;
-  children: React.ReactNode;
-}) => (
-  <div
-    className={twMerge(
-      'rounded-xxl flex flex-col overflow-hidden border border-neutral-200 bg-white shadow-2xl',
-      className,
-    )}
-  >
-    <div className="flex shrink-0 items-center justify-between border-b border-neutral-100 px-4 py-2.5">
-      <span className="text-sm font-semibold text-neutral-800">{title}</span>
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label={`${title} 닫기`}
-        className="flex h-7 w-7 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <path
-            d="M6 6L18 18M18 6L6 18"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        </svg>
-      </button>
-    </div>
-    <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
-  </div>
-);
-
-const QnaIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-    <path
-      d="M5 5.5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9l-4 3.5V6.5a1 1 0 0 1 1-1Z"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M9.2 9.4a2.8 2.8 0 0 1 5.4 1c0 1.6-2.3 2-2.3 3.2"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-    />
-    <circle
-      cx="12.1"
-      cy="15.6"
-      r="0.5"
-      fill="currentColor"
-      stroke="currentColor"
-    />
-  </svg>
-);
-
-const DocIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-    <path
-      d="M7 3.5h7L18.5 8v11.5a1 1 0 0 1-1 1h-10a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1Z"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M13.5 3.5V8H18M9 12h6M9 15h6"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 /**
  * 라이브 피드백 입장 모달 — 멘토 앱 모달과 동일 디자인.
  *
- * - 4:3 모달, 좌상단 로고+타이머 아크릴(JitsiEmbed topLeftSlot), 좌하단 자료 버튼/패널.
+ * - 4:3 모달, 좌상단 로고+타이머 아크릴(JitsiEmbed topLeftSlot).
+ * - 좌하단 자료 버튼/패널(사전질문·제출물)은 공용 `LiveFeedbackMaterials` 사용(문구는 role 분기).
  * - 멘토 시점: 중앙 하단 출석 체크(토글). 저장은 닫힘/세션 종료 시 일괄(멘티 잠김 방지).
  * - 멘티 시점: 출석 체크 없이 동일 레이아웃.
  */
@@ -219,8 +113,6 @@ const LiveFeedbackModal = ({
   registerBaseUrl,
   onExhausted,
 }: LiveFeedbackModalProps) => {
-  const [openPanel, setOpenPanel] = useState<MaterialPanel | null>(null);
-
   const [pendingAttendance, setPendingAttendance] =
     useState<AttendanceStatus | null>(
       menteeStatus === 'PRESENT' || menteeStatus === 'ABSENT'
@@ -256,28 +148,15 @@ const LiveFeedbackModal = ({
   }, [isOpen, endDate]);
 
   const isMentor = role === 'MENTOR';
-  const isMentee = role === 'MENTEE';
-  const hasPreQuestion = !!preQuestion && preQuestion.trim().length > 0;
-  const hasSubmission = !!submissionUrl;
-  const isNotionSubmission = hasSubmission && isAllowedNotionUrl(submissionUrl);
-
-  // 멘티 시점이면 "나의 ~", 멘토 시점이면 "멘티 ~"로 표기.
-  const qnaLabel = isMentee ? '나의 사전 QA' : '사전 QA';
-  const submissionLabel = isMentee ? '나의 제출물' : '멘티 제출물';
-  const qnaTitle = isMentee ? '나의 사전 Q&A' : '사전 Q&A';
-  const submissionTitle = isMentee
-    ? '나의 제출물'
-    : `${menteeName} 님의 제출물`;
-
-  const toggle = (panel: MaterialPanel) =>
-    setOpenPanel((prev) => (prev === panel ? null : panel));
 
   return (
     <BaseModal
       isOpen={isOpen}
       onClose={handleClose}
       closeOnOverlayClick={false}
-      className="rounded-xxl aspect-[4/3] h-[94vh] max-h-[980px] w-auto max-w-[96vw] overflow-hidden bg-neutral-900"
+      // z-10: 모달 콘텐츠(Jitsi iframe)를 오버레이 위로 명시 합성 — 모바일(iOS)에서
+      // fixed 오버레이가 iframe 위를 덮어 터치가 막히던 문제 방지.
+      className="rounded-xxl relative z-10 aspect-[4/3] h-[94vh] max-h-[980px] w-auto max-w-[96vw] overflow-hidden bg-neutral-900"
     >
       <div className="relative h-full w-full">
         <div className="absolute inset-0">
@@ -307,8 +186,11 @@ const LiveFeedbackModal = ({
         {/* 중앙 하단 — (멘토) 멘티 출석 체크 */}
         {isMentor && (
           <div
+            data-testid="mentor-attendance-anchor"
             className={twMerge(
-              'absolute bottom-20 left-1/2 z-10 -translate-x-1/2 transition-opacity duration-300',
+              // 모바일은 좌상단 타이머 패널 바로 아래에 배치하고,
+              // 데스크톱은 기존처럼 하단 중앙에 둔다.
+              'absolute left-3 top-[98px] z-10 transition-opacity duration-300 md:bottom-20 md:left-1/2 md:top-auto md:-translate-x-1/2',
               pendingAttendance && 'opacity-50 hover:opacity-100',
             )}
           >
@@ -321,69 +203,13 @@ const LiveFeedbackModal = ({
         )}
       </div>
 
-      {/* 자료 버튼/패널 — 뷰포트 좌하단 고정 */}
-      {(hasPreQuestion || hasSubmission) && (
-        <div className="fixed bottom-6 left-6 z-[60] flex flex-col items-start gap-3">
-          {openPanel === 'qna' && hasPreQuestion && (
-            <FloatingPanel
-              title={qnaTitle}
-              onClose={() => setOpenPanel(null)}
-              className="max-h-[60vh] w-[340px] max-w-[80vw]"
-            >
-              <p className="whitespace-pre-wrap px-4 py-3 text-sm leading-6 text-neutral-700">
-                {preQuestion}
-              </p>
-            </FloatingPanel>
-          )}
-
-          {openPanel === 'submission' && hasSubmission && (
-            <FloatingPanel
-              title={submissionTitle}
-              onClose={() => setOpenPanel(null)}
-              className="h-[70vh] w-[400px] max-w-[80vw]"
-            >
-              {isNotionSubmission ? (
-                <NotionSubmissionPanel
-                  link={submissionUrl!}
-                  menteeName={menteeName}
-                />
-              ) : (
-                <div className="p-4">
-                  <a
-                    href={submissionUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
-                  >
-                    새 탭에서 열기
-                  </a>
-                </div>
-              )}
-            </FloatingPanel>
-          )}
-
-          <div className="flex flex-col gap-2.5">
-            {hasPreQuestion && (
-              <SemiFab
-                label={qnaLabel}
-                active={openPanel === 'qna'}
-                onClick={() => toggle('qna')}
-              >
-                <QnaIcon />
-              </SemiFab>
-            )}
-            {hasSubmission && (
-              <SemiFab
-                label={submissionLabel}
-                active={openPanel === 'submission'}
-                onClick={() => toggle('submission')}
-              >
-                <DocIcon />
-              </SemiFab>
-            )}
-          </div>
-        </div>
-      )}
+      {/* 좌하단 자료 패널 — 공용 컴포넌트(문구는 role 분기). */}
+      <LiveFeedbackMaterials
+        viewer={role === 'MENTEE' ? 'MENTEE' : 'MENTOR'}
+        menteeName={menteeName}
+        preQuestion={preQuestion}
+        submissionUrl={submissionUrl}
+      />
     </BaseModal>
   );
 };
