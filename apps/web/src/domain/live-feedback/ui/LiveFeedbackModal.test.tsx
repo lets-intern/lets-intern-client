@@ -23,7 +23,7 @@ describe('LiveFeedbackModal', () => {
     }
   });
 
-  it('멘토 모드에서는 모바일 출석 바 앵커를 자료 FAB 위(좌하단 고정) 위치 클래스로 렌더한다', () => {
+  it('멘토 모드에서는 모바일 출석 바 앵커를 타이머 아래(top) 위치 클래스로 렌더한다', () => {
     render(
       <LiveFeedbackModal
         isOpen
@@ -37,10 +37,9 @@ describe('LiveFeedbackModal', () => {
     );
 
     const anchor = screen.getByTestId('mentor-attendance-anchor');
-    // 모바일: 좌하단 가로 자료 FAB 바로 위 전체폭 고정. 데스크톱: 하단 중앙.
-    expect(anchor).toHaveClass('fixed');
-    expect(anchor).toHaveClass('inset-x-4');
-    expect(anchor).toHaveClass('bottom-[76px]');
+    // 모바일: 좌상단 타이머 아래(top). 데스크톱: 하단 중앙.
+    expect(anchor).toHaveClass('top-[98px]');
+    expect(anchor).toHaveClass('left-3');
     expect(anchor).toHaveClass('md:bottom-20');
   });
 

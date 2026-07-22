@@ -248,12 +248,12 @@ export function LiveFeedbackMaterials({
   if (!hasPreQuestion && !hasSubmission) return null;
 
   return (
-    <div className="fixed inset-x-4 bottom-6 z-[60] flex flex-col items-stretch gap-3 md:inset-x-auto md:left-6 md:items-start">
+    <div className="fixed bottom-6 left-6 z-[60] hidden flex-col items-start gap-3 md:flex">
       {openPanel === 'qna' && hasPreQuestion && (
         <FloatingPanel
           title={qnaTitle}
           onClose={() => setOpenPanel(null)}
-          className="max-h-[60vh] w-full md:w-[340px] md:max-w-[80vw]"
+          className="max-h-[60vh] w-[340px] max-w-[80vw]"
         >
           <p className="whitespace-pre-wrap px-4 py-3 text-sm leading-6 text-neutral-700">
             {preQuestion}
@@ -265,7 +265,7 @@ export function LiveFeedbackMaterials({
         <FloatingPanel
           title={submissionTitle}
           onClose={() => setOpenPanel(null)}
-          className="h-[70vh] w-full md:w-[400px] md:max-w-[80vw]"
+          className="h-[70vh] w-[400px] max-w-[80vw]"
         >
           {isNotionSubmission ? (
             <NotionSubmissionEmbed
@@ -287,8 +287,7 @@ export function LiveFeedbackMaterials({
         </FloatingPanel>
       )}
 
-      {/* 모바일: 가로 좌우 배치(각 버튼 flex-1, 폭 대부분 차지). 데스크탑: 세로 스택. */}
-      <div className="flex gap-2.5 md:flex-col [&>button]:flex-1 [&>button]:justify-center md:[&>button]:flex-none md:[&>button]:justify-start">
+      <div className="flex flex-col gap-2.5">
         {hasPreQuestion && (
           <SemiFab
             label={qnaLabel}

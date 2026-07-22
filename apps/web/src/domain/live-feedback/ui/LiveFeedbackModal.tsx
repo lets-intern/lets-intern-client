@@ -56,8 +56,8 @@ const MenteeAttendanceBar = ({
   const toggle = (status: AttendanceStatus) =>
     onSelect(selected === status ? null : status);
   return (
-    <div className="flex w-full items-center gap-1.5 rounded-full bg-black/45 py-1.5 pl-3 pr-1.5 text-white shadow-lg backdrop-blur-md md:w-auto md:gap-2 md:pl-4">
-      <span className="flex-1 whitespace-nowrap text-xs font-medium text-white/80 md:flex-none">
+    <div className="flex max-w-[calc(100vw-1rem)] items-center gap-1.5 rounded-full bg-black/45 py-1.5 pl-3 pr-1.5 text-white shadow-lg backdrop-blur-md md:gap-2 md:pl-4">
+      <span className="shrink-0 whitespace-nowrap text-xs font-medium text-white/80">
         {menteeName} 님 출석
       </span>
       <span className="h-4 w-px shrink-0 bg-white/20" />
@@ -157,10 +157,9 @@ const LiveFeedbackModal = ({
       closeOnOverlayClick={false}
       // z-10: 모달 콘텐츠(Jitsi iframe)를 오버레이 위로 명시 합성 — 모바일(iOS)에서
       // fixed 오버레이가 iframe 위를 덮어 터치가 막히던 문제 방지.
-      // 모바일: 모달 높이를 "화면 - 하단 컨트롤 영역(≈140px)"으로 계산 → 모달 바닥이 항상
-      // 출석바/자료 FAB 바로 위(~20px)에서 멈춰 겹침 0·간격 일정(px 예약). 상단정렬(self-start).
-      // 데스크탑(md+)은 기존 높이 주도(94vh)·세로중앙 유지.
-      className="rounded-xxl relative z-10 mt-4 aspect-[4/3] h-[calc(100dvh-140px)] max-h-[calc(100dvh-140px)] w-auto max-w-[92vw] self-start overflow-hidden bg-black md:mt-0 md:h-[94vh] md:max-h-[980px] md:max-w-[96vw] md:self-center"
+      // 모바일: 자료 FAB를 숨기므로 모달이 화면 대부분을 차지(96dvh×98vw, 종횡비 미고정 → 화상은
+      // 내부에서 레터박스). 데스크탑(md+)은 기존 4:3·높이주도(94vh) 유지.
+      className="rounded-xxl relative z-10 h-[96dvh] max-h-[96dvh] w-[98vw] overflow-hidden bg-black md:aspect-[4/3] md:h-[94vh] md:max-h-[980px] md:w-auto md:max-w-[96vw]"
     >
       <div className="relative h-full w-full">
         <div className="absolute inset-0">
@@ -187,14 +186,13 @@ const LiveFeedbackModal = ({
           )}
         </div>
 
-        {/* 중앙 하단 — (멘토) 멘티 출석 체크 */}
+        {/* (멘토) 멘티 출석 체크 */}
         {isMentor && (
           <div
             data-testid="mentor-attendance-anchor"
             className={twMerge(
-              // 모바일: 좌하단 자료 FAB(가로 배치) 바로 위에 전체폭으로 고정.
-              // 데스크톱: 기존처럼 모달 하단 중앙(콤팩트).
-              'fixed inset-x-4 bottom-[76px] z-[60] transition-opacity duration-300 md:absolute md:inset-x-auto md:bottom-20 md:left-1/2 md:z-10 md:-translate-x-1/2',
+              // 모바일: 좌상단 타이머 패널 바로 아래. 데스크톱: 모달 하단 중앙.
+              'absolute left-3 top-[98px] z-10 transition-opacity duration-300 md:bottom-20 md:left-1/2 md:top-auto md:-translate-x-1/2',
               pendingAttendance && 'opacity-50 hover:opacity-100',
             )}
           >
