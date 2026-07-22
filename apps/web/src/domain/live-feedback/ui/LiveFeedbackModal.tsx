@@ -49,15 +49,14 @@ const MenteeAttendanceBar = ({
   selected: AttendanceStatus | null;
   onSelect: (status: AttendanceStatus | null) => void;
 }) => {
-  // 모바일에서 좁은 폭에 눌려도 칩 글자가 세로로 쪼개지지 않게 shrink-0·nowrap 고정.
-  // 모바일은 참석/불참 터치 타깃을 키운다(px-5 py-2.5). 데스크탑은 콤팩트.
+  // 이름 라벨과 참석/불참 칩의 글자 크기를 통일(text-xs). 칩은 콤팩트 패딩.
   const baseChip =
-    'shrink-0 whitespace-nowrap rounded-lg px-5 py-2.5 text-sm font-semibold transition disabled:opacity-50 md:px-4 md:py-1.5';
+    'shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-xs font-semibold transition disabled:opacity-50';
   const toggle = (status: AttendanceStatus) =>
     onSelect(selected === status ? null : status);
   return (
-    <div className="flex max-w-[calc(100vw-1rem)] items-center gap-1.5 rounded-full bg-black/45 py-1.5 pl-3 pr-1.5 text-white shadow-lg backdrop-blur-md md:gap-2 md:pl-4">
-      <span className="shrink-0 whitespace-nowrap text-xs font-medium text-white/80">
+    <div className="flex max-w-[calc(100vw-1rem)] items-center gap-1.5 rounded-full bg-black/45 py-1 pl-3 pr-1 text-white shadow-lg backdrop-blur-md">
+      <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-white/80">
         {menteeName} 님 출석
       </span>
       <span className="h-4 w-px shrink-0 bg-white/20" />

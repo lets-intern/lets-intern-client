@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 
 import { JitsiMeeting } from '@jitsi/react-sdk';
 
@@ -53,6 +53,16 @@ const ALLOWED_TOOLBAR_BUTTONS = [
   'settings',
   'hangup',
 ];
+
+// 모바일: 좁은 툴바에서 채팅·설정을 숨겨 핵심 컨트롤만 노출.
+const MOBILE_TOOLBAR_BUTTONS = ALLOWED_TOOLBAR_BUTTONS.filter(
+  (b) => b !== 'chat' && b !== 'settings',
+);
+
+/** 모바일 뷰포트 판정(768px 미만). SSR 안전(window 없으면 false). */
+function isMobileViewport(): boolean {
+  return typeof window !== 'undefined' && window.innerWidth < 768;
+}
 
 const CONFIG_OVERWRITE = {
   startWithVideoMuted: false,
@@ -161,6 +171,14 @@ export function JitsiEmbed({
     onExhausted,
   });
 
+  // 툴바 버튼은 Jitsi 마운트 시 1회 고정 → 렌더 시점 뷰포트로 모바일 여부 결정(mount당 1회).
+  const [configOverwrite] = useState(() => ({
+    ...CONFIG_OVERWRITE,
+    toolbarButtons: isMobileViewport()
+      ? MOBILE_TOOLBAR_BUTTONS
+      : ALLOWED_TOOLBAR_BUTTONS,
+  }));
+
   return (
     <div className="relative h-full w-full bg-neutral-900">
       {/* 좌상단 — 로고 + (옵션)타이머를 하나의 반투명 아크릴 패널로 묶는다.
@@ -186,7 +204,7 @@ export function JitsiEmbed({
         <JitsiMeeting
           domain={domain}
           roomName={roomName}
-          configOverwrite={CONFIG_OVERWRITE}
+          configOverwrite={configOverwrite}
           interfaceConfigOverwrite={INTERFACE_CONFIG_OVERWRITE}
           onReadyToClose={onClose}
           onApiReady={(api) => {
