@@ -50,8 +50,9 @@ const MenteeAttendanceBar = ({
   onSelect: (status: AttendanceStatus | null) => void;
 }) => {
   // 모바일에서 좁은 폭에 눌려도 칩 글자가 세로로 쪼개지지 않게 shrink-0·nowrap 고정.
+  // 모바일은 참석/불참 터치 타깃을 키운다(px-5 py-2.5). 데스크탑은 콤팩트.
   const baseChip =
-    'shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-semibold transition disabled:opacity-50 md:px-4';
+    'shrink-0 whitespace-nowrap rounded-lg px-5 py-2.5 text-sm font-semibold transition disabled:opacity-50 md:px-4 md:py-1.5';
   const toggle = (status: AttendanceStatus) =>
     onSelect(selected === status ? null : status);
   return (
@@ -156,9 +157,10 @@ const LiveFeedbackModal = ({
       closeOnOverlayClick={false}
       // z-10: 모달 콘텐츠(Jitsi iframe)를 오버레이 위로 명시 합성 — 모바일(iOS)에서
       // fixed 오버레이가 iframe 위를 덮어 터치가 막히던 문제 방지.
-      // 모바일: 모달 높이 76vh + 상단정렬(self-start) → 아래 여백에 출석바 + 가로 자료 FAB가
-      // 놓여 Jitsi 툴바와 안 겹친다. 데스크탑(md+)은 기존 높이 주도(94vh)·세로중앙 유지.
-      className="rounded-xxl relative z-10 mt-4 aspect-[4/3] h-[76vh] max-h-[76vh] w-auto max-w-[92vw] self-start overflow-hidden bg-black md:mt-0 md:h-[94vh] md:max-h-[980px] md:max-w-[96vw] md:self-center"
+      // 모바일: 모달 높이를 "화면 - 하단 컨트롤 영역(≈140px)"으로 계산 → 모달 바닥이 항상
+      // 출석바/자료 FAB 바로 위(~20px)에서 멈춰 겹침 0·간격 일정(px 예약). 상단정렬(self-start).
+      // 데스크탑(md+)은 기존 높이 주도(94vh)·세로중앙 유지.
+      className="rounded-xxl relative z-10 mt-4 aspect-[4/3] h-[calc(100dvh-140px)] max-h-[calc(100dvh-140px)] w-auto max-w-[92vw] self-start overflow-hidden bg-black md:mt-0 md:h-[94vh] md:max-h-[980px] md:max-w-[96vw] md:self-center"
     >
       <div className="relative h-full w-full">
         <div className="absolute inset-0">

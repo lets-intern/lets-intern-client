@@ -253,7 +253,7 @@ export function LiveFeedbackMaterials({
         <FloatingPanel
           title={qnaTitle}
           onClose={() => setOpenPanel(null)}
-          className="max-h-[60vh] w-[340px] max-w-[80vw]"
+          className="max-h-[60vh] w-full md:w-[340px] md:max-w-[80vw]"
         >
           <p className="whitespace-pre-wrap px-4 py-3 text-sm leading-6 text-neutral-700">
             {preQuestion}
@@ -265,7 +265,7 @@ export function LiveFeedbackMaterials({
         <FloatingPanel
           title={submissionTitle}
           onClose={() => setOpenPanel(null)}
-          className="h-[70vh] w-[400px] max-w-[80vw]"
+          className="h-[70vh] w-full md:w-[400px] md:max-w-[80vw]"
         >
           {isNotionSubmission ? (
             <NotionSubmissionEmbed
