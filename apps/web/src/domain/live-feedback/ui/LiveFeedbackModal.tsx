@@ -68,7 +68,7 @@ const MenteeAttendanceBar = ({
       <span
         className={twMerge(
           'shrink-0 whitespace-nowrap text-xs font-semibold',
-          selected ? 'text-white/80' : 'text-neutral-700',
+          selected ? 'text-white/80' : 'text-neutral-900',
         )}
       >
         {menteeName}님의 출석여부를 체크해 주세요
@@ -76,7 +76,7 @@ const MenteeAttendanceBar = ({
       <span
         className={twMerge(
           'h-4 w-px shrink-0',
-          selected ? 'bg-white/25' : 'bg-neutral-300',
+          selected ? 'bg-white/25' : 'bg-neutral-400',
         )}
       />
       <button
@@ -89,7 +89,7 @@ const MenteeAttendanceBar = ({
             ? 'bg-[#4d55f5]/70 text-white'
             : selected // 다른 항목 선택됨 → 투명 배경 위라 밝은 글자
               ? 'text-white/70 hover:bg-white/10'
-              : 'text-neutral-600 hover:bg-black/5',
+              : 'bg-black/5 text-neutral-800 hover:bg-black/10', // 클릭 전 — 또렷하게
         )}
       >
         출석
@@ -104,7 +104,7 @@ const MenteeAttendanceBar = ({
             ? 'bg-[#fc5555]/70 text-white'
             : selected // 다른 항목 선택됨 → 투명 배경 위라 밝은 글자
               ? 'text-white/70 hover:bg-white/10'
-              : 'text-neutral-600 hover:bg-black/5',
+              : 'bg-black/5 text-neutral-800 hover:bg-black/10', // 클릭 전 — 또렷하게
         )}
       >
         결석
