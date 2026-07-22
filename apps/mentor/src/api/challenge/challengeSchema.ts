@@ -180,6 +180,8 @@ export const challengeMissionFeedbackSchema = z.object({
 export const feedbackAttendanceSchema = z.object({
   attendanceDetailVo: z.object({
     feedback: z.string().nullish(),
+    // 멘티 사전 질문 — BE 추가 예정. 미배포 시 undefined 라 forward-compatible.
+    preQuestion: z.string().nullish(),
   }),
 });
 
