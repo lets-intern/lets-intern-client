@@ -201,6 +201,8 @@ describe('useMergedFeedbackRows', () => {
       missionId: 1001,
       missionTh: 1,
       challengeTitle: '기필코 경험정리 챌린지 21기',
+      // 클릭한 멘티 본인 상세 진입용 출석 id (row id 'written-1-1001-11'의 11).
+      attendanceId: 11,
     });
     expect(row?.thLabel).toBe('1회차');
   });
