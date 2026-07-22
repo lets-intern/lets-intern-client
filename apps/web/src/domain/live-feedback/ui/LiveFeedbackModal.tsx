@@ -291,7 +291,7 @@ const LiveFeedbackModal = ({
               onExhausted={onExhausted}
               topLeftSlot={
                 startDate && endDate ? (
-                  <LiveSessionTimer startDate={startDate} endDate={endDate} />
+                  <LiveSessionTimer endDate={endDate} />
                 ) : undefined
               }
             />

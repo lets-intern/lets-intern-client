@@ -21,8 +21,6 @@ function formatRemaining(remainingMs: number): string {
 }
 
 interface Props {
-  /** 세션 시작 ISO (현재 라벨엔 미사용 — 시작 전/후 분기 필요 시 확장). */
-  startDate?: string;
   /** 세션 종료 ISO — 남은 시간 계산용. */
   endDate?: string;
 }
@@ -33,7 +31,7 @@ interface Props {
  * 멘토 앱/알림톡/챌린지 피드백 입장 모달 공통. JitsiEmbed 좌상단 아크릴 패널(topLeftSlot)
  * 안에 들어가므로 자체 배경 없이 텍스트만 렌더한다. 1초마다 갱신(unmount 시 cleanup).
  */
-const LiveSessionTimer = ({ startDate, endDate }: Props) => {
+const LiveSessionTimer = ({ endDate }: Props) => {
   const [nowMs, setNowMs] = useState(() => Date.now());
 
   useEffect(() => {
@@ -44,7 +42,6 @@ const LiveSessionTimer = ({ startDate, endDate }: Props) => {
   const endMs = endDate ? new Date(endDate).getTime() : null;
   const remainingMs = endMs != null ? endMs - nowMs : null;
   const isEnded = remainingMs != null && remainingMs <= 0;
-  void startDate;
 
   return (
     <div className="pointer-events-none inline-flex items-center gap-3 px-1 text-white">
