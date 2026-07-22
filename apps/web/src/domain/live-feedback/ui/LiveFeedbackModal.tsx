@@ -57,7 +57,7 @@ const MenteeAttendanceBar = ({
   return (
     <div className="flex max-w-[calc(100vw-1rem)] items-center gap-1.5 rounded-full bg-black/45 py-1 pl-3 pr-1 text-white shadow-lg backdrop-blur-md">
       <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-white/80">
-        {menteeName} 님 출석
+        {menteeName}님의 출석여부를 체크해 주세요
       </span>
       <span className="h-4 w-px shrink-0 bg-white/20" />
       <button
@@ -70,7 +70,7 @@ const MenteeAttendanceBar = ({
             : 'text-white/80 hover:bg-white/10',
         )}
       >
-        참석
+        출석
       </button>
       <button
         type="button"
@@ -82,7 +82,7 @@ const MenteeAttendanceBar = ({
             : 'text-white/80 hover:bg-white/10',
         )}
       >
-        불참
+        결석
       </button>
     </div>
   );
