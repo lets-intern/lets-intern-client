@@ -728,6 +728,76 @@ export const handlers = [
               },
             ],
           },
+          {
+            // 경험정리(EXPERIENCE_1/EXPERIENCE_2) 그룹핑 검증용 — 같은 th에 미션 2개.
+            // BE `missionType` 필드 도착 전 선개발용 목업 (PRD §6.1). 필드 도착 시 이 챌린지만 정리.
+            challengeId: 3,
+            title: '경험정리 페어 시나리오 챌린지',
+            shortDesc: '경험정리 Lv.1/Lv.2 미션 그룹핑 검증용 목업',
+            startDate: '2026-04-14',
+            endDate: '2026-05-04',
+            feedbackMissions: [
+              // 케이스 A: EXPERIENCE_1만 제출됨, EXPERIENCE_2는 미제출 (같은 4회차)
+              {
+                missionId: 3401,
+                missionTitle: '4회차 — 경험정리(Lv.1)',
+                th: 4,
+                missionType: 'EXPERIENCE_1',
+                submittedCount: 6,
+                notSubmittedCount: 0,
+                feedbackStatusCounts: [{ feedbackStatus: 'COMPLETED', count: 6 }],
+              },
+              {
+                missionId: 3402,
+                missionTitle: '4회차 — 경험정리(Lv.2)',
+                th: 4,
+                missionType: 'EXPERIENCE_2',
+                submittedCount: 0,
+                notSubmittedCount: 6,
+                feedbackStatusCounts: [],
+              },
+              // 케이스 B: EXPERIENCE_2만 제출됨 (같은 5회차)
+              {
+                missionId: 3501,
+                missionTitle: '5회차 — 경험정리(Lv.1)',
+                th: 5,
+                missionType: 'EXPERIENCE_1',
+                submittedCount: 0,
+                notSubmittedCount: 5,
+                feedbackStatusCounts: [],
+              },
+              {
+                missionId: 3502,
+                missionTitle: '5회차 — 경험정리(Lv.2)',
+                th: 5,
+                missionType: 'EXPERIENCE_2',
+                submittedCount: 5,
+                notSubmittedCount: 0,
+                feedbackStatusCounts: [
+                  { feedbackStatus: 'IN_PROGRESS', count: 5 },
+                ],
+              },
+              // 케이스 C: 두 미션 모두 제출 기록 있음 (같은 6회차, 예외 케이스 PRD §5-④)
+              {
+                missionId: 3601,
+                missionTitle: '6회차 — 경험정리(Lv.1)',
+                th: 6,
+                missionType: 'EXPERIENCE_1',
+                submittedCount: 3,
+                notSubmittedCount: 1,
+                feedbackStatusCounts: [{ feedbackStatus: 'COMPLETED', count: 3 }],
+              },
+              {
+                missionId: 3602,
+                missionTitle: '6회차 — 경험정리(Lv.2)',
+                th: 6,
+                missionType: 'EXPERIENCE_2',
+                submittedCount: 2,
+                notSubmittedCount: 2,
+                feedbackStatusCounts: [{ feedbackStatus: 'WAITING', count: 2 }],
+              },
+            ],
+          },
         ],
       },
     });

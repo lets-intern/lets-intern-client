@@ -51,3 +51,73 @@ describe('멘토 서면 피드백 현황 MSW 핸들러', () => {
     expect(body.data).not.toHaveProperty('liveFeedbackList');
   });
 });
+
+describe('경험정리 EXPERIENCE_1/EXPERIENCE_2 페어 목업 시나리오', () => {
+  /** 같은 challengeId+th를 공유하는 EXPERIENCE_1/EXPERIENCE_2 미션 쌍을 찾는다. */
+  async function findExperiencePairs() {
+    const res = await fetch(`${BASE}/challenge/mentor/feedback-management`);
+    const body = await res.json();
+    const parsed = mentorFeedbackManagementSchema.parse(body.data);
+
+    const pairs: Array<{
+      challengeId: number;
+      th: number;
+      exp1: { submittedCount: number };
+      exp2: { submittedCount: number };
+    }> = [];
+    for (const challenge of parsed.challengeList) {
+      const byTh = new Map<
+        number,
+        { exp1?: { submittedCount: number }; exp2?: { submittedCount: number } }
+      >();
+      for (const mission of challenge.feedbackMissions) {
+        if (mission.missionType !== 'EXPERIENCE_1' && mission.missionType !== 'EXPERIENCE_2')
+          continue;
+        const entry = byTh.get(mission.th) ?? {};
+        if (mission.missionType === 'EXPERIENCE_1') entry.exp1 = mission;
+        else entry.exp2 = mission;
+        byTh.set(mission.th, entry);
+      }
+      for (const [th, entry] of byTh) {
+        if (entry.exp1 && entry.exp2)
+          pairs.push({
+            challengeId: challenge.challengeId,
+            th,
+            exp1: entry.exp1,
+            exp2: entry.exp2,
+          });
+      }
+    }
+    return pairs;
+  }
+
+  it('같은 challengeId+th를 공유하는 EXPERIENCE_1/EXPERIENCE_2 페어가 존재한다', async () => {
+    const pairs = await findExperiencePairs();
+    expect(pairs.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('케이스 A: EXPERIENCE_1만 제출된 페어가 존재한다', async () => {
+    const pairs = await findExperiencePairs();
+    expect(
+      pairs.some(
+        (p) => p.exp1.submittedCount > 0 && p.exp2.submittedCount === 0,
+      ),
+    ).toBe(true);
+  });
+
+  it('케이스 B: EXPERIENCE_2만 제출된 페어가 존재한다', async () => {
+    const pairs = await findExperiencePairs();
+    expect(
+      pairs.some(
+        (p) => p.exp1.submittedCount === 0 && p.exp2.submittedCount > 0,
+      ),
+    ).toBe(true);
+  });
+
+  it('케이스 C: 두 미션 모두 제출 기록이 있는 페어가 존재한다', async () => {
+    const pairs = await findExperiencePairs();
+    expect(
+      pairs.some((p) => p.exp1.submittedCount > 0 && p.exp2.submittedCount > 0),
+    ).toBe(true);
+  });
+});
