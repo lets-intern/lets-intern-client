@@ -518,6 +518,18 @@ describe('useMergedFeedbackRows — 경험정리 페어 그룹핑', () => {
     expect(missionIds).toContain(3402);
   });
 
+  it('thLabel: 한쪽만 제출한 멘티에게 "4회차"가 1번만 나타난다', () => {
+    const attendanceMap = buildAttendanceMap('정멘티', 'PRESENT', 'ABSENT');
+    const { result } = renderHook(() =>
+      useMergedFeedbackRows([experienceChallenge], [], attendanceMap),
+    );
+    const thLabels = result.current
+      .filter((r) => r.type === 'written' && r.menteeNameLabel === '정멘티')
+      .map((r) => r.thLabel);
+    // 페어 그룹핑으로 반대쪽(미제출) 행이 제거돼 "4회차"가 멘티당 1번만 표시된다.
+    expect(thLabels).toEqual(['4회차']);
+  });
+
   it('missionType이 없으면(페어 없음) 기존처럼 모든 행을 그대로 둔다', () => {
     const plainChallenge: Challenge = {
       ...experienceChallenge,
