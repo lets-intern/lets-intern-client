@@ -7,6 +7,8 @@ import { JitsiMeeting } from '@jitsi/react-sdk';
 import { LetsCareerLogo } from './LetsCareerLogo';
 import { useJitsiConnection } from './useJitsiConnection';
 
+export { default as LiveSessionTimer } from './LiveSessionTimer';
+
 interface JitsiEmbedProps {
   /** 회의실 URL — 외부에서 buildJitsiRoomUrl로 생성해 전달 (셀프호스팅 단일 사용) */
   roomUrl: string;
