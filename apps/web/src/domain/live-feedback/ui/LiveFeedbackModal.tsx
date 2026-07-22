@@ -49,13 +49,14 @@ const MenteeAttendanceBar = ({
   selected: AttendanceStatus | null;
   onSelect: (status: AttendanceStatus | null) => void;
 }) => {
-  // 이름 라벨과 참석/불참 칩의 글자 크기를 통일(text-xs). 칩은 콤팩트 패딩.
+  // 이름 라벨과 출석/결석 칩의 글자 크기를 통일(text-xs). 데스크탑은 닫기 버튼과 높이(py-1.5)
+  // 맞춰 디자인 통일, 모바일은 콤팩트(py-1).
   const baseChip =
-    'shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-xs font-semibold transition disabled:opacity-50';
+    'shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-xs font-semibold transition disabled:opacity-50 md:py-1.5';
   const toggle = (status: AttendanceStatus) =>
     onSelect(selected === status ? null : status);
   return (
-    <div className="flex max-w-[calc(100vw-1rem)] items-center gap-1.5 rounded-full bg-black/45 py-1 pl-3 pr-1 text-white shadow-lg backdrop-blur-md">
+    <div className="flex max-w-[calc(100vw-1rem)] items-center gap-1.5 rounded-full bg-black/70 py-1 pl-3 pr-1 text-white shadow-lg backdrop-blur-md md:bg-black/60">
       <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-white/80">
         {menteeName}님의 출석여부를 체크해 주세요
       </span>
