@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import JitsiEmbedModal from './JitsiEmbedModal';
 
@@ -49,5 +50,20 @@ describe('JitsiEmbedModal (web)', () => {
     expect(
       screen.getByText(/회의실이 아직 준비되지 않았습니다/),
     ).toBeInTheDocument();
+  });
+
+  it('모달 바깥(오버레이) 클릭으로는 닫히지 않는다', async () => {
+    const user = userEvent.setup();
+    const handleClose = jest.fn();
+    render(
+      <JitsiEmbedModal isOpen onClose={handleClose} meetingUrl={TEST_URL} />,
+    );
+
+    const overlay = document.querySelector('[aria-hidden="true"]');
+    expect(overlay).not.toBeNull();
+    if (!overlay) return;
+
+    await user.click(overlay);
+    expect(handleClose).not.toHaveBeenCalled();
   });
 });

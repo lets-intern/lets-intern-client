@@ -2,8 +2,8 @@
 
 import {
   JitsiEmbed,
-  LiveSessionTimer,
   LiveFeedbackMaterials,
+  LiveSessionTimer,
 } from '@letscareer/ui/JitsiEmbed';
 
 import BaseModal from '@/common/modal/BaseModal';
@@ -57,6 +57,7 @@ const JitsiEmbedModal = ({
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
+      closeOnOverlayClick={false}
       // z-10: 모달 콘텐츠(Jitsi iframe)를 오버레이 위로 명시 합성 — 모바일(iOS)에서
       // fixed 오버레이가 iframe 위를 덮어 터치가 막히던 문제 방지.
       className="rounded-xxl relative z-10 aspect-[4/3] h-[94vh] max-h-[980px] w-auto max-w-[96vw] overflow-hidden bg-neutral-900"

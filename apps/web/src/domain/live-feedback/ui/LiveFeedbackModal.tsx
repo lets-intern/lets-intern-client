@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 
 import {
   JitsiEmbed,
-  LiveSessionTimer,
   LiveFeedbackMaterials,
+  LiveSessionTimer,
 } from '@letscareer/ui/JitsiEmbed';
 
 import BaseModal from '@/common/modal/BaseModal';
@@ -186,9 +186,11 @@ const LiveFeedbackModal = ({
         {/* 중앙 하단 — (멘토) 멘티 출석 체크 */}
         {isMentor && (
           <div
+            data-testid="mentor-attendance-anchor"
             className={twMerge(
-              // 모바일은 Jitsi 하단 툴바(마이크·카메라·설정·통화)를 피해 더 위로 올린다.
-              'absolute bottom-28 left-1/2 z-10 -translate-x-1/2 transition-opacity duration-300 md:bottom-20',
+              // 모바일은 좌상단 타이머 패널 바로 아래에 배치하고,
+              // 데스크톱은 기존처럼 하단 중앙에 둔다.
+              'absolute left-3 top-[98px] z-10 transition-opacity duration-300 md:bottom-20 md:left-1/2 md:top-auto md:-translate-x-1/2',
               pendingAttendance && 'opacity-50 hover:opacity-100',
             )}
           >
