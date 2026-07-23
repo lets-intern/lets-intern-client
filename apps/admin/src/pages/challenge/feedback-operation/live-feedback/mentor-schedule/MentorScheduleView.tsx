@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
 import {
   useAdminFeedbackListQuery,
+  useAdminMentorSlotCountsQuery,
   useMentorFeedbackSlotsQuery,
 } from '@/api/feedback/feedback';
 import type { FeedbackAdminVo } from '@/api/feedback/feedbackSchema';
 import { useAdminUserMentorListQuery } from '@/api/mentor/mentor';
+import dayjs from '@/lib/dayjs';
 import { twMerge } from '@/lib/twMerge';
 import { getMentorColor } from '../constants/colors';
 import { buildReservationBlocks } from '../reservation/ui/ReservationCalendarView';
@@ -71,6 +73,15 @@ export default function MentorScheduleView() {
     });
     return map;
   }, [reservations]);
+
+  // 멘토별 오픈 슬롯 건수(현재 이후). BE 집계 API 1콜로 태그에 표시.
+  const nowIso = useMemo(() => dayjs().format('YYYY-MM-DDTHH:mm:ss'), []);
+  const { data: slotCounts } = useAdminMentorSlotCountsQuery(nowIso);
+  const openCountByMentor = useMemo(() => {
+    const map = new Map<number, number>();
+    (slotCounts ?? []).forEach((s) => map.set(s.mentorId, s.openCount));
+    return map;
+  }, [slotCounts]);
 
   const filteredMentors = useMemo(() => {
     const kw = keyword.trim();
@@ -183,6 +194,8 @@ export default function MentorScheduleView() {
                   {mentor.name}
                   <span className="ml-1 opacity-60">
                     · 예정 {upcomingCountByMentor.get(mentor.id) ?? 0}
+                    {slotCounts != null &&
+                      ` · 오픈 ${openCountByMentor.get(mentor.id) ?? 0}`}
                   </span>
                 </button>
               );

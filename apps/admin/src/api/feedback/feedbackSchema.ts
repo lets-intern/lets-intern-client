@@ -147,6 +147,17 @@ export type FeedbackSlotVo = z.infer<typeof feedbackSlotVoSchema>;
 export const getMentorFeedbackSlotsResponseSchema = z.object({
   feedbackSlotList: z.array(feedbackSlotVoSchema),
 });
+
+/** 멘토별 슬롯 오픈/예약 건수 집계 (GET /admin/feedback/slot/count) */
+export const mentorSlotCountVoSchema = z.object({
+  mentorId: z.number(),
+  openCount: z.number(),
+  reservedCount: z.number(),
+});
+export const getMentorSlotCountsResponseSchema = z.object({
+  mentorSlotCountList: z.array(mentorSlotCountVoSchema),
+});
+export type MentorSlotCountVo = z.infer<typeof mentorSlotCountVoSchema>;
 export type GetMentorFeedbackSlotsResponse = z.infer<
   typeof getMentorFeedbackSlotsResponseSchema
 >;
