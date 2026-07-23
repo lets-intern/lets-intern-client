@@ -29,7 +29,7 @@ export function buildReservationBlocks(
       weekStart,
     );
     const color = getMentorColor(r.mentorName);
-    const roundLabel = r.th != null ? `${r.th}회차 · ` : '';
+    const roundLabel = r.missionTh != null ? `${r.missionTh}회차 · ` : '';
     const subLine = `${roundLabel}${r.mentorName} · ${r.menteeName}`;
     return {
       key: String(r.feedbackId),
