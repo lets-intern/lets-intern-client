@@ -1,4 +1,5 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { twMerge } from '@/lib/twMerge';
 import ReservationManagement from './reservation/ReservationManagement';
 
@@ -14,14 +15,34 @@ const subTabs: { id: SubTab; label: string }[] = [
   { id: 'schedule', label: '멘토 스케줄' },
 ];
 
+function isSubTab(value: string | null): value is SubTab {
+  return value === 'reservation' || value === 'schedule';
+}
+
 export default function LiveFeedbackTab() {
-  const [subTab, setSubTab] = useState<SubTab>('reservation');
+  // 하위 탭 상태도 URL(?sub=)에 둔다. 새로고침 시 예약 관리로 리셋되며
+  // 그 조회가 다시 나가는 것을 막는다.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const subParam = searchParams.get('sub');
+  const subTab: SubTab = isSubTab(subParam) ? subParam : 'reservation';
+
+  const setSubTab = (id: SubTab) => {
+    const next = new URLSearchParams(searchParams);
+    next.set('sub', id);
+    setSearchParams(next, { replace: true });
+  };
 
   return (
     <div className="flex flex-col gap-6">
-      <h2 className="text-medium20 text-neutral-0 font-semibold">
-        전체 예약 목록
-      </h2>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-medium20 text-neutral-0 font-semibold">
+          전체 예약 목록
+        </h2>
+        <div className="border-neutral-90 bg-neutral-95 text-xxsmall12 text-neutral-40 rounded-md border px-3 py-1.5">
+          참고 · 미션 회차 표시 버그 수정 중이에요. 추가 요청은 임성빈에게
+          문의해 주세요.
+        </div>
+      </div>
 
       <nav className="border-neutral-80 flex gap-1 border-b">
         {subTabs.map((tab) => (

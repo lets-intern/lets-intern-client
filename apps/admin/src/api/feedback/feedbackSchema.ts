@@ -43,6 +43,8 @@ export const feedbackAdminVoSchema = z.object({
   mentorStatus: feedbackAttendanceStatusSchema,
   menteeStatus: feedbackAttendanceStatusSchema,
   status: feedbackStatusSchema,
+  /** 피드백 회차(몇 회차). BE feedback.th. */
+  th: z.number().nullable().optional(),
   /**
    * 예약을 다른 날로 옮긴 횟수.
    * BE 미제공(예약 변경 내역 자체가 LC-3065 미구현) → 목 전용. 실 API 에 없으면 undefined → 0 으로 본다.
