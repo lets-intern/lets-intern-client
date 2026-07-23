@@ -4,12 +4,14 @@ import OutlinedButton from '@/common/button/OutlinedButton';
 import SolidButton from '@/common/button/SolidButton';
 import BaseModal from '@/common/modal/BaseModal';
 import { Dayjs } from 'dayjs';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   challengeName: string;
+  amount: number;
   endDate: Dayjs | null | undefined;
 }
 
@@ -17,6 +19,7 @@ const CouponRewardPopup = ({
   isOpen,
   onClose,
   challengeName,
+  amount,
   endDate,
 }: Props) => {
   const router = useRouter();
@@ -33,7 +36,7 @@ const CouponRewardPopup = ({
           <span className="text-primary">재구매 할인 쿠폰</span>
           으로
           <br />
-          <span className="text-primary">{challengeName}</span>을 더 저렴하게,
+          <span className="text-primary">{challengeName}</span>를 더 저렴하게,
           <br />
           커리어 성장을 더 탄탄하게!
         </p>
@@ -47,7 +50,7 @@ const CouponRewardPopup = ({
             <p className="absolute inset-0 flex items-center justify-center text-neutral-100">
               <span className="flex items-end gap-1">
                 <span className="text-xlarge28 md:text-xxlarge36 font-semibold">
-                  5,000
+                  {amount.toLocaleString()}
                 </span>
                 <span className="text-xxsmall12 md:text-xsmall16 mb-1 font-bold">
                   원
@@ -58,9 +61,19 @@ const CouponRewardPopup = ({
           <div className="bg-primary-15 mt-[-13px] h-[32px] w-[267px] rounded-[50%] md:h-[40px] md:w-[334px]" />
         </div>
         <div className="text-neutral-40 text-xxsmall12 md:text-xsmall16 flex flex-col pb-1 text-center font-normal">
-          <p>* 쿠폰함을 확인해보세요.</p>
+          <p>
+            *{' '}
+            <Link
+              href="/mypage/coupon"
+              onClick={onClose}
+              className="hover:text-primary-80 underline underline-offset-2 transition-colors"
+            >
+              쿠폰함
+            </Link>
+            을 확인해보세요.
+          </p>
           {endDate && (
-            <p>* 유효기간 : ~ {endDate.format('YYYY년 MM월 DD일')}</p>
+            <p>* 유효기간 : ~ {endDate.format('YYYY년 MM월 DD일 HH시 mm분')}</p>
           )}
         </div>
         <hr className="border-neutral-85 -mx-5 w-[calc(100%+2.5rem)]" />
