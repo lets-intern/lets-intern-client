@@ -31,7 +31,7 @@ const PlusSection = () => {
 
         <div className="flex w-full max-w-[960px] flex-col items-center gap-8 md:flex-row md:gap-12">
           <img
-            src="/images/seminar/vod/archive.png"
+            src="/images/seminar/vod/archive.webp"
             alt="챌린지 참여자 전용 VOD 아카이브 화면"
             loading="lazy"
             className="shadow-03 w-full rounded-lg md:w-3/5"

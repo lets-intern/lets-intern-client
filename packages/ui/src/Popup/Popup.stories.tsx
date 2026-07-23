@@ -16,8 +16,13 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// 아래 스토리들은 render에서 자체 open 상태를 관리하며 args를 쓰지 않는다.
+// open/onOpenChange/children이 필수 prop이라 타입 요구사항 충족용 더미값.
+const DUMMY_ARGS = { open: false, onOpenChange: () => {}, children: null };
+
 // 헤드리스 셸이라 카드 배경/여백은 children이 책임진다.
 export const Default: Story = {
+  args: DUMMY_ARGS,
   render: () => {
     const [open, setOpen] = useState(false);
     return (
@@ -31,10 +36,10 @@ export const Default: Story = {
           title="뉴스레터 구독 안내"
           className={CARD_CLASSES}
         >
-          <h2 className="text-small18 font-semibold text-neutral-0">
+          <h2 className="text-small18 text-neutral-0 font-semibold">
             뉴스레터를 구독하시겠어요?
           </h2>
-          <p className="mt-2 text-xsmall14 text-neutral-30">
+          <p className="text-xsmall14 text-neutral-30 mt-2">
             매주 커리어 인사이트를 이메일로 받아보세요.
           </p>
           <button
@@ -51,6 +56,7 @@ export const Default: Story = {
 
 // 닫기 X 버튼을 숨긴 변형 (오버레이 클릭·ESC로만 닫힘)
 export const WithoutCloseButton: Story = {
+  args: DUMMY_ARGS,
   render: () => {
     const [open, setOpen] = useState(false);
     return (
@@ -65,10 +71,10 @@ export const WithoutCloseButton: Story = {
           className={CARD_CLASSES}
           showCloseButton={false}
         >
-          <h2 className="text-small18 font-semibold text-neutral-0">
+          <h2 className="text-small18 text-neutral-0 font-semibold">
             오버레이나 ESC로 닫아보세요
           </h2>
-          <p className="mt-2 text-xsmall14 text-neutral-30">
+          <p className="text-xsmall14 text-neutral-30 mt-2">
             닫기 버튼이 없는 팝업 변형입니다.
           </p>
         </Popup>

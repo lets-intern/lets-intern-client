@@ -202,8 +202,22 @@ const MagnetApplyContent = ({
       }
     }
 
+    // 출시 알림 프로그램을 선택했다면 수신 여부(받아볼래요/괜찮아요)도 반드시 선택해야 한다.
+    // (미선택 시 제출하면 wantNotification 이 null 이라 선택한 출시 알림 신청이 누락된다)
+    if (selectedLaunchAlertIds.length > 0 && wantNotification === null) {
+      return true;
+    }
+
     return false;
-  }, [value, selections, isMarketingAgreed, surveyAnswers, questions]);
+  }, [
+    value,
+    selections,
+    isMarketingAgreed,
+    surveyAnswers,
+    questions,
+    selectedLaunchAlertIds,
+    wantNotification,
+  ]);
 
   const isSubmitting = patchUserIsPending || postApplicationIsPending;
 
@@ -479,9 +493,9 @@ const MagnetApplyContent = ({
         </section>
       )}
 
-      {/* 출시 알림 프로그램 선택 — 전용 출시알림 신청 모드(variant='launch-alert')에서만 노출.
-          일반 자료집 신청(variant='apply')에서는 어드민 useLaunchAlert 토글과 무관하게 항상 비노출. */}
-      {variant === 'launch-alert' && useLaunchAlert && (
+      {/* 출시 알림 프로그램 선택 — 어드민이 useLaunchAlert 토글을 켠 마그넷이면
+          일반 자료집 신청(variant='apply')과 전용 출시알림 모드 모두에서 노출한다. */}
+      {useLaunchAlert && (
         <section>
           <LaunchAlertProgramSection
             selectedMagnetIds={selectedLaunchAlertIds}

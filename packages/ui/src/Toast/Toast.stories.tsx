@@ -54,6 +54,8 @@ function ToastTriggers() {
 
 // 권장 사용법 — 앱 루트에 Toaster를 마운트하고 useToast로 imperative 발화
 export const Imperative: Story = {
+  // render가 args를 쓰지 않지만, title이 필수 prop이라 타입 요구사항 충족용 더미값
+  args: { title: '' },
   render: () => (
     <Toaster>
       <ToastTriggers />
