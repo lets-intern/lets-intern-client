@@ -14,13 +14,24 @@ const calcDDay = (endDate: string) =>
 const CouponCard = ({ coupon }: CouponCardProps) => {
   const dDay = calcDDay(coupon.endDate);
   const showDDayBadge = dDay >= 0;
+  const isUnlimited = coupon.remainTime === -1;
+  const showQuantityBadge = isUnlimited || coupon.remainTime >= 2;
 
   return (
     <div className="rounded-xs border-neutral-85 flex flex-col gap-2 border p-4">
-      {showDDayBadge && (
-        <span className="bg-primary-10 text-primary text-xxsmall12 w-fit rounded-[3px] px-2 py-1 font-medium">
-          D-{dDay}
-        </span>
+      {(showDDayBadge || showQuantityBadge) && (
+        <div className="flex gap-1">
+          {showDDayBadge && (
+            <span className="bg-primary-10 text-primary text-xxsmall12 w-fit rounded-[3px] px-2 py-1 font-medium">
+              D-{dDay}
+            </span>
+          )}
+          {showQuantityBadge && (
+            <span className="bg-primary-10 text-primary text-xxsmall12 w-fit rounded-[3px] px-2 py-1 font-medium">
+              {isUnlimited ? '무제한' : `${coupon.remainTime}장 보유`}
+            </span>
+          )}
+        </div>
       )}
       <div className="flex flex-col gap-0.5">
         <p className="text-small18 text-neutral-0 font-bold">
