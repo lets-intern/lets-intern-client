@@ -105,7 +105,7 @@ const MissionCalendar = ({ schedules, todayTh, isDone }: Props) => {
           type="button"
           aria-label="이전 미션 보기"
           onClick={handlePrev}
-          className="absolute left-1 top-1/2 z-10 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-900/20 text-white transition hover:bg-neutral-900/40 md:opacity-0 md:focus-visible:opacity-100 md:group-hover:opacity-100"
+          className="absolute left-1 top-1/2 z-10 hidden h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-900/20 text-white transition hover:bg-neutral-900/40 md:flex md:opacity-0 md:focus-visible:opacity-100 md:group-hover:opacity-100"
         >
           <ChevronLeft size={20} />
         </button>
@@ -115,7 +115,7 @@ const MissionCalendar = ({ schedules, todayTh, isDone }: Props) => {
           type="button"
           aria-label="다음 미션 보기"
           onClick={handleNext}
-          className="absolute right-1 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full bg-neutral-900/20 text-white transition hover:bg-neutral-900/40 md:opacity-0 md:focus-visible:opacity-100 md:group-hover:opacity-100"
+          className="absolute right-1 top-1/2 z-10 hidden h-8 w-8 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full bg-neutral-900/20 text-white transition hover:bg-neutral-900/40 md:flex md:opacity-0 md:focus-visible:opacity-100 md:group-hover:opacity-100"
         >
           <ChevronRight size={20} />
         </button>
