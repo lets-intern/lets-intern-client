@@ -1,10 +1,10 @@
 'use client';
 
+import { useMyCoupons } from '@/api/coupon/coupon';
 import PlusIcon from '@/assets/icons/plus.svg?react';
 import { CategoryTabs } from '@letscareer/ui';
 import { useState } from 'react';
 import MoreButton from '../ui/button/MoreButton';
-import { useMyCoupons } from './hooks/useMyCoupons';
 import CouponCard from './ui/CouponCard';
 import CouponRegisterModal from './ui/CouponRegisterModal';
 

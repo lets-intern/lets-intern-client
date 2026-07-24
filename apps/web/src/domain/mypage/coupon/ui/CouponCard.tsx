@@ -1,5 +1,5 @@
+import { CouponItem } from '@/api/coupon/coupon';
 import dayjs from '@/lib/dayjs';
-import { CouponItem } from '../constants';
 
 interface CouponCardProps {
   coupon: CouponItem;

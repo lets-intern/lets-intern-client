@@ -1,12 +1,9 @@
 'use client';
 
+import { COUPON_TYPE_LABEL, CouponItem } from '@/api/coupon/coupon';
 import OutlinedButton from '@/common/button/OutlinedButton';
 import SolidButton from '@/common/button/SolidButton';
 import BaseModal from '@/common/modal/BaseModal';
-import {
-  COUPON_TYPE_LABEL,
-  CouponItem,
-} from '@/domain/mypage/coupon/constants';
 import dayjs from '@/lib/dayjs';
 import { useEffect, useState } from 'react';
 
