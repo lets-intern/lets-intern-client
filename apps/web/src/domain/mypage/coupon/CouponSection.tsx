@@ -34,7 +34,7 @@ const CouponSection = () => {
           onChange={setTab}
         />
         <button
-          className="text-xsmall14 border-neutral-80 rounded-xxs hover:border-primary hover:text-primary mr-5 flex flex-shrink-0 items-center gap-1 rounded border px-3 py-1.5 font-medium text-neutral-50 transition-colors md:mr-0"
+          className="text-xsmall14 border-primary-80 rounded-xxs hover:border-primary hover:text-primary text-primary-80 mr-5 flex flex-shrink-0 items-center gap-1 rounded border px-3 py-1.5 font-medium transition-colors md:mr-0"
           onClick={() => setIsModalOpen(true)}
         >
           <PlusIcon className="h-4 w-4" />
